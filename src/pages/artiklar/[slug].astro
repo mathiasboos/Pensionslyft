@@ -1,0 +1,60 @@
+---
+import { render } from "astro:content";
+import { Clock } from "lucide-react";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getArticles, type Article } from "@/lib/articles";
+import { formatDate } from "@/lib/format";
+
+export async function getStaticPaths() {
+  const articles = await getArticles();
+  return articles.map((article) => ({ params: { slug: article.id }, props: { article } }));
+}
+
+interface Props {
+  article: Article;
+}
+
+const { article } = Astro.props;
+const { title, excerpt, lead, category, author, published_at, reading_minutes } = article.data;
+const { Content } = await render(article);
+---
+
+<BaseLayout
+  title={`${title} – Pensionslyft`}
+  description={excerpt}
+  ogTitle={title}
+  ogType="article"
+  jsonLd={{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    description: excerpt,
+    datePublished: published_at.toISOString(),
+    author: { "@type": "Organization", name: author },
+    publisher: { "@type": "Organization", name: "Pensionslyft" },
+    inLanguage: "sv-SE",
+    isAccessibleForFree: true,
+  }}
+>
+  <article class="mx-auto max-w-3xl px-4 py-14">
+    <div class="flex items-center gap-2 text-xs tracking-wider text-muted-foreground uppercase">
+      <span>{category}</span>
+    </div>
+    <h1 class="mt-4 font-serif text-4xl leading-tight font-semibold">{title}</h1>
+    <p class="mt-4 text-lg text-muted-foreground">{excerpt}</p>
+    <div class="mt-4 flex flex-wrap items-center gap-4 border-b border-border pb-6 text-sm text-muted-foreground">
+      <span>{author}</span>
+      <time datetime={published_at.toISOString().slice(0, 10)}>{formatDate(published_at)}</time>
+      <span class="inline-flex items-center gap-1">
+        <Clock className="size-3" aria-hidden="true" />
+        {reading_minutes} min
+      </span>
+    </div>
+
+    <p class="mt-8 font-serif text-xl leading-9 text-foreground">{lead}</p>
+
+    <div class="article-body mt-6">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

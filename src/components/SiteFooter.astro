@@ -1,0 +1,26 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-20 border-t border-border bg-secondary/40">
+  <div class="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-3">
+    <div class="sm:col-span-2">
+      <p class="font-serif text-lg font-semibold text-primary">Pensionslyft</p>
+      <p class="mt-2 max-w-md text-sm text-muted-foreground">
+        Oberoende guider och kalkyler om svensk pension. Vi ger allmän information, inte individuell
+        finansiell rådgivning.
+      </p>
+    </div>
+    <div class="text-sm">
+      <p class="font-medium text-foreground">Innehåll</p>
+      <ul class="mt-2 space-y-2 text-muted-foreground">
+        <li><a href="/artiklar" class="hover:text-primary">Artiklar</a></li>
+        <li><a href="/pensionskalkylator" class="hover:text-primary">Pensionskalkylator</a></li>
+        <li><a href="/ranta-pa-ranta" class="hover:text-primary">Ränta på ränta</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-border py-4 text-center text-xs text-muted-foreground">
+    © {year} Pensionslyft. Alla belopp är uppskattningar.
+  </div>
+</footer>

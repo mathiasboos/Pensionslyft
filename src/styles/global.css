@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+/*
+ * Pensionslyft design system ("Trustworthy Nordic").
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ * The :root block defines the actual color values using oklch.
+ *
+ * To add a new color:
+ * 1. Add the variable to :root
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-foreground: var(--primary-foreground);
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.98 0.008 85); /* #FBF8F2 off-white */
+  --foreground: oklch(0.24 0.045 253); /* #0F2034 */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.045 253);
+  --primary: oklch(0.28 0.068 253); /* #0C2A49 deep navy */
+  --primary-foreground: oklch(0.98 0.008 85);
+  --primary-soft: oklch(0.42 0.088 250); /* #22507B */
+  --secondary: oklch(0.91 0.032 82); /* #ECE0CA warm sand */
+  --secondary-foreground: oklch(0.28 0.068 253);
+  --muted: oklch(0.95 0.012 85);
+  --muted-foreground: oklch(0.48 0.025 253); /* #545F6C */
+  --accent: oklch(0.88 0.045 82); /* #E7D5B7 */
+  --accent-foreground: oklch(0.28 0.068 253);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.98 0.008 85);
+  --border: oklch(0.89 0.015 85); /* #DFDAD0 */
+  --input: oklch(0.89 0.015 85);
+  --ring: oklch(0.42 0.088 250);
+  --chart-1: oklch(0.28 0.068 253);
+  --chart-2: oklch(0.62 0.09 82); /* #A18142 gold */
+  --chart-3: oklch(0.55 0.09 250);
+  --chart-4: oklch(0.72 0.07 180);
+  --chart-5: oklch(0.5 0.12 30);
+  --gradient-deep: linear-gradient(160deg, oklch(0.24 0.062 253), oklch(0.36 0.082 250));
+  --shadow-soft: 0 18px 40px -24px oklch(0.28 0.068 253 / 0.45);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    font-family: var(--font-sans);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+/* Article text rendered from Markdown (src/content/articles). */
+@layer components {
+  .article-body h2 {
+    @apply mt-10 font-serif text-2xl font-semibold text-foreground;
+  }
+  .article-body h3 {
+    @apply mt-8 font-serif text-xl font-semibold text-foreground;
+  }
+  .article-body p {
+    @apply mt-4 text-base leading-8 text-foreground/90;
+  }
+  .article-body ul {
+    @apply my-4 list-disc space-y-2 pl-6;
+  }
+  .article-body ol {
+    @apply my-4 list-decimal space-y-2 pl-6;
+  }
+  .article-body li {
+    @apply leading-7 text-foreground/90;
+  }
+  .article-body strong {
+    @apply font-semibold;
+  }
+  .article-body a {
+    @apply text-primary underline underline-offset-2;
+  }
+  /* display: block lets a wide table scroll sideways on phones instead of widening the page. */
+  .article-body table {
+    @apply my-6 block max-w-full border-separate border-spacing-0 overflow-x-auto rounded-lg border border-border text-left text-sm;
+  }
+  .article-body thead {
+    @apply bg-muted;
+  }
+  .article-body th {
+    @apply px-4 py-2 font-semibold;
+  }
+  .article-body td {
+    @apply border-t border-border px-4 py-2;
+  }
+}
