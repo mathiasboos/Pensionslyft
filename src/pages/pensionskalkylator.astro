@@ -1,0 +1,22 @@
+---
+import PensionCalculator from "@/components/calculators/PensionCalculator";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Pensionskalkylator – räkna ut ditt pensionskapital"
+  description="Räkna ut ditt framtida pensionskapital utifrån sparande, avkastning och avgifter – och se vad det blir per månad."
+  ogTitle="Pensionskalkylator – Pensionslyft"
+  ogDescription="Se ditt framtida pensionskapital och månadsbelopp efter avgifter."
+>
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="font-serif text-4xl font-semibold">Pensionskalkylator</h1>
+    <p class="mt-3 max-w-2xl text-muted-foreground">
+      Fyll i ditt nuvarande pensionskapital och ditt månadssparande. Kalkylatorn räknar fram kapitalet
+      vid pension och en uppskattad månadsutbetalning.
+    </p>
+    <div class="mt-10">
+      <PensionCalculator client:load />
+    </div>
+  </div>
+</BaseLayout>

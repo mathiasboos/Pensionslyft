@@ -1,0 +1,84 @@
+---
+import { ArrowRight, Calculator, LineChart } from "lucide-react";
+import ArticleCard from "@/components/ArticleCard.astro";
+import { buttonVariants } from "@/components/ui/button";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getArticles } from "@/lib/articles";
+import { cn } from "@/lib/utils";
+
+const latest = (await getArticles()).slice(0, 3);
+---
+
+<BaseLayout
+  title="Pensionslyft – förstå och förbättra din pension"
+  description="Räkna ut ditt pensionskapital, se ränta-på-ränta-effekten och läs guider om allmän pension, tjänstepension och avgifter."
+  ogDescription="Kalkylatorer och guider för din svenska pension."
+>
+  <section class="text-primary-foreground" style="background: var(--gradient-deep)">
+    <div class="mx-auto max-w-6xl px-4 py-20 sm:py-28">
+      <p class="text-xs tracking-[0.3em] text-primary-foreground/70 uppercase">Pension på riktigt</p>
+      <h1 class="mt-4 max-w-3xl font-serif text-4xl leading-tight font-semibold sm:text-5xl">
+        Få kontroll över din pension – innan den är någon annans beslut
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg text-primary-foreground/85">
+        Pensionslyft samlar begripliga guider och kalkylatorer om allmän pension, tjänstepension och
+        eget sparande. Räkna först, läs sedan.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/pensionskalkylator" class={buttonVariants({ size: "lg", variant: "secondary" })}>
+          Räkna ut din pension
+        </a>
+        <a
+          href="/artiklar"
+          class={cn(
+            buttonVariants({ size: "lg", variant: "outline" }),
+            "border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground",
+          )}
+        >
+          Läs artiklarna
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 py-16">
+    <div class="grid gap-6 md:grid-cols-2">
+      <a
+        href="/pensionskalkylator"
+        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
+      >
+        <Calculator className="size-8 text-primary-soft" aria-hidden="true" />
+        <h2 class="mt-4 font-serif text-2xl font-semibold">Pensionskalkylatorn</h2>
+        <p class="mt-2 text-muted-foreground">
+          Se ditt framtida pensionskapital och vad det blir per månad efter avgifter.
+        </p>
+        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
+          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
+        </span>
+      </a>
+      <a
+        href="/ranta-pa-ranta"
+        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
+      >
+        <LineChart className="size-8 text-primary-soft" aria-hidden="true" />
+        <h2 class="mt-4 font-serif text-2xl font-semibold">Ränta på ränta</h2>
+        <p class="mt-2 text-muted-foreground">
+          Jämför hur mycket som är dina insättningar och hur mycket avkastningen gör.
+        </p>
+        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
+          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 pb-16">
+    <div class="flex items-end justify-between">
+      <h2 class="font-serif text-2xl font-semibold">Senaste artiklarna</h2>
+      <a href="/artiklar" class="text-sm text-primary hover:underline">Alla artiklar</a>
+    </div>
+    <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {latest.map((article) => <ArticleCard article={article} />)}
+    </div>
+  </section>
+</BaseLayout>

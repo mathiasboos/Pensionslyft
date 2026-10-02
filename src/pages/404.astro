@@ -1,0 +1,18 @@
+---
+import { buttonVariants } from "@/components/ui/button";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Sidan finns inte – Pensionslyft" description="Sidan du letar efter finns inte.">
+  <div class="mx-auto max-w-3xl px-4 py-24 text-center">
+    <p class="text-7xl font-serif font-semibold text-primary">404</p>
+    <h1 class="mt-4 font-serif text-3xl font-semibold">Sidan finns inte</h1>
+    <p class="mt-3 text-muted-foreground">
+      Sidan du letar efter har flyttats eller finns inte längre.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a href="/" class={buttonVariants()}>Till startsidan</a>
+      <a href="/artiklar" class={buttonVariants({ variant: "outline" })}>Läs artiklarna</a>
+    </div>
+  </div>
+</BaseLayout>

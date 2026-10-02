@@ -1,18 +1,12 @@
 {
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist", "node_modules"],
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "strict": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
-    "types": [],
+    "jsxImportSource": "react",
     "paths": {
-      "framer": ["./preview/framer-stub.ts"]
+      "@/*": ["./src/*"]
     }
-  },
-  "include": ["framer", "preview", "tests"]
+  }
 }

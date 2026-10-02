@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pensionslyft.se/sitemap-index.xml

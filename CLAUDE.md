@@ -1,34 +1,44 @@
 # Pensionslyft – notes for Claude
 
-This repo supports the Framer site pensionslyft.se. The owner builds pages in Framer and
-copies files from here into Framer by hand, so everything must be paste-ready.
+This repo is the website pensionslyft.se. It is a static Astro site deployed by
+Cloudflare Pages: every merge to `main` goes live, and every PR gets a preview URL.
+The owner is not a developer. They ask for changes in plain words and review them on
+the Cloudflare preview link, so explain changes without jargon and always say what to
+look at on the preview.
+
+## Stack
+- Astro (static output, `build.format: "file"`, `trailingSlash: "never"`). URLs have
+  no trailing slash: `/artiklar`, `/pensionskalkylator`.
+- Tailwind CSS v4. The design tokens are in `src/styles/global.css` (navy primary,
+  sand secondary, off-white background, Source Serif 4 for headings, Inter for body).
+  Use the token classes (`bg-primary`, `text-muted-foreground`, `font-serif`, …), not
+  raw hex values.
+- React only for interactive parts (the calculators in `src/components/calculators/`,
+  mounted with `client:load`). Everything else is `.astro`. Icons come from
+  `lucide-react` and are rendered statically.
+- shadcn/ui components live in `src/components/ui/`. To add one, copy its source from
+  ui.shadcn.com into that folder.
+- Articles are Markdown in `src/content/articles/`. The schema is in
+  `src/content.config.ts`: title, category, excerpt, lead, reading_minutes,
+  published_at, plus optional author, draft and slug. The lead paragraph is shown
+  large above the body. Use `##` and `###` for headings inside the body.
+- `src/layouts/BaseLayout.astro` sets the title, description, Open Graph tags, the
+  canonical URL and optional JSON-LD. Every page uses it.
 
 ## Rules
+- All site text is Swedish. Format numbers with `src/lib/format.ts`
+  (`formatSek`, `formatPercent`, `formatDate`), never by hand.
+- Keep the calculator math in `src/lib/pension.ts`. The values in
+  `tests/pension.test.ts` are the reference: only change them when a change to the
+  math is intended.
+- The site must work at phone width (375 px) with no horizontal scrolling.
+- Never commit `.env` files or secrets. The repository is public.
 
-- **Framer components (`framer/*.tsx`)**
-  - Keep each component in one self-contained file.
-  - Import only from `react` and `framer`. No other npm packages, no Tailwind and no CSS
-    files: use inline styles.
-  - Write layouts that adapt without media queries (flex-wrap, grid `auto-fit`), because
-    the component width is set in Framer.
-  - Keep the `@framerSupportedLayoutWidth` / `@framerSupportedLayoutHeight` annotations
-    and `addPropertyControls`.
-  - Export the math function next to the default component so tests can import it.
-- **Language and formatting.** All site text is Swedish. Format numbers with `Intl`
-  `sv-SE` (SEK with no decimals, a decimal comma for percentages).
-- **Articles.** `content/articles/*.md` is the source. After any change, run
-  `npm run build:articles` and commit the regenerated `content/articles.csv`.
-- **Design and page docs.** When a change affects a page or the design, update
-  `design/brand.md` or `design/site-structure.md` too.
-- **`lovable-app/`** is a read-only reference copy of the old Lovable app. Don't edit
-  it. Never commit `.env` files or keys: this repository is public.
-
-## Before pushing
-
+## Before opening a PR
 ```sh
 npm test
-npm run typecheck
-npm run preview   # check both components at desktop and phone width (Playwright screenshot)
+npm run build      # includes astro check (types + content schema)
+npm run preview    # then take Playwright screenshots of the changed pages at 1280 px and 375 px
 ```
-
-When you change a component, tell the owner which file to paste into Framer.
+Chromium is preinstalled for Playwright (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`).
+Open a PR into `main` and tell the owner that Cloudflare will post a preview link on it.
