@@ -1,0 +1,14 @@
+// Cloudflare settings for deploying with Workers (`npx wrangler deploy`).
+// Cloudflare Pages ignores this file (it has no "pages_build_output_dir"),
+// so the site deploys correctly whichever of the two Cloudflare chooses.
+{
+  "name": "pensionslyft",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Unknown URLs get the Swedish 404 page (dist/404.html) with status 404.
+    "not_found_handling": "404-page",
+    // Pages are built as artiklar.html and served as /artiklar.
+    "html_handling": "auto-trailing-slash"
+  }
+}
