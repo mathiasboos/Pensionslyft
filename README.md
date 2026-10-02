@@ -43,10 +43,19 @@ Login, membership and admin from that version are not included.
 
 ### 1. Connect the repo to Cloudflare Pages
 
-1. Create a free account at [cloudflare.com](https://dash.cloudflare.com/sign-up).
-2. Go to **Workers & Pages → Create → Pages → Connect to Git**, give Cloudflare access to
-   GitHub, and choose **mathiasboos/Pensionslyft**.
-3. Use these build settings:
+Everything in this step happens on the **Cloudflare website**, not on GitHub.
+
+1. Create a free account at [cloudflare.com](https://dash.cloudflare.com/sign-up) and log in.
+2. In the **left-hand menu** of the Cloudflare dashboard, click **Workers & Pages**. In
+   the newer menu it is under **Compute (Workers)**. Direct link while logged in:
+   <https://dash.cloudflare.com/?to=/:account/workers-and-pages>
+3. Click the blue **Create application** (or **Create**) button. Cloudflare opens the
+   **Workers** screen first; switch to the **Pages** tab, or click the small link
+   **"Looking to deploy Pages? Get started"** at the bottom.
+4. Choose **Connect to Git** (or **Import an existing Git repository**), sign in with
+   GitHub, allow Cloudflare to see **mathiasboos/Pensionslyft**, select it and click
+   **Begin setup**.
+5. Use these build settings:
    - Production branch: `main`
    - Framework preset: **Astro**
    - Build command: `npm run build`
@@ -54,8 +63,13 @@ Login, membership and admin from that version are not included.
    - Node version: the repo's `.nvmrc` sets Node 22. Cloudflare reads it automatically.
      If the build complains about Node, add the variable `NODE_VERSION` = `22` under
      Settings → Variables.
-4. Click **Save and Deploy**. After a minute the site is live at
+6. Click **Save and Deploy**. After a minute the site is live at
    `https://<project-name>.pages.dev`. Check that it looks right.
+
+**Ended up on the Workers screen instead?** That works too: import the repository there,
+and use build command `npm run build` and deploy command `npx wrangler deploy`. The
+`wrangler.jsonc` file in this repo tells Cloudflare where the built site is. The site
+will then be at `https://pensionslyft.<your-account>.workers.dev`.
 
 From now on, every merge to `main` updates the live site, and every pull request gets
 its own preview link.
