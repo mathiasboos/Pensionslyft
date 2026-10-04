@@ -27,6 +27,7 @@ visual editor (Framer, Lovable) is needed.
 | One article | `/artiklar/<slug>` | `src/pages/artiklar/[slug].astro` + `src/content/articles/<slug>.md` |
 | Pension calculator | `/pensionskalkylator` | `src/pages/pensionskalkylator.astro` + `src/components/calculators/PensionCalculator.tsx` |
 | Compound interest | `/ranta-pa-ranta` | `src/pages/ranta-pa-ranta.astro` + `src/components/calculators/CompoundCalculator.tsx` |
+| FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
 | Not found | any other URL | `src/pages/404.astro` |
 
 - **Articles** are Markdown files in `src/content/articles/`. Add a new file there and the

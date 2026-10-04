@@ -1,0 +1,44 @@
+---
+import FireCalculator from "@/components/calculators/FireCalculator";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="FIRE-kalkylator – när kan du bli ekonomiskt oberoende?"
+  description="Räkna ut när ditt sparande räcker för att leva på avkastningen. FIRE-kalkylatorn tar hänsyn till sparkvot, avkastning, avgifter och skatt på ISK."
+  ogTitle="FIRE-kalkylator – Pensionslyft"
+  ogDescription="Se vid vilken ålder du kan bli ekonomiskt oberoende."
+>
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="font-serif text-4xl font-semibold">FIRE-kalkylator</h1>
+    <p class="mt-3 max-w-2xl text-muted-foreground">
+      FIRE står för <em>Financial Independence, Retire Early</em>: att spara och investera tills
+      avkastningen räcker att leva på. Ange din lön, hur stor del du sparar och vad du räknar med i
+      avkastning, så ser du vid vilken ålder du når målet.
+    </p>
+    <div class="mt-10">
+      <FireCalculator client:load />
+    </div>
+
+    <section class="mt-12 max-w-3xl rounded-xl border border-border bg-secondary/50 p-6 text-sm leading-6">
+      <h2 class="font-serif text-lg font-semibold">Så räknar kalkylatorn</h2>
+      <ul class="mt-3 list-disc space-y-1.5 pl-5">
+        <li>
+          Målet är dina årsutgifter gånger FIRE-multipeln. Med 25&nbsp;× kan du ta ut 4&nbsp;% av
+          portföljen per år, den så kallade 4&nbsp;%-regeln.
+        </li>
+        <li>
+          Du sparar samma belopp varje månad. Skatt och avgifter dras på portföljens värde i slutet
+          av varje år.
+        </li>
+        <li>
+          Lön, utgifter och mål räknas i dagens kronor, utan inflation. Ange därför gärna
+          avkastningen efter inflation.
+        </li>
+      </ul>
+      <p class="mt-3 text-muted-foreground">
+        Resultatet är en uppskattning, inte finansiell rådgivning. Avkastning är aldrig garanterad.
+      </p>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { formatPercent, formatSek } from "../src/lib/format";
-import { calculateCompound, calculatePension } from "../src/lib/pension";
+import { formatPercent, formatSek, formatSekShort } from "../src/lib/format";
+import { calculateCompound, calculateFire, calculatePension } from "../src/lib/pension";
 
 // Regression values: the calculators must keep giving the same numbers as the
 // original Lovable site for its default inputs.
@@ -59,5 +59,94 @@ describe("format", () => {
     expect(formatSek(2800224.4).replace(/\s/g, " ")).toBe("2 800 224 kr");
     expect(formatPercent(6.5, 1)).toBe("6,5 %");
     expect(formatPercent(0.6, 2)).toBe("0,60 %");
+  });
+
+  it("shortens amounts for chart axes", () => {
+    expect(formatSekShort(1500000).replace(/\s/g, " ")).toBe("1,5 mkr");
+    expect(formatSekShort(6000000).replace(/\s/g, " ")).toBe("6 mkr");
+    expect(formatSekShort(250000).replace(/\s/g, " ")).toBe("250 tkr");
+    expect(formatSekShort(0)).toBe("0 kr");
+  });
+});
+
+// Reference values come from the original FIRE calculator (the Framer version of the site).
+describe("calculateFire", () => {
+  const defaults = {
+    currentAge: 20,
+    monthlySalary: 40000,
+    savingsRate: 50,
+    fireMultiple: 25,
+    annualReturn: 6.1,
+    annualFee: 0.25,
+    yieldTax: 1.05,
+    startCapital: 0,
+  };
+
+  it("matches the original calculator for its default inputs", () => {
+    const result = calculateFire(defaults);
+    expect(result.fireAge).toBe(37);
+    expect(result.fireYear).toBe(17);
+    expect(result.target).toBe(6000000);
+    expect(result.monthlySavings).toBe(20000);
+    expect(result.monthlySpending).toBe(20000);
+    expect(result.netReturn).toBeCloseTo(4.8, 10);
+    expect(result.rows).toHaveLength(70);
+
+    const first = result.rows[0]!;
+    expect(Math.round(first.growth)).toBe(6638);
+    expect(Math.round(first.tax)).toBe(2590);
+    expect(Math.round(first.fees)).toBe(617);
+    expect(Math.round(first.closing)).toBe(243432);
+
+    const fire = result.rows[16]!;
+    expect(fire.age).toBe(37);
+    expect(Math.round(fire.opening)).toBe(5630087);
+    expect(Math.round(fire.closing)).toBe(6139299);
+    expect(Math.round(fire.gap)).toBe(-139299);
+
+    expect(result.milestones).toEqual([
+      { percent: 25, age: 26 },
+      { percent: 50, age: 30 },
+      { percent: 75, age: 34 },
+      { percent: 100, age: 37 },
+    ]);
+  });
+
+  it("matches the original calculator with a start capital", () => {
+    const result = calculateFire({
+      ...defaults,
+      currentAge: 35,
+      monthlySalary: 55000,
+      savingsRate: 30,
+      annualReturn: 7,
+      annualFee: 0.3,
+      startCapital: 500000,
+    });
+    expect(result.fireAge).toBe(60);
+    expect(result.target).toBeCloseTo(11550000, 6);
+    expect(Math.round(result.rows[24]!.closing)).toBe(12320151);
+    expect(result.milestones.map((m) => m.age)).toEqual([44, 51, 56, 60]);
+  });
+
+  it("reports when the target is not reached within 70 years", () => {
+    const result = calculateFire({
+      ...defaults,
+      currentAge: 40,
+      monthlySalary: 30000,
+      savingsRate: 5,
+      fireMultiple: 30,
+      annualReturn: 2,
+      annualFee: 0.5,
+    });
+    expect(result.fireYear).toBeNull();
+    expect(result.fireAge).toBeNull();
+    expect(Math.round(result.rows[69]!.closing)).toBe(1451216);
+    expect(result.milestones.at(-1)).toEqual({ percent: 100, age: null });
+  });
+
+  it("handles a zero return", () => {
+    const result = calculateFire({ ...defaults, annualReturn: 0, annualFee: 0, yieldTax: 0 });
+    expect(result.rows[0]!.closing).toBeCloseTo(240000, 6);
+    expect(result.fireYear).toBe(25);
   });
 });
