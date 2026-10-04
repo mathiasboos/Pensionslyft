@@ -23,6 +23,7 @@ export interface Series {
   rgkPct: number[]; // räntan hos Riksgälden, procent
   taxLimit1: number[];
   taxLimit2: number[];
+  studiebidrag: number[]; // studiebidrag per termin utan tillägg (PGB för studier)
   komSkatt: number[]; // procent
   begravning: number[]; // procent
 }
@@ -64,6 +65,7 @@ export function buildSeries(realGrowth: number, realReturn: number, inflation = 
     rgkPct: pick("rgk"),
     taxLimit1: pick("taxLimit1"),
     taxLimit2: Array.from({ length: n }, () => 1e16),
+    studiebidrag: pick("studiebidrag"),
     komSkatt: [],
     begravning: [],
   };
@@ -80,6 +82,7 @@ export function buildSeries(realGrowth: number, realReturn: number, inflation = 
     s.Iindex[i(y)] = s.Iindex[i(y - 1)]! * (1 + realGrowth) * (1 + inflation);
     s.ipAvg[i(y)] = s.ipAvg[i(y - 1)]!;
     s.ppAvg[i(y)] = 1;
+    s.studiebidrag[i(y)] = int(0.0174 * s.PBB[i(y)]!) * 4 * 5; // 1,74 % av prisbasbeloppet per vecka, 20 veckor
   }
   // IBB uses the following year's income index (G74 = ROUND((I75/I52)*G4, -2)).
   for (let y = lastHard + 1; y <= LAST_YEAR; y++) {

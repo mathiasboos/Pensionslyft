@@ -21,8 +21,8 @@ def num(x):
 FIRST, LAST_HARD = 1957, 2026
 years = list(range(FIRST, LAST_HARD + 1))
 row = lambda y: y - 1957 + 4  # Några tal: 1957 -> row 4
-idx = {k: [] for k in ["KPIj","KPI","PBB","MPGI","IBB","FPB","Iindex","balanstal","Bindex","Pindex","ipAvg","ppAvg","yield","yieldAP7","rgk","taxLimit1"]}
-cols = {"KPIj":"B","KPI":"C","PBB":"E","MPGI":"F","IBB":"G","FPB":"H","Iindex":"I","balanstal":"J","Bindex":"K","Pindex":"L","ipAvg":"N","ppAvg":"O","yield":"Q","yieldAP7":"R","rgk":"S","taxLimit1":"AC"}
+idx = {k: [] for k in ["KPIj","KPI","PBB","MPGI","IBB","FPB","Iindex","balanstal","Bindex","Pindex","ipAvg","ppAvg","yield","yieldAP7","rgk","taxLimit1","studiebidrag"]}
+cols = {"KPIj":"B","KPI":"C","PBB":"E","MPGI":"F","IBB":"G","FPB":"H","Iindex":"I","balanstal":"J","Bindex":"K","Pindex":"L","ipAvg":"N","ppAvg":"O","yield":"Q","yieldAP7":"R","rgk":"S","taxLimit1":"AC","studiebidrag":"AF"}
 for y in years:
     for k, c in cols.items():
         idx[k].append(num(v(NT, f"{c}{row(y)}")))

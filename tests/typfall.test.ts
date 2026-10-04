@@ -28,7 +28,7 @@ describe("typfallsmodellen, compared with the model's own run for born 1959", ()
     const columns = [
       "Lön", "PGI", "IP_rätt", "PP_rätt", "GP_rätt", "IP_PBH", "PP_PBH", "GP_PBH", "IP", "PP", "GP", "ptillagg",
       "Brutto", "Tax_ink", "Grundavdrag", "Pensionavgift", "Besk_inkomst", "Kyrk_begravn", "Kommunal_skatt",
-      "Statlig_skatt", "Skattereduktioner", "Nettoinkomst",
+      "Statlig_skatt", "Skattereduktioner", "Nettoinkomst", "Bidrag", "Ind_Disp",
     ];
     let compared = 0;
     for (const row of rows) {
@@ -49,12 +49,20 @@ describe("typfallsmodellen, compared with the model's own run for born 1959", ()
       ["fixed:Inkomst", "lon"], ["fixed:IP", "ip"], ["fixed:PP", "pp"], ["fixed:GP", "gp"],
       ["fixed:Ptillagg", "tillagg"], ["fixed:TJP", "tjp"], ["fixed:Brutto", "brutto"],
     ];
+    let benefits = 0;
     // The model writes this table for ages 1-104 only.
     for (const row of rows.filter((r) => r["fixed:Ålder"] != null)) {
       const mine = result.years.find((y) => y.age === row["fixed:Ålder"])!;
       for (const [column, key] of pairs) expect(mine[key], `${column} at ${mine.age}`).toBe(row[column]);
       if (mine.netto !== null) expect(mine.netto, `netto at ${mine.age}`).toBe(row["fixed:Inkomst efter skatt"]);
+      if (mine.bidrag !== null) {
+        expect(mine.bidrag, `bidrag at ${mine.age}`).toBe(row["fixed:Bidrag"]);
+        expect(mine.disp, `disponibel inkomst at ${mine.age}`).toBe(row["fixed:Disponibel inkomst"]);
+        if (mine.bidrag > 0) benefits++;
+      }
     }
+    // Bostadstillägg every year from 66 to 104 (the table ends at 104)
+    expect(benefits).toBe(39);
   });
 
   it("gives the same result with the advanced settings at their defaults", () => {
@@ -81,7 +89,11 @@ describe("typfallsmodellen, compared with the model's own run for born 1959", ()
   it("matches all four columns of Tabell 1", () => {
     const t = fixture.table1 as Record<string, (number | null)[]>;
     const table = pensionTable(result);
-    const rows = [...table.wage, ...table.pension, ...table.afterTax];
+    const rows = [
+      ...table.wage,
+      ...table.pension,
+      ...table.afterTax.map((r) => (r.label === "Disponibel inkomst" ? { ...r, label: "Disponibel inkomst efter skatt" } : r)),
+    ];
     const labels: [string, string][] = [
       ["Slutlön, 61 - 65 års ålder", "Slutlön, 61 - 65 års ålder"], ["Lön efter skatt", "Lön efter skatt"],
       ["Inkomstpension", "Inkomstpension"], ["Tilläggspension", "Tilläggspension"], ["Premiepension", "Premiepension"],
@@ -90,6 +102,9 @@ describe("typfallsmodellen, compared with the model's own run for born 1959", ()
       ["Privat pensionssparande (med avdragsrätt)", "Privat pensionssparande (med avdragsrätt)"],
       ["Total pension brutto", "Total pension brutto"], ["Efter skatt", "Efter skatt"],
       ["Privat pensionssparande (ISK / KF)", "Privat pensionssparande (ISK / KF)"],
+      ["Bostadstillägg för pensionärer m.m.", "Bostadstillägg för pensionärer m.m."],
+      // The fixture keeps the last of the two rows named "Disponibel inkomst", the one after tax.
+      ["Disponibel inkomst", "Disponibel inkomst efter skatt"],
     ];
     expect(table.title).toBe("Pension vid 66 års ålder");
     for (const [excel, mine] of labels) {
@@ -220,5 +235,89 @@ describe("typfallsmodellen, advanced settings", () => {
   it("changes the wage path with löneprofil and ändrad lön", () => {
     expect(run({ loneprofil: 1 }).slutlon).not.toBeCloseTo(plain.slutlon, 0);
     expect(run({ andradLonAr: 2035, andradLonFaktor: 0.8 }).slutlon).toBeCloseTo(plain.slutlon * 0.8, 6);
+  });
+});
+
+describe("typfallsmodellen, more advanced settings", () => {
+  const base = { ...defaults, born: 1975, par: 68, monthlyWage: 33200, avtal: 2 as Avtal };
+  const low = { ...base, monthlyWage: 18000, avtal: 1 as Avtal };
+  const run = (advanced: Parameters<typeof runTypfall>[0]["advanced"], extra: Partial<typeof base> = {}) =>
+    runTypfall({ ...base, ...extra, advanced });
+  const plain = run({});
+  const at = (r: ReturnType<typeof runTypfall>, age: number) => r.years.find((y) => y.age === age)!;
+
+  it("takes out part of the pension and works part time until the final withdrawal", () => {
+    const r = run({ defAr: 70, uttagIP: 0.5, uttagPP: 0.5 });
+    expect(r.defAr).toBe(70);
+    expect(r.tjpPar).toBe(70); // the tjänstepension follows the final withdrawal
+    expect(at(r, 68).lon).toBeCloseTo(at(plain, 67).lon / 2, -1);
+    expect(at(r, 69).ip).toBeGreaterThan(0);
+    expect(at(r, 69).ip).toBeLessThan(at(r, 70).ip * 0.6);
+    expect(at(r, 70).lon).toBe(0);
+    const stop = run({ defAr: 70, uttagIP: 0, uttagPP: 0, sysselsattning: 0 });
+    expect(at(stop, 68).lon).toBe(0);
+    expect(at(stop, 69).ip).toBe(0);
+  });
+
+  it("pays the tjänstepension from its own age", () => {
+    const r = run({ tjpPar: 65 });
+    expect(at(r, 64).tjp).toBe(0);
+    expect(at(r, 65).tjp).toBeGreaterThan(0);
+    expect(at(r, 65).lon).toBeGreaterThan(0);
+    expect(r.tjp).toBeLessThan(plain.tjp);
+  });
+
+  it("gives bostadstillägg to low pensions, more with a higher rent and less with wealth", () => {
+    const r = run({}, low);
+    expect(r.bidrag).toBeGreaterThan(0);
+    expect(run({ hyra: 9000 }, low).bidrag).toBeGreaterThan(r.bidrag);
+    expect(run({ formogenhet: 500000 }, low).bidrag).toBeLessThan(r.bidrag);
+    expect(run({ ansoker: false }, low).bidrag).toBe(0);
+    expect(at(run({ ansoker: false }, low), 70).bidrag).toBe(0);
+    expect(r.disp).toBeCloseTo(r.netto + r.bidrag, 6);
+    expect(plain.bidrag).toBe(0);
+  });
+
+  it("taxes capital income at 30 % and counts it for bostadstillägg", () => {
+    const k = run({ kapital: 50000 });
+    expect(k.netto - plain.netto).toBeCloseTo(50000 * 0.7, 0);
+    expect(run({ kapital: 20000 }, low).bidrag).toBeLessThan(run({}, low).bidrag);
+  });
+
+  it("gives a tax reduction for the a-kassa fee from 2022", () => {
+    expect(run({ akassa: 2000 }).dispFore!).toBeGreaterThan(plain.dispFore!);
+    expect(run({ fack: 2000 }).dispFore).toBe(plain.dispFore);
+  });
+
+  it("gives PGB for sjuk- och aktivitetsersättning, värnplikt and studier", () => {
+    const pgb = (r: ReturnType<typeof runTypfall>) => r.verbose.filter((v) => v.PGB! > 0).map((v) => v.year);
+    const sa = run({ pgb: { sa: [{ from: 2000, to: 2002, belopp: 150000 }], vpl: null, studier: [] } });
+    expect(pgb(sa)).toEqual([2000, 2001, 2002]);
+    const vpl = run({ pgb: { sa: [], vpl: { start: "1995-01-10", end: "1996-01-09" }, studier: [] } });
+    expect(pgb(vpl)).toEqual([1995, 1996]);
+    expect(vpl.ip).toBeGreaterThan(plain.ip);
+    const stud = run({ pgb: { sa: [], vpl: null, studier: [{ from: 1996, to: 1999, terminer: 2 }] } }, { wStart: 25 });
+    // 138 % of the study grant, from 1997 in the model
+    expect(pgb(stud)).toEqual([1997, 1998, 1999]);
+  });
+
+  it("uses an own wage path as given", () => {
+    const same = run({ egenLon: plain.wagePath });
+    expect(same.brutto).toBe(plain.brutto);
+    const higher = run({ egenLon: plain.wagePath.map((w) => ({ ...w, income: w.income * 1.2, wage: w.wage * 1.2 })) });
+    expect(higher.ip).toBeGreaterThan(plain.ip);
+  });
+
+  it("starts from known balances and deducts fund fees when the return is before fees", () => {
+    expect(run({ pbhYear: 2020, pbhPP: 500000 }).pp).toBeGreaterThan(plain.pp);
+    expect(run({ pbhYear: 2020, pbhTJP: 800000 }).tjp).toBeGreaterThan(plain.tjp);
+    expect(run({ efterFondavgifter: false }).pp).toBeLessThan(plain.pp);
+  });
+
+  it("pays child benefits and counts them in the disposable income", () => {
+    const r = run({ barn: [2015] }, { ...low, monthlyWage: 15000 });
+    const y = r.years.find((x) => x.year === 2025)!;
+    expect(y.bidrag!).toBeGreaterThanOrEqual(1250 * 12);
+    expect(y.disp).toBe(y.netto! + y.bidrag! + y.pps);
   });
 });

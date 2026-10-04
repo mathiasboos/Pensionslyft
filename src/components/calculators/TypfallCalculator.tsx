@@ -81,21 +81,23 @@ export default function TypfallCalculator() {
     [mode, adv, inflation],
   );
 
-  const result = useMemo(
-    () =>
-      runTypfall({
-        born,
-        par: parUsed,
-        wStart: wStartUsed,
-        monthlyWage,
-        avtal,
-        gift,
-        realGrowth: realGrowth / 100,
-        realReturn: realReturn / 100,
-        advanced: advUsed,
-      }),
-    [born, parUsed, wStartUsed, monthlyWage, avtal, gift, realGrowth, realReturn, advUsed],
+  const baseInput = useMemo(
+    () => ({
+      born,
+      par: parUsed,
+      wStart: wStartUsed,
+      monthlyWage,
+      avtal,
+      gift,
+      realGrowth: realGrowth / 100,
+      realReturn: realReturn / 100,
+    }),
+    [born, parUsed, wStartUsed, monthlyWage, avtal, gift, realGrowth, realReturn],
   );
+  const result = useMemo(() => runTypfall({ ...baseInput, advanced: advUsed }), [baseInput, advUsed]);
+  // The wage path from the form, to fill in "egen löneutveckling".
+  const computedWagePath = () =>
+    runTypfall({ ...baseInput, advanced: { ...adv, inflation: inflation / 100, egenLon: null } }).wagePath;
   const table = pensionTable(result);
 
   const kgrad = result.slutlon > 0 ? (result.brutto / result.slutlon) * 100 : 0;
@@ -150,6 +152,8 @@ export default function TypfallCalculator() {
         "Privat sparande (ISK / KF)",
         "Före skatt",
         "Efter skatt",
+        "Bidrag",
+        "Disponibel inkomst",
       ],
       ...result.years.map((y) => [
         y.year,
@@ -164,6 +168,8 @@ export default function TypfallCalculator() {
         y.pps,
         y.brutto,
         y.netto,
+        y.bidrag,
+        y.disp,
       ]),
     ]);
 
@@ -353,8 +359,13 @@ export default function TypfallCalculator() {
               par={parUsed}
               wStart={wStartUsed}
               avtal={avtal}
+              gift={gift}
+              monthlyWage={monthlyWage}
               forsakringstid={result.forsakringstid}
+              defAr={result.defAr}
+              tjpPar={result.tjpPar}
               lifeExpectancy={cohortValue(born, "eLife", parUsed)}
+              computedWagePath={computedWagePath}
             />
           </div>
         )}
@@ -424,7 +435,7 @@ export default function TypfallCalculator() {
                 {table.pension.map(renderRow)}
                 <tr>
                   <td colSpan={5} className="pt-5 pb-2 text-right text-xs text-muted-foreground">
-                    Efter skatt: som andel av lönen efter skatt
+                    Efter skatt: som andel av lönen efter skatt, disponibel inkomst av den före pensionen
                   </td>
                 </tr>
                 {table.afterTax.map(renderRow)}
@@ -435,8 +446,11 @@ export default function TypfallCalculator() {
               efter.
               {avtal !== 1 &&
                 (result.advanced.tempTjp > 0
-                  ? ` Tjänstepensionen betalas ut under ${result.advanced.tempTjp} år.`
-                  : " Tjänstepensionen betalas ut livsvarigt.")}
+                  ? ` Tjänstepensionen betalas ut under ${result.advanced.tempTjp} år`
+                  : " Tjänstepensionen betalas ut livsvarigt")}
+              {avtal !== 1 && (result.tjpPar === parUsed ? "." : ` från ${result.tjpPar} år.`)}
+              {result.defAr > parUsed &&
+                ` Allmän pension tas ut delvis från ${parUsed} år och helt från ${result.defAr} år.`}
             </p>
           </div>
         </div>
@@ -503,8 +517,8 @@ export default function TypfallCalculator() {
                 <ChevronDown className={cn("size-5 transition-transform", tableOpen && "rotate-180")} aria-hidden="true" />
               </button>
               <p className="mt-1 text-sm text-muted-foreground">
-                Kronor i månaden, i {W_REF} års priser.
-                {result.pps > 0 && " Efter skatt räknar med uttagen från ISK och kapitalförsäkring."}
+                Kronor i månaden, i {W_REF} års priser. Bidrag är bostadstillägg, bostadsbidrag, barnbidrag och
+                bistånd. Disponibel inkomst är efter skatt med bidrag och uttag från ISK och kapitalförsäkring.
               </p>
             </div>
             <button type="button" onClick={yearsCsv} className={csvButton}>
@@ -528,6 +542,8 @@ export default function TypfallCalculator() {
                       ...(hasPrivat ? ["Privat sparande"] : []),
                       "Före skatt",
                       "Efter skatt",
+                      "Bidrag",
+                      "Disponibel inkomst",
                     ].map((h) => (
                       <th key={h} scope="col" className="px-3 py-2 font-medium first:text-left">
                         {h}
@@ -545,9 +561,11 @@ export default function TypfallCalculator() {
                           {num.format(v / 12)}
                         </td>
                       ))}
-                      <td className="px-3 py-1.5 whitespace-nowrap">
-                        {y.netto === null ? "–" : num.format((y.netto + y.pps) / 12)}
-                      </td>
+                      {[y.netto, y.bidrag, y.disp].map((v, i) => (
+                        <td key={`n${i}`} className="px-3 py-1.5 whitespace-nowrap">
+                          {v === null ? "–" : num.format(v / 12)}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>

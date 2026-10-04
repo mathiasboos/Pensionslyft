@@ -206,3 +206,136 @@ export function Disclosure({ title, children }: { title: string; children: React
     </details>
   );
 }
+
+/** A number that may be left empty (null), e.g. a known balance that is not given. */
+export function OptionalNumberRow({
+  id,
+  label,
+  hint,
+  value,
+  onChange,
+  max,
+}: {
+  id: string;
+  label: string;
+  hint?: ReactNode;
+  value: number | null;
+  onChange: (v: number | null) => void;
+  max: number;
+}) {
+  const [text, setText] = useState(value === null ? "" : String(value));
+  const [focused, setFocused] = useState(false);
+  useEffect(() => {
+    if (!focused) setText(value === null ? "" : String(value));
+  }, [value, focused]);
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 pt-1">
+        <label htmlFor={id} className="text-sm">
+          {label}
+        </label>
+        {hint && (
+          <p id={`${id}-hint`} className="mt-0.5 text-xs text-muted-foreground">
+            {hint}
+          </p>
+        )}
+      </div>
+      <Input
+        id={id}
+        type="text"
+        inputMode="numeric"
+        autoComplete="off"
+        placeholder="–"
+        value={text}
+        aria-describedby={hint ? `${id}-hint` : undefined}
+        className="w-28 shrink-0 bg-card text-right tabular-nums"
+        onFocus={() => setFocused(true)}
+        onChange={(e) => {
+          setText(e.target.value);
+          const v = parse(e.target.value);
+          if (e.target.value.trim() === "") onChange(null);
+          else if (v !== null && v >= 0 && v <= max) onChange(Math.round(v));
+        }}
+        onBlur={() => {
+          setFocused(false);
+          const v = parse(text);
+          if (text.trim() === "" || v === null) {
+            onChange(null);
+            setText("");
+          } else {
+            const c = Math.round(Math.min(max, Math.max(0, v)));
+            onChange(c);
+            setText(String(c));
+          }
+        }}
+      />
+    </div>
+  );
+}
+
+/** A date, åååå-mm-dd. */
+export function DateRow({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <label htmlFor={id} className="text-sm">
+        {label}
+      </label>
+      <Input
+        id={id}
+        type="date"
+        value={value}
+        min="1960-01-01"
+        max="2100-12-31"
+        className="w-40 shrink-0 bg-card"
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
+/** Two buttons where one is chosen, as "Normalt / Avancerat". */
+export function Segmented<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+  size = "md",
+}: {
+  label: string;
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: ReactNode }[];
+  size?: "sm" | "md";
+}) {
+  return (
+    <div className="flex gap-2" role="group" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          aria-pressed={value === o.value}
+          onClick={() => onChange(o.value)}
+          className={cn(
+            "flex-1 cursor-pointer rounded-full border font-semibold transition-colors",
+            size === "sm" ? "h-8 text-xs" : "h-9 text-sm",
+            value === o.value
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-foreground/70 bg-card hover:bg-muted",
+          )}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}

@@ -104,8 +104,11 @@ export function deltal(PAR: number, fodar: number, alder: number, defAr: number,
   const month1 = 12 - int((PAR - int(PAR)) * 12);
   const month2 = 12 - int((defAr - int(defAr)) * 12);
   let d: number;
-  if (PAR <= 60) throw new Error("Pensionsålder under 61 stöds inte");
-  else if (alder < int(PAR + konst)) d = 0;
+  // Before 61 (only tjänstepension): extrapolated from premiepensionens delningstal at 61 and 62.
+  if (PAR <= 60) {
+    const p61 = cohortValue(int(fodar), "dPPn", 61);
+    d = (p61 - cohortValue(int(fodar), "dPPn", 62)) * (61 - PAR) + p61;
+  } else if (alder < int(PAR + konst)) d = 0;
   else if (alder === int(PAR + konst)) d = cell(kolAge) * (month1 / 12) + cell(kolAge + 1) * ((12 - month1) / 12);
   else if (PAR === defAr) d = cell(kolAge);
   else if (alder < int(defAr + 1)) d = cell(kolAge);
@@ -241,9 +244,19 @@ export function IP_(
   return pension;
 }
 
-/** ppkassa(): premiepension for one year from the fund balance. */
-export function ppkassa(PAR: number, born: number, alder: number, pbh: number, defAr = 999, andelUttag = 1): number {
-  const uttagPP = 1;
+/**
+ * ppkassa(): premiepension for one year from the fund balance. uttagPP is the input UttagPP
+ * (the share taken out between PAR and defAr), andelUttag the share in the first year.
+ */
+export function ppkassa(
+  PAR: number,
+  born: number,
+  alder: number,
+  pbh: number,
+  defAr = 999,
+  andelUttag = 1,
+  uttagPP = 1,
+): number {
   if (PAR > defAr) defAr = PAR;
   if (defAr < 61) defAr = PAR;
   if (defAr > 99) defAr = PAR;
