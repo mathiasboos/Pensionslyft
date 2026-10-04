@@ -165,6 +165,11 @@ export interface TypfallYear {
   netto: number | null; // null for years before 2020 (tax rules not included)
   bidrag: number | null; // bostadstillägg, bostadsbidrag, barnbidrag and bistånd
   disp: number | null; // disponibel inkomst: netto + bidrag + pps
+  municipalTax: number | null; // kommunal skatt with church and burial fee, net of reductions
+  stateTax: number | null; // statlig skatt with the public service fee and tax on capital
+  /** Brutto in the prices of the year ("löpande priser") and in today's wage level (the index of the reference year). */
+  bruttoCurrent: number;
+  bruttoWageLevel: number;
 }
 
 export interface TypfallResult {
@@ -466,6 +471,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const STP_points = arr(), PGB_ = arr();
   const IPS_pbh = arr(), PPS_pbh = arr(), ips = arr(), pps = arr();
   const brutto = arr(), Netto = new Array<number>(n).fill(NaN);
+  const StateTax = new Array<number>(n).fill(NaN), MunicipalTax = new Array<number>(n).fill(NaN);
   const Bidrag = new Array<number>(n).fill(NaN), IndDisp = new Array<number>(n).fill(NaN);
   const pmonth = 12 - int(12 * (born + PAR - int(born + PAR)));
   const Tmonth = 12 - int(12 * (born + tjpPar - int(born + tjpPar)));
@@ -801,10 +807,12 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       if (kinkskatt - faAvdrag - jobbavdrag < faAvdrag) faAvdrag = kinkskatt - faAvdrag - jobbavdrag;
       // The VBA leaves the capital income itself out of the yearly netto (only its tax is in);
       // it is added here, as in Tabell 1.
-      Netto[age] =
-        brutto[age]! +
-        (age >= int(PAR) ? kapital : 0) -
-        maxi(kinkskatt + kyrkskatt + statskatt + pensionavgift - pensredukt - jobbavdrag - rakassa - faAvdrag, 0);
+      const totalTax = maxi(kinkskatt + kyrkskatt + statskatt + pensionavgift - pensredukt - jobbavdrag - rakassa - faAvdrag, 0);
+      Netto[age] = brutto[age]! + (age >= int(PAR) ? kapital : 0) - totalTax;
+      // As the web version splits the tax: the state tax (with the public service fee and the tax
+      // on capital), and the rest, the municipal tax, church and burial fee and pension fee net of the reductions.
+      StateTax[age] = statskatt;
+      MunicipalTax[age] = totalTax - statskatt;
 
       // Bidrag: barnbidrag, underhållsstöd, bostadsbidrag, bostadstillägg and ekonomiskt bistånd
       const antal = antalBarn(year, barnAll);
@@ -953,6 +961,10 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       netto: Number.isNaN(Netto[age]!) ? null : r(Netto[age]!),
       bidrag: Number.isNaN(Bidrag[age]!) ? null : r(Bidrag[age]!),
       disp: Number.isNaN(IndDisp[age]!) ? null : r(IndDisp[age]!),
+      municipalTax: Number.isNaN(MunicipalTax[age]!) ? null : r(MunicipalTax[age]!),
+      stateTax: Number.isNaN(StateTax[age]!) ? null : r(StateTax[age]!),
+      bruttoCurrent: Math.round(brutto[age]!),
+      bruttoWageLevel: Math.round((brutto[age]! * Iindex[Math.max(STARTAGE, W_REF - int(born))]!) / Iindex[age]!),
     });
   }
 

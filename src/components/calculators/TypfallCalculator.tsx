@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bar, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChevronDown, Download } from "lucide-react";
 import { FIRST_COHORT, LAST_COHORT, cohortValue } from "@/lib/typfall/data";
 import { type Avtal, DEFAULT_ADVANCED, type TypfallAdvanced, W_REF } from "@/lib/typfall/model";
@@ -20,6 +20,7 @@ import { formatPercent, formatSek, formatSekShort, num } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
 import { cn } from "@/lib/utils";
 import { AdvancedSections, changedSections } from "./TypfallAdvanced";
+import { DisposableChart, TaxChart, WageChart } from "./TypfallCharts";
 import { ScenarioCompare } from "./TypfallCompare";
 import { CheckRow, Disclosure, NumberRow, Segmented, SelectRow } from "./TypfallFields";
 
@@ -45,6 +46,74 @@ const SERIES = [
   { key: "privat", label: "Privat sparande", color: "#5CA28B" },
 ] as const;
 const WAGE_COLOR = "#C9C3B8";
+
+type Year = ReturnType<typeof runScenario>["years"][number];
+
+/** The columns of "År för år" with the explanations of the model's web version. */
+const YEAR_COLUMNS: { key: string; head: string; info: string; get: (y: Year) => number | null }[] = [
+  { key: "lon", head: "Lön", info: "Årets lön eller annan förvärvsinkomst.", get: (y) => y.lon },
+  {
+    key: "ip",
+    head: "Inkomst- och tilläggspension",
+    info: "Inkomstpension, den största delen av den allmänna pensionen, plus tilläggspension för den som är född 1953 eller tidigare.",
+    get: (y) => y.ip,
+  },
+  {
+    key: "pp",
+    head: "Premiepension",
+    info: "Premiepension: den del av den allmänna pensionen du själv väljer placering för.",
+    get: (y) => y.pp,
+  },
+  {
+    key: "tjp",
+    head: "Tjänste\u00ADpension+IPS",
+    info: "Tjänstepension från arbetsgivaren plus eventuellt individuellt pensionssparande (IPS), före skatt.",
+    get: (y) => y.tjp + y.ips,
+  },
+  {
+    key: "gp",
+    head: "Garantipension",
+    info: "Garantipension (lägstanivå för den som haft låg eller ingen inkomst) plus inkomstpensionstillägg och, för den som är född 1938–1953, garantitillägg.",
+    get: (y) => y.gp + y.tillagg,
+  },
+  {
+    key: "brutto",
+    head: "Inkomst brutto",
+    info: "Summan av lön, allmän pension, tjänstepension och privat pensionssparande, före skatt.",
+    get: (y) => y.brutto,
+  },
+  {
+    key: "kommunal",
+    head: "Kommunal skatt",
+    info: "Kommunal inkomstskatt och kyrko-/begravningsavgift, efter jobbskatteavdrag och andra skattereduktioner.",
+    get: (y) => y.municipalTax,
+  },
+  {
+    key: "statlig",
+    head: "Statlig skatt",
+    info: "Statlig inkomstskatt (20 % över brytpunkten), public service-avgiften, och eventuell skatt på kapital efter pensionering.",
+    get: (y) => y.stateTax,
+  },
+  { key: "netto", head: "Inkomst efter skatt", info: "Bruttoinkomst minus kommunal och statlig skatt.", get: (y) => y.netto },
+  {
+    key: "bidrag",
+    head: "Bidrag (BT, ÄFS, m.m.)",
+    info: "Bostadstillägg, äldreförsörjningsstöd och andra behovsprövade tillägg.",
+    get: (y) => y.bidrag,
+  },
+  {
+    key: "pps",
+    head: "Privat pensionssparande (ISK / KF)",
+    info: "Utbetalning från privat pensionssparande (ISK eller kapitalförsäkring), som inte beskattas som inkomst.",
+    get: (y) => y.pps,
+  },
+  {
+    key: "disp",
+    head: "Disponibel inkomst",
+    info: "Inkomst efter skatt plus bidrag och privat pensionssparande efter skatt.",
+    get: (y) => y.disp,
+  },
+];
 
 type Mode = ScenarioForm["mode"];
 
@@ -95,7 +164,7 @@ export default function TypfallCalculator() {
   const chartData = useMemo(
     () =>
       result.years
-        .filter((y) => y.age >= firstAge && y.age <= 90)
+        .filter((y) => y.age >= firstAge && y.age <= 100)
         .map((y) => ({
           age: y.age,
           lon: y.lon / 12,
@@ -109,7 +178,9 @@ export default function TypfallCalculator() {
         })),
     [result, firstAge],
   );
-  const tableYears = result.years.filter((y) => y.age >= firstAge && y.age <= 100);
+  // The table starts ten years before the pension, as in the web version, and only has the columns with something in them.
+  const tableYears = result.years.filter((y) => y.age >= parUsed - 10 && y.age <= 100);
+  const yearColumns = YEAR_COLUMNS.filter((c) => tableYears.some((y) => (c.get(y) ?? 0) > 0));
 
   const tableCsv = () =>
     downloadCsv(`typfall-${born}-${parUsed}.csv`, [
@@ -476,6 +547,8 @@ export default function TypfallCalculator() {
             </div>
           </div>
 
+          <WageChart years={result.years} wStart={wStartUsed} par={parUsed} />
+
           <div className="rounded-xl border border-border bg-card p-6">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-serif text-xl font-semibold">Inkomst per månad</h2>
@@ -497,7 +570,7 @@ export default function TypfallCalculator() {
               </ul>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Staplarna är före skatt och den streckade linjen efter skatt, i {W_REF} års priser.
+              Fasta priser ({W_REF}). Staplarna är före skatt och den streckade linjen efter skatt.
               {result.pps > 0 && " Uttagen från ISK och kapitalförsäkring är redan beskattade."}
             </p>
             <div className="mt-4 h-80">
@@ -513,6 +586,7 @@ export default function TypfallCalculator() {
                     itemStyle={{ color: "var(--color-foreground)" }}
                     cursor={{ fill: "var(--color-muted)" }}
                   />
+                  <ReferenceArea x1={parUsed} x2={chartData.at(-1)?.age} fill="var(--color-muted)" fillOpacity={0.7} ifOverflow="visible" />
                   <ReferenceLine
                     x={parUsed}
                     stroke="var(--color-foreground)"
@@ -526,7 +600,7 @@ export default function TypfallCalculator() {
                   <Line
                     dataKey="netto"
                     name="Inkomst efter skatt"
-                    type="monotone"
+                    type="linear"
                     stroke="var(--color-foreground)"
                     strokeWidth={2}
                     strokeDasharray="6 4"
@@ -538,6 +612,9 @@ export default function TypfallCalculator() {
               </ResponsiveContainer>
             </div>
           </div>
+
+          <DisposableChart years={result.years} par={parUsed} />
+          <TaxChart years={result.years} par={parUsed} />
 
           <div className="rounded-xl border border-border bg-card">
             <div className="flex flex-wrap items-start justify-between gap-3 p-4 sm:px-6">
@@ -567,22 +644,17 @@ export default function TypfallCalculator() {
                 <table className="w-full text-right text-xs tabular-nums">
                   <thead className="sticky top-0 bg-muted">
                     <tr>
-                      {[
-                        "År",
-                        "Ålder",
-                        "Lön",
-                        "Inkomst­pension",
-                        "Premie­pension",
-                        "Garanti och tillägg",
-                        "Tjänste­pension",
-                        ...(hasPrivat ? ["Privat sparande"] : []),
-                        "Före skatt",
-                        "Efter skatt",
-                        "Bidrag",
-                        "Disponibel inkomst",
-                      ].map((h) => (
-                        <th key={h} scope="col" className="px-3 py-2 font-medium first:text-left">
-                          {h}
+                      <th scope="col" className="px-3 py-2 text-left align-bottom font-medium">
+                        År
+                      </th>
+                      <th scope="col" className="px-3 py-2 align-bottom font-medium">
+                        Ålder
+                      </th>
+                      {yearColumns.map((c) => (
+                        <th key={c.key} scope="col" className="px-3 py-2 align-bottom font-medium">
+                          <abbr title={c.info} className="cursor-help underline decoration-dotted underline-offset-2">
+                            {c.head}
+                          </abbr>
                         </th>
                       ))}
                     </tr>
@@ -592,16 +664,14 @@ export default function TypfallCalculator() {
                       <tr key={y.age} className={cn("border-t border-border", y.age === parUsed && "bg-secondary/50 font-semibold")}>
                         <td className="px-3 py-1.5 text-left">{y.year}</td>
                         <td className="px-3 py-1.5">{y.age}</td>
-                        {[y.lon, y.ip, y.pp, y.gp + y.tillagg, y.tjp, ...(hasPrivat ? [y.ips + y.pps] : []), y.brutto].map((v, i) => (
-                          <td key={i} className="px-3 py-1.5 whitespace-nowrap">
-                            {num.format(v / 12)}
-                          </td>
-                        ))}
-                        {[y.netto, y.bidrag, y.disp].map((v, i) => (
-                          <td key={`n${i}`} className="px-3 py-1.5 whitespace-nowrap">
-                            {v === null ? "–" : num.format(v / 12)}
-                          </td>
-                        ))}
+                        {yearColumns.map((c) => {
+                          const v = c.get(y);
+                          return (
+                            <td key={c.key} className="px-3 py-1.5 whitespace-nowrap">
+                              {v === null ? "–" : num.format(v / 12)}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
                   </tbody>
