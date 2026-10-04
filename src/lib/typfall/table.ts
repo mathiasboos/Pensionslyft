@@ -37,9 +37,8 @@ export function pensionTable(r: TypfallResult): PensionTable {
     title: `Pension vid ${par} års ålder`,
     wage: [
       row(n > 1 ? `Slutlön, ${par - n} - ${par - 1} års ålder` : `Slutlön, ${par - 1} års ålder`, c.slutlon, slut, ofWage(slut)),
-      // Without benefits (barnbidrag, bostadsbidrag) the disposable income is the wage after tax.
       { label: "Lön efter skatt", current: c.slutlonNetto, fixed: netto, share: netto === null ? null : ofWage(netto) },
-      { label: "Disponibel inkomst", current: c.slutlonNetto, fixed: netto, share: netto === null ? null : ofWage(netto) },
+      { label: "Disponibel inkomst", current: c.dispFore, fixed: r.dispFore, share: r.dispFore === null ? null : ofWage(r.dispFore) },
     ],
     pension: [
       row("Inkomstpension", c.ip, r.ip, ofWage(r.ip)),
@@ -54,8 +53,10 @@ export function pensionTable(r: TypfallResult): PensionTable {
     ],
     afterTax: [
       row("Efter skatt", c.netto, r.netto, ofNetto(r.netto), true),
+      // The VBA leaves the share at 0 when there were no benefits the year before the pension.
+      row("Bostadstillägg för pensionärer m.m.", c.bidrag, r.bidrag, 0),
       row("Privat pensionssparande (ISK / KF)", c.pps, r.pps, ofWage(r.pps)),
-      row("Disponibel inkomst", c.netto + c.pps, r.netto + r.pps, ofNetto(r.netto + r.pps), true),
+      row("Disponibel inkomst", c.disp, r.disp, r.dispFore ? r.disp / r.dispFore : null, true),
     ],
   };
 }
