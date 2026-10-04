@@ -6,6 +6,7 @@ import {
   type Avkastningsval,
   type Avtal,
   DEFAULT_ADVANCED,
+  type Kyrka,
   type Loneprofil,
   type Sparform,
   type TypfallAdvanced,
@@ -13,7 +14,7 @@ import {
 } from "@/lib/typfall/model";
 import { formatPercent, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CheckRow, DateRow, NumberRow, OptionalNumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
+import { CheckRow, DateRow, ExternalLink, NumberRow, OptionalNumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
 
 type WagePath = { age: number; year: number; income: number; wage: number }[];
 
@@ -40,10 +41,25 @@ const SPARFORM: { value: Sparform; label: string }[] = [
 const ANDEL = [1, 0.75, 0.5, 0.25].map((v) => ({ value: v, label: formatPercent(v * 100, 0) }));
 const TEMP_YEARS = [5, 10, 15, 20];
 
-// The average municipal tax and burial fee in the last data year, as a starting point for an own rate.
+// The average burial fee (not a member) and church fee with burial fee (a member) in the last data year.
 const lastTax = data.lastHardYear - data.taxFirstYear;
-const AVG_KOMMUNALSKATT = data.komSkatt[lastTax]! / 100;
-const AVG_BEGRAVNING = data.begravning[lastTax]! / 100;
+const fraction = (percent: number) => Number((percent / 100).toFixed(6));
+const AVG_EJ_MEDLEM = fraction(data.begravning[lastTax]!);
+const AVG_MEDLEM = fraction(data.kyrkoavgift[lastTax]!);
+
+const SCB_KOMMUNALSKATT =
+  "https://www.scb.se/hitta-statistik/statistik-efter-amne/offentlig-ekonomi/finanser-for-den-kommunala-sektorn/kommunalskatterna/";
+const SKV_KYRKOAVGIFT =
+  "https://skatteverket.se/privat/skatter/arbeteochinkomst/skattetabeller/kyrkoavgift.4.3152d9ac158968eb8fd2db3.html";
+
+const KYRKA: { value: Kyrka; label: string }[] = [
+  { value: "", label: "Genomsnitt för riket, ej medlem" },
+  { value: "medlem", label: "Medlem i Svenska kyrkan/annat trossamfund" },
+  { value: "stockholm", label: "Inte medlem, Stockholms stad" },
+  { value: "tranas", label: "Inte medlem, Tranås kommun" },
+  { value: "ovriga", label: "Inte medlem, övriga Sverige" },
+  { value: "egen", label: "— Egen sats —" },
+];
 
 type Key = keyof TypfallAdvanced;
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -55,7 +71,7 @@ const SECTIONS = {
   allman: ["defAr", "uttagIP", "uttagPP", "sysselsattning"],
   bostad: ["ansoker", "hyra", "makensInkomst", "formogenhet", "kapital"],
   garanti: ["forsakringstid"],
-  skatt: ["kommunalskatt", "begravning", "fack", "akassa"],
+  skatt: ["kommunalskatt", "begravning", "kyrka", "fack", "akassa"],
   kapital: ["avkastningsval", "pbhYear", "efterFondavgifter"],
   lon: ["loneprofil", "andradLonAr", "andradLonFaktor", "slutlonAr", "egenLon"],
   pgb: ["barn", "pgb"],
@@ -343,7 +359,6 @@ export function AdvancedSections({
   computedWagePath: () => WagePath;
 }) {
   const [sparMode, setSparMode] = useState<"belopp" | "andel">(adv.sparManad > 0 && adv.sparManad <= 1 ? "andel" : "belopp");
-  const ownTax = adv.kommunalskatt >= 0.1;
   const wageChange = adv.andradLonAr > 0;
   const firstWorkYear = born + wStart;
   const lastWorkYear = born + par - 1;
@@ -463,55 +478,65 @@ export function AdvancedSections({
       </Section>
 
       <Section title="Inkomstskatt" changed={differs(adv, SECTIONS.skatt)}>
-        <CheckRow
-          checked={ownTax}
-          onChange={(v) =>
-            onChange(v ? { kommunalskatt: AVG_KOMMUNALSKATT, begravning: AVG_BEGRAVNING } : { kommunalskatt: 0, begravning: 0 })
+        <NumberRow
+          id="typfall-kommunalskatt"
+          label="Kommunalskatt"
+          hint={
+            <>
+              0 använder det historiska genomsnittet.{" "}
+              <ExternalLink href={SCB_KOMMUNALSKATT}>SCB:s lista ({data.lastHardYear})</ExternalLink>
+            </>
           }
-          label="Egen kommunalskatt"
-          hint={`Annars används genomsnittet för riket, ${formatPercent(AVG_KOMMUNALSKATT * 100, 2)} ${data.lastHardYear}.`}
+          value={adv.kommunalskatt * 100}
+          onChange={(v) => onChange({ kommunalskatt: v < 10 ? 0 : fraction(v) })}
+          min={0}
+          max={40}
+          decimals={2}
         />
-        {ownTax && (
-          <>
-            <NumberRow
-              id="typfall-kommunalskatt"
-              label="Kommunalskatt"
-              hint="%, 25–40"
-              value={adv.kommunalskatt * 100}
-              onChange={(v) => onChange({ kommunalskatt: v / 100 })}
-              min={25}
-              max={40}
-              decimals={2}
-            />
-            <NumberRow
-              id="typfall-begravning"
-              label="Begravningsavgift och samfundsavgift"
-              hint="%, 0–2"
-              value={adv.begravning * 100}
-              onChange={(v) => onChange({ begravning: v / 100 })}
-              min={0}
-              max={2}
-              decimals={2}
-            />
-          </>
-        )}
+        <SelectRow
+          id="typfall-kyrka"
+          label="Medlemskap i Svenska kyrkan eller annat trossamfund"
+          hideLabel
+          value={adv.kyrka}
+          onChange={(k) =>
+            onChange({
+              kyrka: k,
+              begravning:
+                k === "" ? null : k === "medlem" ? AVG_MEDLEM : k === "ovriga" ? AVG_EJ_MEDLEM : k === "egen" ? (adv.begravning ?? AVG_EJ_MEDLEM) : 0,
+            })
+          }
+          options={KYRKA}
+          hint={<ExternalLink href={SKV_KYRKOAVGIFT}>Hitta din församling</ExternalLink>}
+        />
+        <NumberRow
+          id="typfall-begravning"
+          label="Begravningsavgift och samfundsavgift"
+          hint={`medlem ~${formatPercent(AVG_MEDLEM * 100, 2)}, ej medlem ~${formatPercent(AVG_EJ_MEDLEM * 100, 2)} (${data.lastHardYear})${
+            adv.kyrka === "stockholm" || adv.kyrka === "tranas" ? ". Ingår i kommunalskatten i Stockholm och Tranås." : ""
+          }`}
+          value={(adv.begravning ?? 0) * 100}
+          onChange={(v) => onChange(v === 0 && adv.kyrka === "" ? {} : { begravning: fraction(v), kyrka: "egen" })}
+          min={0}
+          max={3}
+          decimals={2}
+        />
         <NumberRow
           id="typfall-fack"
           label="Fackföreningsavgift"
-          hint="kronor per år, ger ingen skattereduktion efter 2019"
-          value={adv.fack}
-          onChange={(v) => onChange({ fack: v })}
+          hint="kronor per månad, ingen skattereduktion efter 2019"
+          value={Math.round(adv.fack / 12)}
+          onChange={(v) => onChange({ fack: v * 12 })}
           min={0}
-          max={100000}
+          max={10000}
         />
         <NumberRow
           id="typfall-akassa"
           label="A-kasseavgift"
-          hint="kronor per år, 25 % skattereduktion från 2022"
-          value={adv.akassa}
-          onChange={(v) => onChange({ akassa: v })}
+          hint="kronor per månad, 25 % skattereduktion från 2022"
+          value={Math.round(adv.akassa / 12)}
+          onChange={(v) => onChange({ akassa: v * 12 })}
           min={0}
-          max={100000}
+          max={10000}
         />
       </Section>
 

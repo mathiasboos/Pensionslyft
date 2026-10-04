@@ -1,6 +1,6 @@
 // Tables from Pensionsmyndighetens typfallsmodell (ver. 4.8), extracted from the workbook:
 // - years: index series from the sheet "Några tal" (1957-2026, the rest is projected in series.ts)
-// - komSkatt/begravning: average municipal tax and burial fee from "K_skatt" (percent)
+// - komSkatt/begravning/kyrkoavgift: average municipal tax, burial fee and church fee from "K_skatt" (percent)
 // - cohorts: per birth year, delningstal and life expectancy (Nyckeltal, mortality) and
 //   arvsvinstfaktorer (arv IP, arv PP)
 // - riktalder: lowest pension age and riktålder per birth year (Nyckeltal DO:DR)
@@ -27,6 +27,7 @@ interface Raw {
   taxFirstYear: number;
   komSkatt: Nullable;
   begravning: Nullable;
+  kyrkoavgift: Nullable; // church fee including the burial fee, percent (from 2000)
   cohortAges: Record<keyof CohortData, number>;
   cohorts: Record<string, CohortData>;
   riktalder: { firstCohort: number; lowest: number[]; rikt: number[] };

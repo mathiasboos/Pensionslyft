@@ -60,6 +60,24 @@ describe("typfall scenarios", () => {
     expect(freeSlot(list)).toBe(0);
   });
 
+  it("reads the burial fee of scenarios saved before the choice of church", () => {
+    const store: Record<string, string> = {};
+    vi.stubGlobal("window", {
+      localStorage: { getItem: (k: string) => store[k] ?? null, setItem: (k: string, v: string) => (store[k] = v) },
+    });
+    const read = (adv: object) => {
+      storeSaved([{ id: "a", name: "Ett", slot: 0, form: { ...DEFAULT_FORM, adv: adv as typeof DEFAULT_FORM.adv } }]);
+      return loadSaved()[0]!.form.adv;
+    };
+    const { kyrka: _kyrka, ...old } = DEFAULT_FORM.adv;
+    // no fee used (0 without an own kommunalskatt) becomes the historical average
+    expect(read({ ...old, begravning: 0 }).begravning).toBeNull();
+    // 0 with an own kommunalskatt was a fee of 0
+    expect(read({ ...old, kommunalskatt: 0.3, begravning: 0 }).begravning).toBe(0);
+    // a fee of 0 chosen with the church (Stockholm, Tranås) stays 0
+    expect(read({ ...DEFAULT_FORM.adv, kyrka: "stockholm", begravning: 0 }).begravning).toBe(0);
+  });
+
   it("returns no scenarios when the storage is blocked or broken", () => {
     vi.stubGlobal("window", { localStorage: { getItem: () => { throw new Error("blocked"); } } });
     expect(loadSaved()).toEqual([]);

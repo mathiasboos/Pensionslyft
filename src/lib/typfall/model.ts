@@ -55,6 +55,8 @@ export type Loneprofil = 0 | 1 | 2 | 3 | 4;
 export type Avkastningsval = 1 | 2 | 3;
 /** rng_Kapitalförsäkring: 0 IPS, 1 kapitalförsäkring, 2 investeringssparkonto. */
 export type Sparform = 0 | 1 | 2;
+/** "": the historical average; "egen": a fee given by the user. */
+export type Kyrka = "" | "medlem" | "stockholm" | "tranas" | "ovriga" | "egen";
 
 /** The settings in the sheet Adv_settings that the calculator offers. */
 export interface TypfallAdvanced {
@@ -74,7 +76,10 @@ export interface TypfallAdvanced {
   sparStart: number; // IPS_start: first year of saving
   tempSpar: number; // rng_Temp_IPS_Uttag: years, 0 = over the remaining life expectancy
   kommunalskatt: number; // rng_Kommunalskatt: 0 = historical average, otherwise e.g. 0.3241
-  begravning: number; // rng_Begravningsavgift, used with an own kommunalskatt
+  // rng_Begravningsavgift: null = the historical average burial fee (not a member of a church).
+  // The VBA reads it only together with an own kommunalskatt; here it applies on its own too.
+  begravning: number | null;
+  kyrka: Kyrka; // the church membership chosen in the form, only to show it again (not used in the model)
   // Allmän pension: partial withdrawal from par, all of it from defAr
   defAr: number; // rng_def_ar: 0 = everything from par
   uttagIP: number; // UttagIP before defAr: 0, 0.25, 0.5, 0.75 or 1
@@ -119,7 +124,8 @@ export const DEFAULT_ADVANCED: TypfallAdvanced = {
   sparStart: 2026,
   tempSpar: 0,
   kommunalskatt: 0,
-  begravning: 0,
+  begravning: null,
+  kyrka: "",
   defAr: 0,
   uttagIP: 1,
   uttagPP: 1,
@@ -379,7 +385,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     Kom_skatt[age] = ownTax ? adv.kommunalskatt : nyck(s.komSkatt, Math.max(year, 1930)) / 100;
     Tax_limit1[age] = year >= 2020 ? nyck(s.taxLimit1, year) : NaN;
     Tax_limit2[age] = year >= 2020 ? nyck(s.taxLimit2, year) : NaN;
-    if (ownTax) Begravavg[age] = adv.begravning;
+    if (adv.begravning !== null) Begravavg[age] = adv.begravning;
     else Begravavg[age] = year < 2000 ? 0 : nyck(s.begravning, year) / 100;
 
     if (egenW) {

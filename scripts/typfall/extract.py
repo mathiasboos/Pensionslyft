@@ -31,10 +31,12 @@ for k, fromYear in [("yield", 2026), ("yieldAP7", 2026), ("rgk", 2025)]:
     for i, y in enumerate(years):
         if y >= fromYear: idx[k][i] = None
 
-# Kommunal skattesats (B) and begravningsavgift (H), percent -> fraction, by year 1930..2026
+# Kommunal skattesats (B), begravningsavgift (H) and kyrkoavgift inkl. begravningsavgift (I),
+# percent, by year 1930..2026 (I only from 2000)
 ks_years = list(range(1930, LAST_HARD + 1))
 kom = [num(v(KS, f"B{y-1930+2}")) for y in ks_years]
 beg = [num(v(KS, f"H{y-1930+2}")) for y in ks_years]
+kyr = [num(v(KS, f"I{y-1930+2}")) for y in ks_years]
 
 COH = range(1959, 2006)
 cohorts = {}
@@ -75,7 +77,7 @@ for r in range(5, 123):
 out = dict(
     source="Pensionsmyndighetens typfallsmodell ver. 4.8",
     firstYear=FIRST, lastHardYear=LAST_HARD, years=idx,
-    taxFirstYear=1930, komSkatt=kom, begravning=beg,
+    taxFirstYear=1930, komSkatt=kom, begravning=beg, kyrkoavgift=kyr,
     cohortAges=dict(dIP=61, dIPn=61, dPPn=61, mIP=61, eLife=61, arvIP1=17, arvIP2=60, arvPP=15),
     cohorts={str(k): val for k, val in cohorts.items()},
     riktalder=dict(firstCohort=min(rikt), lowest=[rikt[k][0] for k in sorted(rikt)], rikt=[rikt[k][1] for k in sorted(rikt)]),

@@ -1,7 +1,7 @@
 // Form rows for the Typfallsmodellen calculator: a label with a hint on the left and a typed
 // value on the right, as in the model's own web version.
 import { type ReactNode, useEffect, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ExternalLink as ExternalLinkIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -143,13 +143,14 @@ export function CheckRow({
 export const selectClass =
   "mt-1.5 h-9 w-full rounded-md border border-input bg-card px-3 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
 
-export function SelectRow<T extends number>({
+export function SelectRow<T extends number | string>({
   id,
   label,
   hint,
   value,
   onChange,
   options,
+  hideLabel,
 }: {
   id: string;
   label: string;
@@ -157,13 +158,20 @@ export function SelectRow<T extends number>({
   value: T;
   onChange: (v: T) => void;
   options: { value: T; label: string }[];
+  /** The label is read by screen readers only, when the choices explain themselves. */
+  hideLabel?: boolean;
 }) {
   return (
     <div>
-      <label htmlFor={id} className="text-sm">
+      <label htmlFor={id} className={hideLabel ? "sr-only" : "text-sm"}>
         {label}
       </label>
-      <select id={id} value={value} onChange={(e) => onChange(Number(e.target.value) as T)} className={selectClass}>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(options.find((o) => String(o.value) === e.target.value)!.value)}
+        className={cn(selectClass, hideLabel && "mt-0")}
+      >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
@@ -172,6 +180,22 @@ export function SelectRow<T extends number>({
       </select>
       {hint && <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>}
     </div>
+  );
+}
+
+/** A link to another site, opened in a new tab. */
+export function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 text-primary underline underline-offset-2 hover:no-underline"
+    >
+      {children}
+      <ExternalLinkIcon className="size-3" aria-hidden="true" />
+      <span className="sr-only">(öppnas i ny flik)</span>
+    </a>
   );
 }
 
