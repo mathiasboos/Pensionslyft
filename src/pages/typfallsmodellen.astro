@@ -1,0 +1,59 @@
+---
+import TypfallCalculator from "@/components/calculators/TypfallCalculator";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Typfallsmodellen – räkna ut allmän pension och tjänstepension"
+  description="Räkna ut din pension med Pensionsmyndighetens typfallsmodell: inkomstpension, premiepension, garantipension, tjänstepension och pension efter skatt."
+  ogTitle="Typfallsmodellen – Pensionslyft"
+  ogDescription="Allmän pension och tjänstepension år för år, före och efter skatt."
+>
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="font-serif text-4xl font-semibold">Typfallsmodellen</h1>
+    <p class="mt-3 max-w-2xl text-muted-foreground">
+      Kalkylatorn bygger på Pensionsmyndighetens typfallsmodell. Den räknar igenom hela arbetslivet år
+      för år: lön, pensionsrätter, avkastning, arvsvinster och delningstal. Resultatet är din allmänna
+      pension och tjänstepension före och efter skatt.
+    </p>
+    <div class="mt-10">
+      <TypfallCalculator client:load />
+    </div>
+
+    <section class="mt-12 max-w-3xl rounded-xl border border-border bg-secondary/50 p-6 text-sm leading-6">
+      <h2 class="font-serif text-lg font-semibold">Så räknar kalkylatorn</h2>
+      <ul class="mt-3 list-disc space-y-1.5 pl-5">
+        <li>
+          Lönen följer den allmänna löneutvecklingen från det år du börjar arbeta till året innan du går i
+          pension. Studier, föräldraledighet, sjukdom och arbetslöshet räknas inte med.
+        </li>
+        <li>
+          Åren fram till och med 2025 räknas med de faktiska indexen, avgifterna och fondavkastningen.
+          Framtiden räknas med dina antaganden om löneutveckling och avkastning. Inflationen är satt till
+          noll, så alla belopp är i 2025 års priser.
+        </li>
+        <li>
+          Allmän pension består av inkomstpension, premiepension, garantipension och
+          inkomstpensionstillägg enligt dagens regler och riktåldrar. Tjänstepensionen räknas enligt det
+          avtal du väljer och betalas ut livet ut från samma ålder.
+        </li>
+        <li>
+          Pensionen det första året räknas med den sista pensionsrätten, som i verkligheten läggs till först
+          året efter.
+        </li>
+        <li>
+          Skatten räknas med den genomsnittliga kommunalskatten och dagens skatteregler.
+        </li>
+        <li>
+          Bostadstillägg, partiellt uttag, barnår, eget pensionssparande och sambo med annan inkomst ingår
+          inte.
+        </li>
+      </ul>
+      <p class="mt-3 text-muted-foreground">
+        Beräkningarna följer Pensionsmyndighetens typfallsmodell, version 4.8. Resultatet är en
+        uppskattning för ett typfall och inget besked om din egen pension. Din personliga prognos finns
+        på minPension.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
