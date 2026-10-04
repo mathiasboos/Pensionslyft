@@ -79,6 +79,7 @@ describe("calculateFire", () => {
     annualReturn: 6.1,
     annualFee: 0.25,
     yieldTax: 1.05,
+    taxFreeAmount: 0, // the original had no tax-free amount
     startCapital: 0,
   };
 
@@ -142,6 +143,21 @@ describe("calculateFire", () => {
     expect(result.fireAge).toBeNull();
     expect(Math.round(result.rows[69]!.closing)).toBe(1451216);
     expect(result.milestones.at(-1)).toEqual({ percent: 100, age: null });
+  });
+
+  it("only taxes the part above the tax-free amount", () => {
+    const result = calculateFire({ ...defaults, taxFreeAmount: 300000 });
+    // Year 1 ends at 246 638 kr before costs: all of it is tax free.
+    expect(result.rows[0]!.tax).toBe(0);
+    expect(Math.round(result.rows[0]!.closing)).toBe(246022);
+    // Year 2: tax on the part above 300 000 kr only.
+    const year2 = result.rows[1]!;
+    const beforeCosts = year2.closing + year2.tax + year2.fees;
+    expect(year2.tax).toBeCloseTo((beforeCosts - 300000) * 0.0105, 6);
+    expect(Math.round(year2.tax)).toBe(2181);
+    // The portfolio is bigger every year than without the tax-free amount.
+    const without = calculateFire(defaults);
+    result.rows.forEach((r, i) => expect(r.closing).toBeGreaterThan(without.rows[i]!.closing));
   });
 
   it("handles a zero return", () => {

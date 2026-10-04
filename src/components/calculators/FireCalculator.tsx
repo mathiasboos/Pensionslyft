@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { ChevronDown, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { calculateFire, FIRE_YEARS, type FireYear } from "@/lib/pension";
+import { calculateFire, FIRE_YEARS, ISK_TAX_FREE_AMOUNT, type FireYear } from "@/lib/pension";
 import { formatPercent, formatSek, formatSekShort, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { SliderField } from "./fields";
@@ -71,6 +71,7 @@ export default function FireCalculator() {
   const [annualReturn, setAnnualReturn] = useState(6.1);
   const [annualFee, setAnnualFee] = useState(0.25);
   const [yieldTax, setYieldTax] = useState(1.05);
+  const [taxFreeAmount, setTaxFreeAmount] = useState(ISK_TAX_FREE_AMOUNT);
   const [startCapital, setStartCapital] = useState(0);
   const [tableOpen, setTableOpen] = useState(false);
 
@@ -84,9 +85,20 @@ export default function FireCalculator() {
         annualReturn,
         annualFee,
         yieldTax,
+        taxFreeAmount,
         startCapital,
       }),
-    [currentAge, monthlySalary, savingsRate, fireMultiple, annualReturn, annualFee, yieldTax, startCapital],
+    [
+      currentAge,
+      monthlySalary,
+      savingsRate,
+      fireMultiple,
+      annualReturn,
+      annualFee,
+      yieldTax,
+      taxFreeAmount,
+      startCapital,
+    ],
   );
   const { rows, fireAge, fireYear } = result;
 
@@ -200,6 +212,21 @@ export default function FireCalculator() {
               Schablonskatten på investeringssparkonto och kapitalförsäkring.
             </p>
           </div>
+          <div>
+            <SliderField
+              label="Skattefritt belopp"
+              value={taxFreeAmount}
+              onChange={setTaxFreeAmount}
+              min={0}
+              max={500000}
+              step={10000}
+              display={formatSek(taxFreeAmount)}
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Från 2026 är de första {formatSek(ISK_TAX_FREE_AMOUNT)} skattefria, totalt för ISK,
+              kapitalförsäkring och PEPP-konto. Välj 0 kr för att räkna utan.
+            </p>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6 text-sm">
@@ -222,6 +249,12 @@ export default function FireCalculator() {
               <dd>{formatPercent(result.netReturn, 2)}</dd>
             </div>
           </dl>
+          {taxFreeAmount > 0 && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Skatten tas bara ut på det som överstiger {formatSek(taxFreeAmount)}, så den blir lägre
+              än så. Mest märks det i början, när portföljen är liten.
+            </p>
+          )}
         </div>
       </div>
 

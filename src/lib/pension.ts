@@ -118,6 +118,7 @@ export type FireInput = {
   annualReturn: number; // percent
   annualFee: number; // percent
   yieldTax: number; // percent, the ISK/KF schablonskatt
+  taxFreeAmount: number; // kr of the portfolio that is not taxed (skattefri grundnivå)
   startCapital: number;
 };
 
@@ -148,6 +149,9 @@ export type FireResult = {
 
 export const FIRE_YEARS = 70;
 
+// The skattefri grundnivå from 2026: one amount per person, shared by ISK, KF and PEPP.
+export const ISK_TAX_FREE_AMOUNT = 300_000;
+
 export function calculateFire(input: FireInput): FireResult {
   const monthlyRate = Math.pow(1 + input.annualReturn / 100, 1 / 12) - 1;
   const yearFactor = Math.pow(1 + monthlyRate, 12);
@@ -163,8 +167,9 @@ export function calculateFire(input: FireInput): FireResult {
   let fireYear: number | null = null;
   for (let year = 1; year <= FIRE_YEARS; year++) {
     const beforeCosts = opening * yearFactor + monthlySavings * depositFactor;
-    // Tax and fees are taken on the value at the end of the year.
-    const tax = (beforeCosts * input.yieldTax) / 100;
+    // Tax and fees are taken on the value at the end of the year. Tax only on the part
+    // above the tax-free amount.
+    const tax = (Math.max(beforeCosts - input.taxFreeAmount, 0) * input.yieldTax) / 100;
     const fees = (beforeCosts * input.annualFee) / 100;
     const closing = beforeCosts - tax - fees;
     const gap = target - closing;
