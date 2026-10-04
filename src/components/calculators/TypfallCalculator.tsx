@@ -18,10 +18,12 @@ import {
 import { pensionTable, type TableRow } from "@/lib/typfall/table";
 import { formatPercent, formatSek, formatSekShort, num } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
+import { type MikrosimRow, newRow } from "@/lib/typfall/mikrosim";
 import { cn } from "@/lib/utils";
 import { AdvancedSections, changedSections } from "./TypfallAdvanced";
 import { DisposableChart, TaxChart, WageChart } from "./TypfallCharts";
 import { ScenarioCompare } from "./TypfallCompare";
+import { Mikrosim } from "./TypfallMikrosim";
 import { CheckRow, Disclosure, NumberRow, Segmented, SelectRow } from "./TypfallFields";
 
 const AVTAL: { value: Avtal; label: string }[] = [
@@ -122,7 +124,8 @@ const csvButton =
 
 export default function TypfallCalculator() {
   const [form, setForm] = useState<ScenarioForm>(DEFAULT_FORM);
-  const [view, setView] = useState<"prognos" | "jamfor">("prognos");
+  const [view, setView] = useState<"prognos" | "jamfor" | "mikrosim">("prognos");
+  const [mikroRows, setMikroRows] = useState<MikrosimRow[]>(() => [newRow("1")]);
   const [saved, setSaved] = useState<SavedScenario[]>([]);
   const [tableOpen, setTableOpen] = useState(false);
   const { mode, born, par, useRikt, wStart, monthlyWage, avtal, gift, inflation, realGrowth, realReturn, adv } = form;
@@ -429,7 +432,7 @@ export default function TypfallCalculator() {
       </div>
 
       <div className="min-w-0 space-y-6">
-        <div className="max-w-md">
+        <div className="max-w-lg">
           <Segmented
             label="Visa"
             value={view}
@@ -445,10 +448,13 @@ export default function TypfallCalculator() {
                   </>
                 ),
               },
+              { value: "mikrosim", label: "Mikrosim" },
             ]}
           />
         </div>
-        {view === "jamfor" ? (
+        {view === "mikrosim" ? (
+          <Mikrosim form={form} saved={saved} rows={mikroRows} onRows={setMikroRows} />
+        ) : view === "jamfor" ? (
           <ScenarioCompare
             current={form}
             currentResult={result}

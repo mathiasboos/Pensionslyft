@@ -276,7 +276,7 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={cn(
             "flex-1 cursor-pointer rounded-full border font-semibold transition-colors",
-            size === "sm" ? "h-8 text-xs" : "h-9 text-sm",
+            size === "sm" ? "min-h-8 px-2 text-xs leading-tight" : "min-h-9 px-2 py-1 text-sm leading-tight",
             value === o.value
               ? "border-primary bg-primary text-primary-foreground"
               : "border-foreground/70 bg-card hover:bg-muted",
