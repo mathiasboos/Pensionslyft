@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import web from "./fixtures/typfall-web-mikrosim.json";
 import {
   contextOf,
   INPUT_COLUMNS,
@@ -9,6 +10,7 @@ import {
   rowError,
   rowFromForm,
   runRow,
+  type MikrosimRow,
 } from "../src/lib/typfall/mikrosim";
 import { DEFAULT_FORM, runScenario } from "../src/lib/typfall/scenario";
 
@@ -42,6 +44,15 @@ describe("mikrosim", () => {
     expect(rowError({ ...row, startWorkAge: 40, retirementAge: 40 })).toMatch(/Pensionsåldern|före pensionsåldern/);
     expect(runRow({ ...row, born: 1900 }, context).error).toMatch(/Födelseår/);
     expect(runRow({ ...row, error: "Raden saknar en eller flera kolumner." }, context).error).toMatch(/saknar/);
+  });
+
+  it("moves the pension age to the earliest possible one, with a warning", () => {
+    const row = { ...newRow("1"), born: 1990, retirementAge: 61 };
+    const run = runRow(row, context);
+    expect(run.error).toBeUndefined();
+    expect(run.warning).toBe("Allmän pension först möjlig vid 66 års ålder, räknar pensionsålder vid 66");
+    expect(run.result!.input.par).toBe(66);
+    expect(runRow({ ...row, retirementAge: 66 }, context).warning).toBeUndefined();
   });
 
   it("uses the inflation and the private saving of the row", () => {
@@ -79,5 +90,17 @@ describe("mikrosim", () => {
     expect(csv[1]!.slice(0, 3)).toEqual([1975, 23, 68]);
     expect(csv[1]!.slice(INPUT_COLUMNS.length)).toEqual(RESULT_COLUMNS.map((c) => Math.round(c.get(runScenario(DEFAULT_FORM)))));
     expect(csv[2]!.slice(INPUT_COLUMNS.length).every((v) => v === null)).toBe(true);
+  });
+
+  it("gives the same pension as the web version for 188 rows with the normal settings", () => {
+    web.cases.forEach(({ row, warning, result }, i) => {
+      const [born, startWorkAge, retirementAge, annualSalary, yearlyInflation, realGrowth, realReturn, ipsMonthly, scheme] = row as number[];
+      const run = runRow(
+        { id: String(i), born, startWorkAge, retirementAge, annualSalary, yearlyInflation, realGrowth, realReturn, ipsMonthly, scheme } as MikrosimRow,
+        context,
+      );
+      expect(Boolean(run.warning), `row ${i} warning`).toBe(warning);
+      expect(RESULT_COLUMNS.map((c) => Math.round(c.get(run.result!))), `row ${i} ${row.join(";")}`).toEqual(result);
+    });
   });
 });

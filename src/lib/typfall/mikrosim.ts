@@ -101,15 +101,14 @@ export function rowError(r: MikrosimRow): string | undefined {
   if (!(r.born >= b.min && r.born <= b.max)) return `Födelseår måste vara mellan ${b.min} och ${b.max}.`;
   if (!(r.startWorkAge >= s.min && r.startWorkAge <= s.max))
     return `Ålder vid arbetslivets start måste vara mellan ${s.min} och ${s.max}.`;
-  const lowest = riktaldrar(r.born).lowest;
-  if (!(r.retirementAge >= lowest && r.retirementAge <= a.max))
-    return `Pensionsåldern måste vara mellan ${lowest} och ${a.max}.`;
+  if (!(r.retirementAge >= a.min && r.retirementAge <= a.max)) return `Pensionsåldern måste vara mellan ${a.min} och ${a.max}.`;
   if (r.startWorkAge >= r.retirementAge) return "Ålder vid arbetslivets start måste vara före pensionsåldern.";
   if (!SCHEMES.some((x) => x.value === r.scheme)) return "Ogiltig tjänstepension.";
   return undefined;
 }
 
-export type RowRun = { result: TypfallResult; error?: undefined } | { result?: undefined; error: string };
+/** The result of a row, with a warning when the pension age was moved to the earliest possible. */
+export type RowRun = { result: TypfallResult; warning?: string; error?: undefined } | { result?: undefined; warning?: undefined; error: string };
 
 const cache = new Map<string, RowRun>();
 
@@ -122,11 +121,16 @@ export function runRow(r: MikrosimRow, context: TypfallAdvanced): RowRun {
   const hit = cache.get(key);
   if (hit) return hit;
   let run: RowRun;
+  const lowest = riktaldrar(r.born).lowest;
+  const par = Math.max(r.retirementAge, lowest);
   try {
     run = {
+      ...(par !== r.retirementAge && {
+        warning: `Allmän pension först möjlig vid ${lowest} års ålder, räknar pensionsålder vid ${lowest}`,
+      }),
       result: runTypfall({
         born: r.born,
-        par: r.retirementAge,
+        par,
         wStart: r.startWorkAge,
         monthlyWage: r.annualSalary / 12,
         avtal: r.scheme,

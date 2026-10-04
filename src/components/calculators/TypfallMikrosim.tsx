@@ -222,6 +222,11 @@ export function Mikrosim({
                           !
                         </abbr>
                       )}
+                      {run.warning && (
+                        <abbr title={run.warning} className="cursor-help no-underline">
+                          ⚠
+                        </abbr>
+                      )}
                     </td>
                     <td className="px-1.5 py-1.5 text-right">
                       <Cell label={`Födelseår, rad ${i + 1}`} value={r.born} bounds={BOUNDS.born} width="w-[4.5rem]" onChange={(v) => edit(r.id, { born: v })} />

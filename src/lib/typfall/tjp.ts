@@ -331,24 +331,20 @@ export function stp(c: TjpContext, medel: number, antal: number, pbb: number): n
   return int(s / 12 + 0.49) * 12;
 }
 
-/** PA_KLBPP(): the old PA-KL benefit level from the five best of seven years. */
+/**
+ * PA_KLBPP(): the old PA-KL benefit level from the best of seven years. The web version, which is
+ * followed here, takes the average of the five best years when the earliest of the seven years has
+ * an income and the best year otherwise. The VBA has a longer chain of cases that also gives the
+ * average of the four, three or two best years, from a comparison that joins strings with "&".
+ */
 export function paKlBpp(c: TjpContext, Zpar: number): number {
   const z = int(Zpar);
-  const yp = [2, 3, 4, 5, 6, 7, 8].map((k) => (c.wage[z - k] ?? 0) / c.FPB[z - k]!);
-  const [, y2, y3, y4, y5, y6, y7] = yp as [number, number, number, number, number, number, number];
+  const yp = [2, 3, 4, 5, 6, 7, 8].map((k) => {
+    const fpb = c.FPB[z - k]!;
+    return fpb === 0 ? 0 : (c.wage[z - k] ?? 0) / fpb;
+  });
   const large = (k: number) => [...yp].sort((a, b) => b - a)[k - 1]!;
-  const avg = (...xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-  // The VBA writes "yearpoint7 = 0 & yearpoint6 <> 0". "&" joins strings before the comparison,
-  // so it reads (yearpoint7 = Val("0" & yearpoint6)) <> 0, with yearpoint6 as a 15-digit string.
-  const str = (x: number) => Number(x.toPrecision(15));
-  let y: number;
-  if (y7 !== 0) y = avg(large(1), large(2), large(3), large(4), large(5));
-  else if (y7 === str(y6)) y = avg(large(1), large(2), large(3), large(4));
-  else if (y6 === str(y5)) y = avg(large(1), large(2), large(3));
-  else if (y5 === str(y4)) y = avg(large(1), large(2));
-  else if (y4 === str(y3)) y = avg(large(1), large(2));
-  else if (y3 === str(y2)) y = avg(large(1), large(2));
-  else y = avg(large(1));
+  const y = yp[6] !== 0 ? (large(1) + large(2) + large(3) + large(4) + large(5)) / 5 : large(1);
   let bpp = 0;
   if (y >= 0 && y <= 1) bpp = y * 0.96;
   else if (y <= 2.5) bpp = 0.96 + (y - 1) * 0.785;
@@ -640,17 +636,18 @@ export function ftjp(
         const bpp = paKlBpp(c, age1997);
         let workyear = 1997 - (int(born) + c.wStart);
         if (workyear > 30) workyear = 30;
-        underlag =
+        const earned =
           (paKl(c, age1997, 1997, bpp) -
             0.6 * (stpPoints[age1997] ?? 0) * (workyear / 30) * c.pbb[age1997]! -
             0.96 * c.pbb[age1997]! * (workyear / 30)) *
           1.08 *
           (c.IBB[age - 1]! / c.IBB[1998 - int(born)]!);
-        // The VBA passes this amount (not the salary) to KAPKL_f.
+        // The VBA passes this amount to KAPKL_f in both cases. The web version, which is followed
+        // here, passes the average of the best years of income when the amount is not negative.
         underlag =
-          underlag < 0
-            ? kapKlF(underlag, tpYear, c.IBB[tjpPar - 1]!, born)
-            : kapKlF(underlag, tpYear, c.IBB[tjpPar - 1]!, born) + underlag;
+          earned < 0
+            ? kapKlF(earned, tpYear, c.IBB[tjpPar - 1]!, born)
+            : kapKlF(underlag, tpYear, c.IBB[tjpPar - 1]!, born) + earned;
       } else {
         underlag = kapKlF(underlag, tpYear, c.IBB[tjpPar - 1]!, born);
       }
