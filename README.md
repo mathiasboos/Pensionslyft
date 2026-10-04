@@ -28,6 +28,7 @@ visual editor (Framer, Lovable) is needed.
 | Pension calculator | `/pensionskalkylator` | `src/pages/pensionskalkylator.astro` + `src/components/calculators/PensionCalculator.tsx` |
 | Compound interest | `/ranta-pa-ranta` | `src/pages/ranta-pa-ranta.astro` + `src/components/calculators/CompoundCalculator.tsx` |
 | FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
+| Typfallsmodellen | `/typfallsmodellen` | `src/pages/typfallsmodellen.astro` + `src/components/calculators/TypfallCalculator.tsx` + `src/lib/typfall/` |
 | Not found | any other URL | `src/pages/404.astro` |
 
 - **Articles** are Markdown files in `src/content/articles/`. Add a new file there and the

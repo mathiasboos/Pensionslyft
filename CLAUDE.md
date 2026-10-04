@@ -32,6 +32,11 @@ look at on the preview.
   `tests/pension.test.ts` are the reference: only change them when a change to the
   math is intended.
 - The site must work at phone width (375 px) with no horizontal scrolling.
+- `src/lib/typfall/` is a line-by-line port of the VBA in Pensionsmyndighetens typfallsmodell
+  (ver. 4.8), with data in `src/data/typfall.json`. `tests/typfall.test.ts` compares it with the
+  model's own output, so keep the VBA's rounding and quirks when changing it. The settings from the
+  sheet Adv_settings are `TypfallAdvanced` in `model.ts`; at their defaults the result must stay
+  identical to the model's run. See `scripts/typfall/README.md` for how to refresh the data.
 - Never commit `.env` files or secrets. The repository is public.
 
 ## Before opening a PR
