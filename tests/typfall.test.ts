@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FIRST_COHORT, LAST_COHORT, riktaldrar } from "../src/lib/typfall/data";
 import { type Avtal, DEFAULT_ADVANCED, runTypfall } from "../src/lib/typfall/model";
+import { withoutPgbYear } from "../src/lib/typfall/pgb";
 import { pensionTable } from "../src/lib/typfall/table";
 import fixture from "./fixtures/typfall-1959.json";
 
@@ -313,6 +314,41 @@ describe("typfallsmodellen, more advanced settings", () => {
     const stud = run({ pgb: { sa: [], vpl: null, studier: [{ from: 1996, to: 1999, terminer: 2 }] } }, { wStart: 25 });
     // 138 % of the study grant, from 1997 in the model
     expect(pgb(stud)).toEqual([1997, 1998, 1999]);
+  });
+
+  it("lists the PGB by year, as the table in the form", () => {
+    expect(plain.pgbRows).toEqual([]);
+    const r = run(
+      {
+        barn: [0, 2012, 0, 0],
+        pgb: {
+          sa: [{ from: 2000, to: 2000, belopp: 150000 }],
+          vpl: { start: "1995-01-10", end: "1996-01-09" },
+          studier: [{ from: 1999, to: 1999, terminer: 2 }],
+        },
+      },
+      { ...low, wStart: 25 },
+    );
+    const rows = r.pgbRows;
+    expect(rows.map((x) => x.year)).toEqual([...rows.map((x) => x.year)].sort((a, b) => a - b));
+    const at = (year: number) => rows.find((x) => x.year === year)!;
+    expect(at(2000)).toMatchObject({ age: 25, sa: 150000, barn: 0, studier: 0, vpl: 0 });
+    expect(at(1995).vpl).toBeGreaterThan(0);
+    expect(at(1999).studier).toBeGreaterThan(0);
+    expect(at(1999).studier % 100).toBe(0);
+    expect(rows.filter((x) => x.barn > 0).map((x) => x.year)).toEqual([2012, 2013, 2014, 2015]);
+    expect(rows.every((x) => x.barn + x.studier + x.vpl + x.sa > 0)).toBe(true);
+  });
+
+  it("cuts an entry around one year when it is removed", () => {
+    const list = [{ from: 2000, to: 2004, belopp: 1 }];
+    expect(withoutPgbYear(list, 2002)).toEqual([
+      { from: 2000, to: 2001, belopp: 1 },
+      { from: 2003, to: 2004, belopp: 1 },
+    ]);
+    expect(withoutPgbYear(list, 2000)).toEqual([{ from: 2001, to: 2004, belopp: 1 }]);
+    expect(withoutPgbYear([{ from: 2002, to: 2002, belopp: 1 }], 2002)).toEqual([]);
+    expect(withoutPgbYear(list, 1999)).toEqual(list);
   });
 
   it("uses an own wage path as given", () => {

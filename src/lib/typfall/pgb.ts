@@ -77,3 +77,14 @@ export function pgbByYear(input: PgbInput, s: Series, year: number) {
   }
   return { sa, vpl, studier };
 }
+
+/** The entries without one year: an entry that covers it is cut around it. */
+export function withoutPgbYear<T extends { from: number; to: number }>(list: T[], year: number): T[] {
+  return list.flatMap((e) => {
+    if (year < e.from || year > e.to) return [e];
+    const out: T[] = [];
+    if (e.from < year) out.push({ ...e, to: year - 1 });
+    if (e.to > year) out.push({ ...e, from: year + 1 });
+    return out;
+  });
+}

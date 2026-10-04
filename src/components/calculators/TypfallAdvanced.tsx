@@ -1,6 +1,5 @@
 // The sections under "Avancerat": the settings from the sheets Adv_settings and PGB in the model.
 import { type ReactNode, useState } from "react";
-import { Plus, X } from "lucide-react";
 import kommuner from "@/data/kommuner-2026.json";
 import { data } from "@/lib/typfall/data";
 import {
@@ -11,11 +10,13 @@ import {
   type Loneprofil,
   type Sparform,
   type TypfallAdvanced,
+  type TypfallResult,
   W_REF,
 } from "@/lib/typfall/model";
 import { formatPercent, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CheckRow, DateRow, ExternalLink, NumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
+import { CheckRow, ExternalLink, NumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
+import { PgbSection } from "./TypfallPgb";
 
 type WagePath = { age: number; year: number; income: number; wage: number }[];
 
@@ -105,159 +106,6 @@ function Note({ children }: { children: ReactNode }) {
 
 const smallButton =
   "flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-foreground/70 bg-card px-3 text-xs font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50";
-
-/** "Pensionsgrundande belopp": choose a type, fill in and add. */
-function PgbSection({
-  adv,
-  onChange,
-  born,
-}: {
-  adv: TypfallAdvanced;
-  onChange: (patch: Partial<TypfallAdvanced>) => void;
-  born: number;
-}) {
-  type Typ = "barn" | "vpl" | "sa" | "studier";
-  const [typ, setTyp] = useState<Typ>("barn");
-  const [barn, setBarn] = useState(born + 30);
-  const [vplStart, setVplStart] = useState(`${Math.max(born + 19, 1995)}-01-15`);
-  const [vplEnd, setVplEnd] = useState(`${Math.max(born + 20, 1996)}-01-14`);
-  const [from, setFrom] = useState(Math.max(born + 20, 1995));
-  const [to, setTo] = useState(Math.max(born + 22, 1997));
-  const [belopp, setBelopp] = useState(150000);
-  const [terminer, setTerminer] = useState(2);
-  const pgb = adv.pgb;
-  const children = adv.barn.filter((b) => b > 0);
-
-  const add = () => {
-    if (typ === "barn" && children.length < 4) onChange({ barn: [...children, barn].sort((a, b) => a - b) });
-    if (typ === "vpl") onChange({ pgb: { ...pgb, vpl: { start: vplStart, end: vplEnd } } });
-    const [a, b] = from <= to ? [from, to] : [to, from];
-    if (typ === "sa") onChange({ pgb: { ...pgb, sa: [...pgb.sa, { from: a, to: b, belopp }] } });
-    if (typ === "studier") onChange({ pgb: { ...pgb, studier: [...pgb.studier, { from: a, to: b, terminer }] } });
-  };
-
-  const entries: { key: string; text: string; remove: () => void }[] = [
-    ...children.map((b, i) => ({
-      key: `barn-${i}`,
-      text: `Barn fött ${b}`,
-      remove: () => onChange({ barn: children.filter((_, k) => k !== i) }),
-    })),
-    ...(pgb.vpl
-      ? [{ key: "vpl", text: `Värnplikt ${pgb.vpl.start} – ${pgb.vpl.end}`, remove: () => onChange({ pgb: { ...pgb, vpl: null } }) }]
-      : []),
-    ...pgb.sa.map((e, i) => ({
-      key: `sa-${i}`,
-      text: `Sjuk-/aktivitetsersättning ${e.from}–${e.to}, ${num.format(e.belopp)} kr per år`,
-      remove: () => onChange({ pgb: { ...pgb, sa: pgb.sa.filter((_, k) => k !== i) } }),
-    })),
-    ...pgb.studier.map((e, i) => ({
-      key: `stud-${i}`,
-      text: `Studier ${e.from}–${e.to}, ${e.terminer} ${e.terminer === 1 ? "termin" : "terminer"} per år`,
-      remove: () => onChange({ pgb: { ...pgb, studier: pgb.studier.filter((_, k) => k !== i) } }),
-    })),
-  ];
-
-  const yearRange = { min: born + 16, max: born + 70 };
-  return (
-    <>
-      <Note>
-        Barnår, sjuk- eller aktivitetsersättning, värnplikt och studier ger alla pensionsrätt utöver den vanliga
-        inkomsten. Välj typ nedan, fyll i det som gäller och klicka Lägg till.
-      </Note>
-      <SelectRow
-        id="typfall-pgb-typ"
-        label="Typ"
-        value={(["barn", "vpl", "sa", "studier"] as Typ[]).indexOf(typ)}
-        onChange={(i) => setTyp((["barn", "vpl", "sa", "studier"] as Typ[])[i]!)}
-        options={[
-          { value: 0, label: "Barn" },
-          { value: 1, label: "Värnplikt" },
-          { value: 2, label: "Sjuk-/aktivitetsersättning" },
-          { value: 3, label: "Studier" },
-        ]}
-      />
-      {typ === "barn" && (
-        <NumberRow
-          id="typfall-pgb-barn"
-          label="Barnets födelseår"
-          hint="ger pensionsrätt de fyra första åren, högst fyra barn"
-          value={barn}
-          onChange={setBarn}
-          min={yearRange.min}
-          max={born + 60}
-        />
-      )}
-      {typ === "vpl" && (
-        <>
-          <DateRow id="typfall-pgb-vpl-start" label="Inryckning" value={vplStart} onChange={setVplStart} />
-          <DateRow id="typfall-pgb-vpl-end" label="Muck" value={vplEnd} onChange={setVplEnd} />
-          <Note>
-            Plikttjänst 1995–2010 och från 2018, minst 120 dagar. Ger pensionsrätt på halva den genomsnittliga
-            pensionsgrundande inkomsten.
-          </Note>
-        </>
-      )}
-      {(typ === "sa" || typ === "studier") && (
-        <>
-          <NumberRow id="typfall-pgb-from" label="Från år" value={from} onChange={setFrom} {...yearRange} />
-          <NumberRow id="typfall-pgb-to" label="Till och med år" value={to} onChange={setTo} {...yearRange} />
-        </>
-      )}
-      {typ === "sa" && (
-        <NumberRow
-          id="typfall-pgb-sa"
-          label="Pensionsgrundande belopp"
-          hint="kronor per år"
-          value={belopp}
-          onChange={setBelopp}
-          min={0}
-          max={1000000}
-        />
-      )}
-      {typ === "studier" && (
-        <>
-          <SelectRow
-            id="typfall-pgb-terminer"
-            label="Terminer per år"
-            value={terminer}
-            onChange={setTerminer}
-            options={[
-              { value: 1, label: "1 termin" },
-              { value: 2, label: "2 terminer" },
-            ]}
-          />
-          <Note>138 procent av studiebidraget. Modellen ger pensionsrätt för studier från 1997.</Note>
-        </>
-      )}
-      <button
-        type="button"
-        className={cn(smallButton, "w-full")}
-        disabled={typ === "barn" && children.length >= 4}
-        onClick={add}
-      >
-        <Plus className="size-3.5" aria-hidden="true" />
-        {typ === "vpl" && pgb.vpl ? "Ersätt" : "Lägg till"}
-      </button>
-      {entries.length > 0 && (
-        <ul className="space-y-1.5 border-t border-border pt-3">
-          {entries.map((e) => (
-            <li key={e.key} className="flex items-center justify-between gap-2 text-sm">
-              <span>{e.text}</span>
-              <button
-                type="button"
-                className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label={`Ta bort ${e.text}`}
-                onClick={e.remove}
-              >
-                <X className="size-4" aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
-  );
-}
 
 /** "Använd egen löneutveckling": income and wage by age, filled in from the computed path. */
 function EgenLon({
@@ -353,6 +201,7 @@ export function AdvancedSections({
   defAr,
   tjpPar,
   lifeExpectancy,
+  pgbRows,
   computedWagePath,
 }: {
   adv: TypfallAdvanced;
@@ -370,6 +219,8 @@ export function AdvancedSections({
   tjpPar: number;
   /** Remaining life expectancy at the pension age, the default payout time for private saving. */
   lifeExpectancy: number;
+  /** What the model counts as PGB, by year. */
+  pgbRows: TypfallResult["pgbRows"];
   /** The wage path computed from the main form, to fill in "egen löneutveckling". */
   computedWagePath: () => WagePath;
 }) {
@@ -685,7 +536,7 @@ export function AdvancedSections({
       </Section>
 
       <Section title="Pensionsgrundande belopp (PGB)" changed={differs(adv, SECTIONS.pgb)}>
-        <PgbSection adv={adv} onChange={onChange} born={born} />
+        <PgbSection adv={adv} onChange={onChange} born={born} rows={pgbRows} />
       </Section>
 
       <Section title="Privat sparande" changed={differs(adv, SECTIONS.privat)}>

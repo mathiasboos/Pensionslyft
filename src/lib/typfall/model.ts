@@ -212,6 +212,8 @@ export interface TypfallResult {
     dispFore: number | null;
   };
   years: TypfallYear[];
+  /** The pensionsgrundande belopp from barn, studier, värnplikt and sjuk-/aktivitetsersättning by year, in current prices (years with any). */
+  pgbRows: { year: number; age: number; barn: number; studier: number; vpl: number; sa: number }[];
   /** Income and wage by age in current prices, as used (for the table "egen löneutveckling"). */
   wagePath: { age: number; year: number; income: number; wage: number }[];
   /** Ages actually used: pension, final withdrawal and tjänstepension. */
@@ -326,7 +328,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const IP_arv1 = arr(), IP_arv2 = arr(), PP_arv = arr();
   const Kom_skatt = arr(), Begravavg = arr(), Tax_limit1 = arr(), Tax_limit2 = arr();
   const Income_ = arr(), Wage_ = arr();
-  const pgbSA = arr(), pgbVPL = arr(), pgbStud = arr();
+  const pgbSA = arr(), pgbVPL = arr(), pgbStud = arr(), pgbBarnA = arr();
 
   // ---------------- startsetup ----------------
   const nyck = (series: number[], year: number) => at(series, s, year);
@@ -536,6 +538,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
           const uink = k === 0 ? (pgi_[age]! * KPI[counter]!) / KPI[counter - 1]! + PGB_[age]! : pgi_[age]! + PGB_[age]!;
           barnPgb = pgbBarn(year, Income_[counter]!, uink, barn, age, MPGI[age]!, IBB[age]!, riktalder);
         });
+        pgbBarnA[age] = barnPgb;
         PGB_[age] = PGB_[age]! + barnPgb;
         PGB_[age] = PGB_[age]! + pgbVPL[age]!;
         cap();
@@ -1047,6 +1050,18 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const j0 = fixed(P);
   const wagePath = [];
   for (let age = 15; age <= SLUTAGE; age++) wagePath.push({ age, year: year_[age]!, income: Income_[age]!, wage: Wage_[age]! });
+  const pgbRows: TypfallResult["pgbRows"] = [];
+  for (let age = 15; age <= SLUTAGE; age++) {
+    const row = {
+      year: year_[age]!,
+      age,
+      barn: Math.round(pgbBarnA[age]!),
+      studier: int(pgbStud[age]! / 100) * 100,
+      vpl: Math.round(pgbVPL[age]!),
+      sa: Math.round(pgbSA[age]!),
+    };
+    if (row.barn > 0 || row.studier > 0 || row.vpl > 0 || row.sa > 0) pgbRows.push(row);
+  }
 
   return {
     input,
@@ -1090,6 +1105,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       dispFore: nettoKnown ? slutDispNominal : null,
     },
     years,
+    pgbRows,
     wagePath,
     defAr,
     tjpPar,

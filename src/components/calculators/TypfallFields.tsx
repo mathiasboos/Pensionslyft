@@ -26,6 +26,7 @@ export function NumberRow({
   max,
   decimals = 0,
   disabled,
+  stacked,
   children,
 }: {
   id: string;
@@ -37,6 +38,8 @@ export function NumberRow({
   max: number;
   decimals?: number;
   disabled?: boolean;
+  /** The label above a field as wide as the form, instead of the label and the field side by side. */
+  stacked?: boolean;
   /** Extra control after the field, e.g. a remove button. */
   children?: ReactNode;
 }) {
@@ -58,55 +61,73 @@ export function NumberRow({
       ? text.trim() !== ""
       : typed > max || (typed < min && digits >= String(Math.trunc(Math.abs(max))).length));
 
+  const field = (
+    <Input
+      id={id}
+      type="text"
+      inputMode={decimals > 0 || min < 0 ? "decimal" : "numeric"}
+      autoComplete="off"
+      value={text}
+      disabled={disabled}
+      aria-invalid={invalid || undefined}
+      aria-describedby={hint ? `${id}-hint` : undefined}
+      className={cn(
+        stacked ? "min-w-0 flex-1" : "w-24",
+        "bg-card text-right tabular-nums",
+        invalid && "border-destructive focus-visible:ring-destructive",
+      )}
+      onFocus={(e) => {
+        setFocused(true);
+        e.target.select();
+      }}
+      onChange={(e) => {
+        setText(e.target.value);
+        const v = parse(e.target.value);
+        if (v !== null && v >= min && v <= max) onChange(round(v));
+      }}
+      onBlur={() => {
+        setFocused(false);
+        const v = parse(text);
+        if (v === null) setText(format(value));
+        else {
+          const clamped = round(Math.min(max, Math.max(min, v)));
+          onChange(clamped);
+          setText(format(clamped));
+        }
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+      }}
+    />
+  );
+  const labelText = (
+    <>
+      <label htmlFor={id} className={cn("text-sm", disabled && "text-muted-foreground")}>
+        {label}
+      </label>
+      {hint && (
+        <p id={`${id}-hint`} className="mt-0.5 text-xs text-muted-foreground">
+          {hint}
+        </p>
+      )}
+    </>
+  );
+
+  if (stacked)
+    return (
+      <div>
+        {labelText}
+        <div className="mt-1.5 flex items-center gap-2">
+          {field}
+          {children}
+        </div>
+      </div>
+    );
   return (
     <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0 pt-1">
-        <label htmlFor={id} className={cn("text-sm", disabled && "text-muted-foreground")}>
-          {label}
-        </label>
-        {hint && (
-          <p id={`${id}-hint`} className="mt-0.5 text-xs text-muted-foreground">
-            {hint}
-          </p>
-        )}
-      </div>
+      <div className="min-w-0 pt-1">{labelText}</div>
       <div className="flex shrink-0 items-center gap-1">
-        <Input
-          id={id}
-          type="text"
-          inputMode={decimals > 0 || min < 0 ? "decimal" : "numeric"}
-          autoComplete="off"
-          value={text}
-          disabled={disabled}
-          aria-invalid={invalid || undefined}
-          aria-describedby={hint ? `${id}-hint` : undefined}
-          className={cn(
-            "w-24 bg-card text-right tabular-nums",
-            invalid && "border-destructive focus-visible:ring-destructive",
-          )}
-          onFocus={(e) => {
-            setFocused(true);
-            e.target.select();
-          }}
-          onChange={(e) => {
-            setText(e.target.value);
-            const v = parse(e.target.value);
-            if (v !== null && v >= min && v <= max) onChange(round(v));
-          }}
-          onBlur={() => {
-            setFocused(false);
-            const v = parse(text);
-            if (v === null) setText(format(value));
-            else {
-              const clamped = round(Math.min(max, Math.max(min, v)));
-              onChange(clamped);
-              setText(format(clamped));
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-          }}
-        />
+        {field}
         {children}
       </div>
     </div>
@@ -157,7 +178,7 @@ export function SelectRow<T extends number | string>({
   hint?: ReactNode;
   value: T;
   onChange: (v: T) => void;
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; disabled?: boolean }[];
   /** The label is read by screen readers only, when the choices explain themselves. */
   hideLabel?: boolean;
 }) {
@@ -173,7 +194,7 @@ export function SelectRow<T extends number | string>({
         className={cn(selectClass, hideLabel && "mt-0")}
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} disabled={o.disabled}>
             {o.label}
           </option>
         ))}
@@ -228,36 +249,6 @@ export function Disclosure({ title, children }: { title: string; children: React
       </summary>
       <div className="mt-2 space-y-2 pl-5.5 text-xs leading-5 text-muted-foreground">{children}</div>
     </details>
-  );
-}
-
-/** A date, åååå-mm-dd. */
-export function DateRow({
-  id,
-  label,
-  value,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <label htmlFor={id} className="text-sm">
-        {label}
-      </label>
-      <Input
-        id={id}
-        type="date"
-        value={value}
-        min="1960-01-01"
-        max="2100-12-31"
-        className="w-40 shrink-0 bg-card"
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
   );
 }
 

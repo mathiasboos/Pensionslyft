@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChevronDown, Download } from "lucide-react";
 import { FIRST_COHORT, LAST_COHORT, cohortValue } from "@/lib/typfall/data";
 import { type Avtal, DEFAULT_ADVANCED, type TypfallAdvanced, W_REF } from "@/lib/typfall/model";
@@ -104,6 +104,8 @@ export default function TypfallCalculator() {
           tjp: y.tjp / 12,
           skydd: (y.gp + y.tillagg) / 12,
           privat: (y.ips + y.pps) / 12,
+          // After tax; the tax rules are only in the model from 2020, so earlier years have no line.
+          netto: y.netto === null ? null : y.netto / 12,
         })),
     [result, firstAge],
   );
@@ -174,7 +176,7 @@ export default function TypfallCalculator() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
-      <div className="self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1">
+      <div className="min-w-0 self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1">
         <div className="grid grid-cols-2 gap-2" role="group" aria-label="Inställningar">
           {(["normal", "avancerat"] as const).map((m) => (
             <button
@@ -348,6 +350,7 @@ export default function TypfallCalculator() {
               defAr={result.defAr}
               tjpPar={result.tjpPar}
               lifeExpectancy={cohortValue(born, "eLife", parUsed)}
+              pgbRows={result.pgbRows}
               computedWagePath={computedWagePath}
             />
           </div>
@@ -487,15 +490,19 @@ export default function TypfallCalculator() {
                     {s.label}
                   </li>
                 ))}
+                <li className="flex items-center gap-2">
+                  <span className="w-4 border-t-2 border-dashed border-foreground" aria-hidden="true" />
+                  Inkomst efter skatt
+                </li>
               </ul>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Före skatt, i {W_REF} års priser.
+              Staplarna är före skatt och den streckade linjen efter skatt, i {W_REF} års priser.
               {result.pps > 0 && " Uttagen från ISK och kapitalförsäkring är redan beskattade."}
             </p>
             <div className="mt-4 h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 8 }} barCategoryGap={2}>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 8 }} barCategoryGap={2}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                   <XAxis dataKey="age" tickLine={false} axisLine={false} fontSize={12} minTickGap={12} />
                   <YAxis tickFormatter={formatSekShort} tickLine={false} axisLine={false} fontSize={12} width={72} />
@@ -516,7 +523,18 @@ export default function TypfallCalculator() {
                   {series.map((s) => (
                     <Bar key={s.key} dataKey={s.key} name={s.label} stackId="a" fill={s.color} />
                   ))}
-                </BarChart>
+                  <Line
+                    dataKey="netto"
+                    name="Inkomst efter skatt"
+                    type="monotone"
+                    stroke="var(--color-foreground)"
+                    strokeWidth={2}
+                    strokeDasharray="6 4"
+                    dot={false}
+                    activeDot={{ r: 4, stroke: "var(--color-card)", strokeWidth: 2 }}
+                    connectNulls={false}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </div>
