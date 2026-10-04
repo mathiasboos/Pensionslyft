@@ -1,7 +1,8 @@
 // Tables from Pensionsmyndighetens typfallsmodell (ver. 4.8), extracted from the workbook:
 // - years: index series from the sheet "Några tal" (1957-2026, the rest is projected in series.ts)
 // - komSkatt/begravning: average municipal tax and burial fee from "K_skatt" (percent)
-// - cohorts: per birth year, delningstal (Nyckeltal, mortality) and arvsvinstfaktorer (arv IP, arv PP)
+// - cohorts: per birth year, delningstal and life expectancy (Nyckeltal, mortality) and
+//   arvsvinstfaktorer (arv IP, arv PP)
 // - riktalder: lowest pension age and riktålder per birth year (Nyckeltal DO:DR)
 import raw from "../../data/typfall.json";
 
@@ -12,6 +13,7 @@ export interface CohortData {
   dIPn: Nullable; // Nyckeltal delningstal IP, ages 61..82 (VBA deltal(..., 4))
   dPPn: Nullable; // Nyckeltal delningstal PP, ages 61..103 (VBA deltal(..., 19))
   mIP: Nullable; // mortality N/Q NDC IP (unisex), ages 61..105
+  eLife: Nullable; // återstående medellivslängd (mortality, rng_Exp_life), ages 61..90
   arvIP1: Nullable; // arv IP, ages 17..66
   arvIP2: Nullable; // arv IP "dubbla arvsvinsten", ages 60..105
   arvPP: Nullable; // arv PP, ages 15..105

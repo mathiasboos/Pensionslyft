@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FIRST_COHORT, LAST_COHORT, riktaldrar } from "../src/lib/typfall/data";
-import { type Avtal, runTypfall } from "../src/lib/typfall/model";
+import { type Avtal, DEFAULT_ADVANCED, runTypfall } from "../src/lib/typfall/model";
 import fixture from "./fixtures/typfall-1959.json";
 
 // The fixture is the model's own output (sheets Utdata and Start) for its default typfall:
@@ -56,6 +56,12 @@ describe("typfallsmodellen, compared with the model's own run for born 1959", ()
     }
   });
 
+  it("gives the same result with the advanced settings at their defaults", () => {
+    const explicit = runTypfall({ ...defaults, advanced: DEFAULT_ADVANCED });
+    expect(explicit.years).toEqual(result.years);
+    expect(explicit.netto).toBe(result.netto);
+  });
+
   it("matches Tabell 1 on the start page", () => {
     const t = fixture.table1 as Record<string, (number | null)[]>;
     const col = (label: string) => t[label]![1]!;
@@ -106,5 +112,88 @@ describe("typfallsmodellen, other cases", () => {
 
   it("refuses a pension age below the lowest age for the birth year", () => {
     expect(() => runTypfall({ ...defaults, born: 1990, par: 63 })).toThrow();
+  });
+});
+
+describe("typfallsmodellen, advanced settings", () => {
+  const base = { ...defaults, born: 1980, par: 68, avtal: 2 as Avtal, realGrowth: 0.016, realReturn: 0.035 };
+  const run = (advanced: Parameters<typeof runTypfall>[0]["advanced"], extra = {}) =>
+    runTypfall({ ...base, ...extra, advanced });
+  const plain = run({});
+
+  it("gives finite amounts for every setting", () => {
+    const settings = [
+      { inflation: 0.02 }, { avkastningsval: 1 as const }, { avkastningsval: 3 as const },
+      { loneprofil: 1 as const }, { loneprofil: 2 as const }, { loneprofil: 3 as const }, { loneprofil: 4 as const },
+      { slutlonAr: 1 }, { slutlonAr: 10 }, { andradLonAr: 2035, andradLonFaktor: 0.8 }, { barn: [2010, 2013] },
+      { forsakringstid: 20 }, { flexpension: 0.02 }, { arvsvinsterTjp: false }, { tempTjp: 5 },
+      { sparform: 0 as const, sparManad: 1000 }, { sparform: 1 as const, sparManad: 1000 },
+      { sparform: 2 as const, sparManad: 1000, tempSpar: 10 }, { kommunalskatt: 0.34, begravning: 0.01 },
+    ];
+    for (const advanced of settings) {
+      const r = run(advanced);
+      for (const v of [r.ip, r.pp, r.gp, r.tillagg, r.tjp, r.ips, r.pps, r.brutto, r.netto, r.slutlon]) {
+        expect(Number.isFinite(v), JSON.stringify(advanced)).toBe(true);
+        expect(v).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it("adds flexpension to ITP 1 only", () => {
+    expect(run({ flexpension: 0.02 }).tjp).toBeGreaterThan(plain.tjp);
+    expect(run({ flexpension: 0.02 }, { avtal: 1 }).tjp).toBe(0);
+  });
+
+  it("pays a temporary tjänstepension for the given years only", () => {
+    const temp = run({ tempTjp: 5 });
+    expect(temp.tjp).toBeGreaterThan(3 * plain.tjp);
+    const paid = temp.years.filter((y) => y.tjp > 0).map((y) => y.age);
+    expect(paid).toEqual([68, 69, 70, 71, 72]);
+  });
+
+  it("gives less tjänstepension with återbetalningsskydd", () => {
+    expect(run({ arvsvinsterTjp: false }).tjp).toBeLessThan(plain.tjp);
+  });
+
+  it("gives pension rights for barnår to low earners", () => {
+    const low = { monthlyWage: 20000 };
+    const r = run({ barn: [2010, 2013] }, low);
+    const pgb = r.verbose.filter((v) => v.PGB! > 0).map((v) => v.year);
+    expect(pgb).toEqual([2010, 2011, 2012, 2013, 2014, 2015, 2016]);
+    expect(r.ip).toBeGreaterThan(run({}, low).ip);
+    // Nothing for incomes above 7.5 inkomstbasbelopp
+    const high = { monthlyWage: 80000 };
+    expect(run({ barn: [2010] }, high).ip).toBe(run({}, high).ip);
+  });
+
+  it("scales garantipension with försäkringstid, at least the working years", () => {
+    const late = { wStart: 40, monthlyWage: 15000, avtal: 1 as Avtal };
+    const full = run({}, late);
+    const r30 = run({ forsakringstid: 30 }, late);
+    expect(r30.forsakringstid).toBe(30);
+    expect(r30.gp).toBeCloseTo((full.gp * 30) / 40, -2);
+    expect(run({ forsakringstid: 10 }, late).forsakringstid).toBe(27);
+  });
+
+  it("pays private saving: IPS taxed in brutto, ISK and KF beside it", () => {
+    const ips = run({ sparform: 0, sparManad: 1000 });
+    expect(ips.ips).toBeGreaterThan(0);
+    expect(ips.brutto).toBeCloseTo(plain.brutto + ips.ips, 6);
+    const isk = run({ sparform: 2, sparManad: 1000, tempSpar: 10 });
+    expect(isk.pps).toBeGreaterThan(0);
+    expect(isk.brutto).toBe(plain.brutto);
+    const paid = isk.years.filter((y) => y.pps > 0).map((y) => y.age);
+    expect(paid[0]).toBe(68);
+    expect(paid.at(-1)).toBeLessThanOrEqual(77);
+  });
+
+  it("uses an own kommunalskatt for every year", () => {
+    expect(run({ kommunalskatt: 0.3 }).netto).toBeGreaterThan(run({ kommunalskatt: 0.35 }).netto);
+    expect(run({ kommunalskatt: 0.3, begravning: 0.01 }).netto).toBeLessThan(run({ kommunalskatt: 0.3 }).netto);
+  });
+
+  it("changes the wage path with löneprofil and ändrad lön", () => {
+    expect(run({ loneprofil: 1 }).slutlon).not.toBeCloseTo(plain.slutlon, 0);
+    expect(run({ andradLonAr: 2035, andradLonFaktor: 0.8 }).slutlon).toBeCloseTo(plain.slutlon * 0.8, 6);
   });
 });

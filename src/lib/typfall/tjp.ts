@@ -19,6 +19,10 @@ export interface TjpContext {
   pbb: number[];
   FPB: number[];
   KPIj: number[];
+  /** rng_FlexPens: extra premium for ITP 1 and SAF-LO from 2014. */
+  flex: number;
+  /** rng_Temp_Tjp_Uttag: years of temporary payout, 0 for a lifelong payout. */
+  tempYears: number;
 }
 
 const yearOf = (c: TjpContext, age: number) => int(c.born) + age;
@@ -47,11 +51,12 @@ export function tlITP1(c: TjpContext, alder: number, inkomst: number, IBB: numbe
   if (IBB === 0) IBB = inkomst;
   if (month === 0) return 0;
   inkomst = inkomst / month;
+  const flex = yearOf(c, alder) > 2013 ? c.flex : 0;
   let p: number;
-  if (inkomst <= (7.5 * IBB) / month) p = 0.045 * inkomst;
+  if (inkomst <= (7.5 * IBB) / month) p = (0.045 + flex) * inkomst;
   else {
     if (yearOf(c, alder) > 2022 && inkomst > 30 * IBB) inkomst = 30 * IBB;
-    p = 0.3 * (inkomst - (7.5 * IBB) / 12) + (0.045 * 7.5 * IBB) / 12;
+    p = (0.3 + flex) * (inkomst - (7.5 * IBB) / 12) + ((0.045 + flex) * 7.5 * IBB) / 12;
   }
   return int(p + 0.5) * month;
 }
@@ -280,7 +285,8 @@ export function safLo(c: TjpContext, alder: number, inkomst: number, IBB: number
   else if (year === 2009) [p1, p2] = [0.04, 0.12];
   else if (year === 2010) [p1, p2] = [0.041, 0.18];
   else if (year === 2011) [p1, p2] = [0.043, 0.24];
-  else [p1, p2] = [0.045, 0.3];
+  else if (year <= 2013) [p1, p2] = [0.045, 0.3];
+  else [p1, p2] = [0.045 + c.flex, 0.3 + c.flex];
   let month: number;
   if (alder < lowAge) return 0;
   else if (int(alder) === lowAge) {
@@ -503,6 +509,48 @@ export function tjpRatt(c: TjpContext, age: number, wage: number, IBB: number, y
   }
 }
 
+/**
+ * tjp_ddeltal(): adjusts the delningstal to the agreement's interest rate and life expectancy,
+ * or for a temporary payout returns the annuity factor for the payout years.
+ * Rng_ddelat is 0, so a lifelong payout keeps the delningstal.
+ */
+export function tjpDdeltal(c: TjpContext, tal: number, val: number, year: number): number {
+  let utbtid = c.tempYears;
+  if (utbtid <= 0) utbtid = 100;
+  if (utbtid > 98) return tal;
+  let kranta0: number;
+  let life0: number;
+  if (year < 2018) [kranta0, life0] = year < 2002 ? [4, 20.3] : [3, 20.3];
+  else [kranta0, life0] = [1.75, 22.65];
+  const late = year > 2019;
+  const [b1, b2] = late ? [-0.16216, 0.84517] : [-0.27166, 0.78457];
+  let kranta: number;
+  let life: number;
+  if (val === 1) [kranta, life] = late ? [3.5, 22.6] : [2.5, 22];
+  else if (val < 4) [kranta, life] = late ? [2.2, 22] : [2.9, 22];
+  else if (val === 4) [kranta, life] = late ? [1.3, 20.8] : [2.25, 21.3];
+  else if (val < 7) [kranta, life] = late ? [2.75, 23.1] : [2.75, 22.8];
+  else [kranta, life] = late ? [2, 23.3] : [2, 21.9];
+  if (utbtid < 30) {
+    // Makeham mortality, discounted at the agreement's interest rate.
+    const PAR = c.tjpPar;
+    const surv = 1 - (0.0002 + 0.000007 * Math.exp(0.1071 * PAR));
+    let S = 0;
+    for (let i = PAR; i <= PAR + int(utbtid) - 1; i++) {
+      const my = 0.0002 + 0.000007 * Math.exp(0.1071 * i);
+      S += (1 - my) / (1 + kranta / 100) ** (i - PAR);
+    }
+    return S / surv;
+  }
+  return vbaRound(tal * (1 + b1 * (kranta / kranta0 - 1) + b2 * (life / life0 - 1)), 2);
+}
+
+/** FTJP's correction of a förmånsbestämd pension for a temporary payout. */
+function tempFactor(c: TjpContext, age: number): number {
+  if (c.tempYears <= 0) return 1;
+  return deltal(c.tjpPar, int(c.born), age, 99, "PP") / tjpDdeltal(c, 15, 4, yearOf(c, age));
+}
+
 /** tjpkassa(): yearly tjänstepension from the premium balance. */
 export function tjpkassa(c: TjpContext, alder: number, pbh: number, tMonth: number): number {
   if (pbh < 1) return 0;
@@ -514,7 +562,7 @@ export function tjpkassa(c: TjpContext, alder: number, pbh: number, tMonth: numb
     delTal = deltal(tjpPar, born, alder, 999, "PP");
     if (delTal <= 0) delTal = deltal(tjpPar + 1, born, alder, 999, "PP") + 0.6;
   } else delTal = 2;
-  // tjp_ddeltal() returns the delningstal unchanged for a lifelong payout.
+  delTal = tjpDdeltal(c, delTal, c.avtal, yearOf(c, alder));
   let month = tMonth;
   let kassa = 0;
   if (alder < int(tjpPar + konst)) kassa = 0;
@@ -544,7 +592,7 @@ export function ftjp(
   if (avtal === 3) {
     let tpYear = 0;
     for (let k = startage; k <= 68; k++) if ((c.wage[k] ?? 0) > 0) tpYear++;
-    const diverse = ratio();
+    const diverse = ratio() * tempFactor(c, age);
     let underlag = dcUnderlag(c, 0);
     underlag = tlITP2F(c, underlag, c.IBB[age - 1]!, tpYear) * diverse;
     tjpAge += (underlag * tMonth) / 12;
@@ -566,7 +614,7 @@ export function ftjp(
     let diverse = 0;
     if (yr(65) > 1960) diverse = tjpPar < 65 ? c.FPB[int(tjpPar)]! : c.FPB[65]!;
     underlag = tpYear > 0 && underlag > 0 ? stp(c, underlag / tpYear + 1, tpYear, diverse) : 0;
-    tjpAge += (underlag * ratio() * tMonth) / 12;
+    tjpAge += (underlag * ratio() * tempFactor(c, age) * tMonth) / 12;
   }
   if (avtal === 5 || avtal === 6) {
     const und = [0, 0, 0, 0, 0, 0, 0];
@@ -585,7 +633,7 @@ export function ftjp(
     let underlag = 0;
     for (let k = 2; k <= 6; k++) underlag += und[k]! / 5;
     underlag = vbaRound(underlag, 0);
-    const diverse = ratio();
+    const diverse = ratio() * tempFactor(c, age);
     if (yr(age) > 1997) {
       if (yr(28) < 1995) {
         const age1997 = 1997 - int(born);
@@ -618,7 +666,8 @@ export function ftjp(
     for (let k = 28; k <= 64; k++) if ((c.wage[k] ?? 0) > 0) tpYear++;
     let underlag = dcUnderlag(c, 1);
     const b = maxi(1938, int(born));
-    const diverse = age === 65 ? 1 : deltal(65, b, 65, 99, "PP") / deltal(tjpPar, b, age, 99, "PP");
+    const diverse =
+      (age === 65 ? 1 : deltal(65, b, 65, 99, "PP") / deltal(tjpPar, b, age, 99, "PP")) * tempFactor(c, age);
     underlag = (tlPA03(c, underlag, tpYear, c.IBB[age - 1]!, born) * diverse) / 12;
     underlag = int(underlag + 0.49);
     tjpAge += underlag * tMonth;

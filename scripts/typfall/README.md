@@ -1,7 +1,8 @@
 # Updating the Typfallsmodellen data
 
 `src/data/typfall.json` holds the tables the calculator needs from Pensionsmyndighetens
-typfallsmodell (index series, delningstal, arvsvinstfaktorer, municipal tax and riktåldrar).
+typfallsmodell (index series, historical fund returns, delningstal, life expectancy,
+arvsvinstfaktorer, municipal tax and riktåldrar).
 To update it from a new version of the workbook:
 
 ```sh

@@ -21,13 +21,13 @@ def num(x):
 FIRST, LAST_HARD = 1957, 2026
 years = list(range(FIRST, LAST_HARD + 1))
 row = lambda y: y - 1957 + 4  # Några tal: 1957 -> row 4
-idx = {k: [] for k in ["KPIj","KPI","PBB","MPGI","IBB","FPB","Iindex","balanstal","Bindex","Pindex","ipAvg","ppAvg","yield","rgk","taxLimit1"]}
-cols = {"KPIj":"B","KPI":"C","PBB":"E","MPGI":"F","IBB":"G","FPB":"H","Iindex":"I","balanstal":"J","Bindex":"K","Pindex":"L","ipAvg":"N","ppAvg":"O","yield":"Q","rgk":"S","taxLimit1":"AC"}
+idx = {k: [] for k in ["KPIj","KPI","PBB","MPGI","IBB","FPB","Iindex","balanstal","Bindex","Pindex","ipAvg","ppAvg","yield","yieldAP7","rgk","taxLimit1"]}
+cols = {"KPIj":"B","KPI":"C","PBB":"E","MPGI":"F","IBB":"G","FPB":"H","Iindex":"I","balanstal":"J","Bindex":"K","Pindex":"L","ipAvg":"N","ppAvg":"O","yield":"Q","yieldAP7":"R","rgk":"S","taxLimit1":"AC"}
 for y in years:
     for k, c in cols.items():
         idx[k].append(num(v(NT, f"{c}{row(y)}")))
 # Model-input dependent cells are recomputed by the engine, so blank them here:
-for k, fromYear in [("yield", 2026), ("rgk", 2025)]:
+for k, fromYear in [("yield", 2026), ("yieldAP7", 2026), ("rgk", 2025)]:
     for i, y in enumerate(years):
         if y >= fromYear: idx[k][i] = None
 
@@ -45,7 +45,7 @@ while True:
     cohort = v(MO, f"S{r}")
     if cohort in (None, 0): break
     if v(MO, f"Q{r}") == 0:
-        mort[(int(cohort), int(v(MO, f"R{r}")))] = (num(v(MO, f"T{r}")), num(v(MO, f"U{r}")))
+        mort[(int(cohort), int(v(MO, f"R{r}")))] = (num(v(MO, f"T{r}")), num(v(MO, f"U{r}")), num(v(MO, f"W{r}")))
     r += 1
 print("mortality rows read:", r - 2, "unisex cells:", len(mort))
 
@@ -57,12 +57,13 @@ for c in COH:
     # aDeltal_IP: Nyckeltal overridden by mortality (unisex) for cohorts >= 1958, ages <= 82
     dIP = [mort.get((c, a), (None,))[0] if (c, a) in mort else dIPn[a - 61] for a in range(61, 83)]
     mIP = [mort[(c, a)][0] if (c, a) in mort else None for a in range(61, 106)]
+    eLife = [mort[(c, a)][2] if (c, a) in mort else None for a in range(61, 91)]
     # arv IP: rows 3.. = ages 17..; columns D.. = years 2000..2100 (VBA: Cells(age-17+3, year-1999+3))
     arvIP1 = [num(v(AIP, f"{n2col(c + a - 1999 + 3)}{a - 17 + 3}")) if 2000 <= c + a <= 2100 else None for a in range(17, 67)]
     arvIP2 = [num(v(AIP, f"{n2col(c + a - 1999 + 3)}{81 + a - 60}")) if 2000 <= c + a <= 2100 else None for a in range(60, 106)]
     # arv PP: Cells(age-14+2, year-1999+3) for ages < 106
     arvPP = [num(v(APP, f"{n2col(c + a - 1999 + 3)}{a - 14 + 2}")) if 2000 <= c + a <= 2100 else None for a in range(15, 106)]
-    cohorts[c] = dict(dIP=dIP, dIPn=dIPn, dPPn=dPPn, mIP=mIP, arvIP1=arvIP1, arvIP2=arvIP2, arvPP=arvPP)
+    cohorts[c] = dict(dIP=dIP, dIPn=dIPn, dPPn=dPPn, mIP=mIP, eLife=eLife, arvIP1=arvIP1, arvIP2=arvIP2, arvPP=arvPP)
 
 # Riktålder and lowest pension age per birth year (Nyckeltal DO:DR)
 rikt = {}
@@ -75,7 +76,7 @@ out = dict(
     source="Pensionsmyndighetens typfallsmodell ver. 4.8",
     firstYear=FIRST, lastHardYear=LAST_HARD, years=idx,
     taxFirstYear=1930, komSkatt=kom, begravning=beg,
-    cohortAges=dict(dIP=61, dIPn=61, dPPn=61, mIP=61, arvIP1=17, arvIP2=60, arvPP=15),
+    cohortAges=dict(dIP=61, dIPn=61, dPPn=61, mIP=61, eLife=61, arvIP1=17, arvIP2=60, arvPP=15),
     cohorts={str(k): val for k, val in cohorts.items()},
     riktalder=dict(firstCohort=min(rikt), lowest=[rikt[k][0] for k in sorted(rikt)], rikt=[rikt[k][1] for k in sorted(rikt)]),
 )

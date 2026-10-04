@@ -1,6 +1,6 @@
 // Index series by calendar year, as the sheets "Några tal" and "Nyckeltal" compute them.
 // Years up to 2026 are the model's data; later years follow the sheet formulas with the
-// user's real growth and return. Inflation is fixed at 0 %, so all amounts are in fixed prices.
+// user's real growth, return and inflation.
 import { data } from "./data";
 import { excelRound, int } from "./vba";
 
@@ -18,7 +18,8 @@ export interface Series {
   Pindex: number[]; // Gällande index (balansindex)
   ipAvg: number[]; // kvar efter administrationsavgift, inkomstpension
   ppAvg: number[]; // kvar efter avgift, premiepension
-  yieldQ: number[]; // fondavkastning (andel)
+  yieldQ: number[]; // fondavkastning, historiskt PPM-index (andel)
+  yieldR: number[]; // fondavkastning, historiskt AP7 Såfa (andel)
   rgkPct: number[]; // räntan hos Riksgälden, procent
   taxLimit1: number[];
   taxLimit2: number[];
@@ -38,8 +39,7 @@ export function balansindex(bi: number, btal: number, ital1: number, ital2: numb
   return int(b * 100 + 0.49) / 100;
 }
 
-export function buildSeries(realGrowth: number, realReturn: number): Series {
-  const inflation = 0;
+export function buildSeries(realGrowth: number, realReturn: number, inflation = 0): Series {
   const first = data.firstYear;
   const lastHard = data.lastHardYear;
   const n = LAST_YEAR - first + 1;
@@ -60,6 +60,7 @@ export function buildSeries(realGrowth: number, realReturn: number): Series {
     ipAvg: pick("ipAvg"),
     ppAvg: pick("ppAvg"),
     yieldQ: pick("yield"),
+    yieldR: pick("yieldAP7"),
     rgkPct: pick("rgk"),
     taxLimit1: pick("taxLimit1"),
     taxLimit2: Array.from({ length: n }, () => 1e16),
@@ -68,10 +69,12 @@ export function buildSeries(realGrowth: number, realReturn: number): Series {
   };
   const i = (year: number) => year - first;
 
-  // Index projection, rows 2027.. in "Några tal".
-  for (let y = lastHard + 1; y <= LAST_YEAR; y++) {
+  // Index projection, rows 2026.. (KPI) and 2027.. (the rest) in "Några tal".
+  for (let y = lastHard; y <= LAST_YEAR; y++) {
     s.KPIj[i(y)] = excelRound(s.KPIj[i(y - 1)]! * (1 + inflation), 2);
     s.KPI[i(y)] = excelRound(s.KPI[i(y - 1)]! * (1 + inflation), 2);
+  }
+  for (let y = lastHard + 1; y <= LAST_YEAR; y++) {
     s.PBB[i(y)] = excelRound((36396 * s.KPIj[i(y - 1)]!) / 257.38, -2);
     s.FPB[i(y)] = excelRound((s.KPIj[i(y - 1)]! / 257.38) * 37144, -2);
     s.Iindex[i(y)] = s.Iindex[i(y - 1)]! * (1 + realGrowth) * (1 + inflation);
@@ -91,7 +94,7 @@ export function buildSeries(realGrowth: number, realReturn: number): Series {
   // Fund return from 2026 and Riksgälden's rate from 2025 follow the user's assumptions.
   const rgk = ((1 + inflation) * (1 + realGrowth) * 1.01 - 1) * 100;
   for (let y = first; y <= LAST_YEAR; y++) {
-    if (y >= 2026) s.yieldQ[i(y)] = (1 + realReturn) * (1 + inflation) - 1;
+    if (y >= 2026) s.yieldQ[i(y)] = s.yieldR[i(y)] = (1 + realReturn) * (1 + inflation) - 1;
     if (y >= 2025) s.rgkPct[i(y)] = rgk;
   }
 

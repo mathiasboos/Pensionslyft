@@ -1,9 +1,9 @@
 // Port of the VBA procedures startsetup() and Mcalc() in Pensionsmyndighetens typfallsmodell
-// (ver. 4.8), for the model's default settings:
-// - wage given in 2025's wage level, "rak löneprofil" (the wage follows inkomstindex)
-// - whole-year birth year and pension age, 100 % withdrawal, tjänstepension from the same age
-// - inflation 0 %, results in fixed 2025 prices, historical average municipal tax
-// - no children, no PGB, no private savings, no housing supplement (bostadstillägg)
+// (ver. 4.8). The basic input is the start page; TypfallAdvanced holds the settings from the
+// sheet Adv_settings that the calculator offers. Not included:
+// - birth year and pension age in whole years only, 100 % withdrawal, tjänstepension from the same age
+// - results in fixed 2025 prices
+// - no PGB for sjukersättning, plikt or studier, no housing supplement (bostadstillägg) or other benefits
 import { cohortValue, riktaldrar } from "./data";
 import {
   IP_,
@@ -36,7 +36,56 @@ export interface TypfallInput {
   gift: boolean;
   realGrowth: number; // real tillväxt per år, t.ex. 0.016
   realReturn: number; // real avkastning efter avgifter, t.ex. 0.017
+  advanced?: Partial<TypfallAdvanced>;
 }
+
+/** Löneprofil (wage_profil): 0 rak, 1-4 the model's age profiles. */
+export type Loneprofil = 0 | 1 | 2 | 3 | 4;
+/** rng_Avkastning_val: 1 the given return also historically, 2 PPM index, 3 AP7 Såfa. */
+export type Avkastningsval = 1 | 2 | 3;
+/** rng_Kapitalförsäkring: 0 IPS, 1 kapitalförsäkring, 2 investeringssparkonto. */
+export type Sparform = 0 | 1 | 2;
+
+/** The settings in the sheet Adv_settings that the calculator offers. */
+export interface TypfallAdvanced {
+  inflation: number; // rng_Yearly_Inflation, t.ex. 0.02
+  avkastningsval: Avkastningsval;
+  loneprofil: Loneprofil;
+  slutlonAr: number; // Average_Earning: years in the average final wage
+  andradLonAr: number; // TL_spec_y: the wage changes from this year (0: no change)
+  andradLonFaktor: number; // TL_special: factor on the wage from andradLonAr
+  barn: number[]; // rng_Född_Barn1-4: the children's birth years (barnår)
+  forsakringstid: number; // rng_Försäkringstid_vid_65, years (max 40)
+  flexpension: number; // rng_FlexPens: extra premium in ITP 1 and SAF-LO, t.ex. 0.02
+  arvsvinsterTjp: boolean; // rng_Arvsvinster_TJP: true = utan återbetalningsskydd
+  tempTjp: number; // rng_Temp_Tjp_Uttag: years, 0 = lifelong
+  sparform: Sparform;
+  sparManad: number; // IPS_Monthly: kr a month, or a share of the wage if at most 1
+  sparStart: number; // IPS_start: first year of saving
+  tempSpar: number; // rng_Temp_IPS_Uttag: years, 0 = over the remaining life expectancy
+  kommunalskatt: number; // rng_Kommunalskatt: 0 = historical average, otherwise e.g. 0.3241
+  begravning: number; // rng_Begravningsavgift, used with an own kommunalskatt
+}
+
+export const DEFAULT_ADVANCED: TypfallAdvanced = {
+  inflation: 0,
+  avkastningsval: 2,
+  loneprofil: 0,
+  slutlonAr: 5,
+  andradLonAr: 0,
+  andradLonFaktor: 1,
+  barn: [],
+  forsakringstid: 40,
+  flexpension: 0,
+  arvsvinsterTjp: true,
+  tempTjp: 0,
+  sparform: 0,
+  sparManad: 0,
+  sparStart: 2026,
+  tempSpar: 0,
+  kommunalskatt: 0,
+  begravning: 0,
+};
 
 export interface TypfallYear {
   year: number;
@@ -48,17 +97,22 @@ export interface TypfallYear {
   gp: number;
   tillagg: number;
   tjp: number;
+  ips: number; // private pension savings (IPS), taxed
+  pps: number; // withdrawal from kapitalförsäkring or ISK, after tax
   brutto: number;
   netto: number | null; // null for years before 2020 (tax rules not included)
 }
 
 export interface TypfallResult {
   input: TypfallInput;
+  advanced: TypfallAdvanced;
+  /** Försäkringstid used for garantipension, after the model's check against the working years. */
+  forsakringstid: number;
   riktalder: number;
   lowestAge: number;
   pensionYear: number;
   /** Tabell 1: yearly amounts at the pension age in fixed 2025 prices. */
-  slutlon: number; // average wage the 5 years before the pension
+  slutlon: number; // average wage the advanced.slutlonAr years before the pension
   slutlonNetto: number | null;
   ip: number;
   pp: number;
@@ -66,6 +120,8 @@ export interface TypfallResult {
   tillagg: number;
   allman: number;
   tjp: number;
+  ips: number;
+  pps: number;
   brutto: number;
   netto: number;
   years: TypfallYear[];
@@ -77,6 +133,66 @@ export const W_REF = 2025;
 const STARTAGE = 1;
 const SLUTAGE = 105;
 
+// Coefficients of the fifth-degree age polynomials in wages() for the löneprofiler 1-4.
+const PROFILES: Record<1 | 2 | 3 | 4, number[]> = {
+  1: [-33.01341746, 4.354364353, -0.212974964, 0.005053746, -0.0000583887, 0.000000263128],
+  2: [-20.6648551, 2.496893883, -0.10843247, 0.002287573, -0.0000236622, 0.0000000962164],
+  3: [-23.73767932, 3.104093675, -0.149408507, 0.003477166, -0.0000392148, 0.000000171834],
+  4: [-17.18584424, 2.203777173, -0.10280891, 0.00234388, -0.0000261194, 0.000000113668],
+};
+const poly = (b: number[], x: number) => b.reduce((sum, bk, k) => sum + bk * x ** k, 0);
+
+/** pgb_barn(): pensionsgrundande belopp for barnår, the best of the three methods. */
+function pgbBarn(ar: number, jink: number, uink: number, barn: number, parent: number, medel: number, IBB: number, rikt: number): number {
+  if (barn <= 1959 || parent >= rikt) return 0;
+  if (ar < barn || ar >= barn + 4) return 0;
+  let v = jink - uink;
+  if (0.75 * medel - uink > v) v = medel * 0.75 - uink;
+  if (IBB > v) v = IBB;
+  return int((v + 49) / 100) * 100;
+}
+
+// Statslåneräntan the year before the income year (Schablonintakt()).
+const SLR: Record<number, number> = {
+  1986: 0.1077, 1987: 0.1167, 1988: 0.1135, 1989: 0.1118, 1990: 0.1313, 1991: 0.1072, 1992: 0.1003,
+  1993: 0.0855, 1994: 0.0957, 1995: 0.1014, 1996: 0.0789, 1997: 0.0647, 1998: 0.0498, 1999: 0.0489,
+  2000: 0.0534, 2001: 0.0498, 2002: 0.0515, 2003: 0.0439, 2004: 0.043, 2005: 0.0324, 2006: 0.0362,
+  2007: 0.0414, 2008: 0.0387, 2009: 0.0311, 2010: 0.0277, 2011: 0.0165, 2012: 0.0149, 2013: 0.0209,
+  2014: 0.009, 2015: 0.0065, 2016: 0.0027, 2017: 0.0049, 2018: 0.0051, 2019: -0.0009, 2020: -0.001,
+  2021: 0.0023, 2022: 0.0194, 2023: 0.0262, 2024: 0.0196, 2025: 0.0255,
+};
+
+export function schablonintakt(ar: number): number {
+  let slr = ar > 2025 ? 0.025 : (SLR[ar - 1] ?? 0);
+  if (ar > 2015 && ar < 2018) slr = Math.max(slr + 0.0075, 0.0125);
+  else if (ar > 2017) slr = Math.max(slr + 0.01, 0.0125);
+  return slr;
+}
+
+/** AvkastningsskattKFISK(): the yearly tax on a kapitalförsäkring or ISK, with the tax-free amount from 2025. */
+export function avkastningsskattKfIsk(underlag: number, ar: number): number {
+  if (ar < 2012) return underlag * 0.27 * schablonintakt(ar);
+  if (ar < 2025) return underlag * 0.3 * schablonintakt(ar);
+  const fri = ar === 2025 ? 150000 : 300000;
+  return underlag > fri ? (underlag - fri) * 0.3 * schablonintakt(ar) : 0;
+}
+
+/** PrivatSpar(): next year's balance of a kapitalförsäkring (typ 1) or ISK (typ 2). */
+export function privatSpar(ingaende: number, sparande: number, y: number, ar: number, typ: 1 | 2): number {
+  if (typ === 1) {
+    const ul = ingaende + sparande * (6 / 12) + sparande * (6 / 12) * 0.5;
+    return ingaende * y + sparande * y ** (180 / 360) - avkastningsskattKfIsk(ul, ar);
+  }
+  if (ar <= 2011) return ingaende; // ISK came in 2012
+  const ul =
+    (ingaende +
+      ingaende * y ** (90 / 360) + sparande * (3 / 12) * y ** (45 / 360) +
+      ingaende * y ** (180 / 360) + sparande * (6 / 12) * y ** (90 / 360) +
+      ingaende * y ** (270 / 360) + sparande * (9 / 12) * y ** (135 / 360) +
+      sparande) / 4;
+  return ingaende * y + sparande * y ** (180 / 360) - avkastningsskattKfIsk(ul, ar);
+}
+
 export function runTypfall(input: TypfallInput): TypfallResult {
   const born = input.born;
   const PAR = input.par;
@@ -84,10 +200,15 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const tjpPar = PAR;
   const { lowest: riktl, rikt: riktalder } = riktaldrar(born);
   if (PAR < riktl) throw new Error(`Allmän pension går att ta ut tidigast vid ${riktl} års ålder`);
-  const s = buildSeries(input.realGrowth, input.realReturn);
+  const adv: TypfallAdvanced = { ...DEFAULT_ADVANCED, ...input.advanced };
+  const s = buildSeries(input.realGrowth, input.realReturn, adv.inflation);
   const civ = input.gift ? 1 : 0;
-  const forstid = 40;
   const wStart = input.wStart;
+  // Försäkringstid: raised to the working years if those are more (at most 40).
+  let forstid = adv.forsakringstid;
+  if (forstid < 40 && int(PAR - wStart - 1) > forstid) forstid = Math.min(PAR - wStart - 1, 40);
+  const ownTax = adv.kommunalskatt >= 0.1;
+  const barnYears = adv.barn.filter((b) => b > 0).sort((a, b) => a - b).slice(0, 4);
   const andelnya = andel(born);
   const income = input.monthlyWage * 12;
   const wTime = W_REF - born;
@@ -118,7 +239,10 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       Iindex[age] = nyck(s.Iindex, year);
       Pindex[age] = nyck(s.Pindex, year);
       if (Pindex[age]! < 1 || Pindex[age]! > Iindex[age]!) Pindex[age] = Iindex[age]!;
-      yieldF[age] = 1 + nyck(s.yieldQ, year); // rng_Avkastning_val = 2: historical PPM index
+      if (adv.avkastningsval === 1) {
+        // The given real return in every year, also historically.
+        yieldF[age] = age > STARTAGE ? (1 + input.realReturn) * (KPI[age]! / KPI[age - 1]!) : 1 + input.realReturn;
+      } else yieldF[age] = 1 + nyck(adv.avkastningsval === 2 ? s.yieldQ : s.yieldR, year);
     } else {
       yieldF[age] = 1.09;
       KPIj[age] = KPI[age] = 25.39;
@@ -151,13 +275,17 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     if (age < 15 || year < 2003) PP_arv[age] = 1;
     else PP_arv[age] = age < 106 ? cohortValue(born, "arvPP", age) : 0;
 
-    // Taxes: historical average municipal tax (rng_Kommunalskatt = 0)
-    Kom_skatt[age] = nyck(s.komSkatt, Math.max(year, 1930)) / 100;
+    // Taxes: the historical average municipal tax, or the given rate for every year
+    Kom_skatt[age] = ownTax ? adv.kommunalskatt : nyck(s.komSkatt, Math.max(year, 1930)) / 100;
     Tax_limit1[age] = year >= 2020 ? nyck(s.taxLimit1, year) : NaN;
     Tax_limit2[age] = year >= 2020 ? nyck(s.taxLimit2, year) : NaN;
-    Begravavg[age] = year < 2000 ? 0 : nyck(s.begravning, year) / 100;
+    if (ownTax) Begravavg[age] = adv.begravning;
+    else Begravavg[age] = year < 2000 ? 0 : nyck(s.begravning, year) / 100;
 
     Income_[age] = wages(age, year);
+    // Ändrad lön (TL_spec_y, TL_special) from a given year
+    if (adv.andradLonAr > 1959 && Income_[age]! > 0 && year >= adv.andradLonAr && adv.andradLonFaktor !== 1)
+      Income_[age] = Income_[age]! * adv.andradLonFaktor;
     Wage_[age] = Income_[age]!;
   }
 
@@ -173,6 +301,15 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     let wage = income;
     if (age <= int(defAr + konst) && age >= int(wStart)) {
       wage = (wage * nyck(s.Iindex, year)) / nyck(s.Iindex, wSlut);
+      const profil = adv.loneprofil;
+      if (profil > 0) {
+        const b = PROFILES[profil as 1 | 2 | 3 | 4];
+        // Profile 1 is flat from 61; the others use the ages as they are.
+        const capped = (x: number) => (profil === 1 ? Math.min(x, 61) : x);
+        let ref = poly(b, capped(age)) / poly(b, capped(wTime));
+        if (ref < 0) ref = 0;
+        wage = wage * ref;
+      }
     }
     // Nominal = False: the wage is in fixed prices of w_ref; KPI(wSlut)/KPI(w_ref) = 1.
     wage = (wage * nyck(s.KPI, wSlut)) / nyck(s.KPI, W_REF);
@@ -197,11 +334,15 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const pgi_ = arr(), IP_ratt = arr(), TP_points = arr(), GP_ratt = arr(), PP_ratt = arr(), TJP_ratt = arr();
   const IP_pbh = arr(), GP_pbh = arr(), PP_pbh = arr(), TJP_pbh = arr();
   const ip = arr(), tp = arr(), pp = arr(), garp = arr(), ptillagg = arr(), TJP = arr();
-  const STP_points = arr();
+  const STP_points = arr(), PGB_ = arr();
+  const IPS_pbh = arr(), PPS_pbh = arr(), ips = arr(), pps = arr();
   const brutto = arr(), Netto = new Array<number>(n).fill(NaN);
   const pmonth = 12 - int(12 * (born + PAR - int(born + PAR)));
   const Tmonth = 12 - int(12 * (born + tjpPar - int(born + tjpPar)));
-  const ARV_tjp = 1; // rng_Arvsvinster_TJP: utan återbetalningsskydd
+  const ARV_tjp = adv.arvsvinsterTjp ? 1 : 0; // 1: utan återbetalningsskydd
+  const tak = 7.5;
+  // Payout time for the private savings: the remaining life expectancy at PAR, or the temporary years.
+  const sparUttag = adv.tempSpar === 0 ? cohortValue(born, "eLife", PAR) : adv.tempSpar;
   let pgiYears = 0;
   let pgbYears = 0;
   let uttagIP = 0;
@@ -225,6 +366,8 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     pbb,
     FPB,
     KPIj,
+    flex: adv.flexpension,
+    tempYears: adv.tempTjp,
   };
 
   // Garantipensionens delningstal: mortality!L5 for born 1959 and later.
@@ -243,8 +386,17 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       uttagIP = 0;
       uttagPP = 0;
       if (age > 15 && age <= riktalder) {
-        // No PGB (sjukersättning, barnår, plikt, studier) in the default typfall.
-        if (pgi_[age]! > 0 && age < 71) pgbYears++;
+        // PGB for barnår; sjukersättning, plikt and studier are not included. One child per year.
+        let barnPgb = 0;
+        barnYears.forEach((barn, k) => {
+          const counter = k === 0 ? barn - int(born) : barn - int(born) - 1;
+          if (barn <= 1960 || counter <= 15 || (k > 0 && barnPgb !== 0)) return;
+          const uink = k === 0 ? (pgi_[age]! * KPI[counter]!) / KPI[counter - 1]! + PGB_[age]! : pgi_[age]! + PGB_[age]!;
+          barnPgb = pgbBarn(year, Income_[counter]!, uink, barn, age, MPGI[age]!, IBB[age]!, riktalder);
+        });
+        PGB_[age] = PGB_[age]! + barnPgb;
+        if (pgi_[age]! + PGB_[age]! > tak * IBB[age]!) PGB_[age] = maxi(tak * IBB[age]! - pgi_[age]!, 0);
+        if (PGB_[age]! + pgi_[age]! > 0 && age < 71) pgbYears++;
       }
     }
 
@@ -259,23 +411,32 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     } else {
       if (age < 65) {
         if (year > 1959) {
-          TP_points[age] = vbaRound(maxi(pgi_[age]! / FPB[age]! - 1, 0), 2);
+          TP_points[age] = vbaRound(maxi((pgi_[age]! + PGB_[age]!) / FPB[age]! - 1, 0), 2);
           STP_points[age] = TP_points[age]!;
         } else {
           TP_points[age] = 0;
           STP_points[age] = 0;
         }
       }
-      // pgbYears only changes which of three identical formulas the VBA uses when PGB is 0.
-      IP_ratt[age] = ipavgift(year - 1, pgi_[age - 1]!, age - 1, andelnya, int(born));
-      PP_ratt[age] = ppavgift(year - 1, pgi_[age - 1]!, age - 1, andelnya, int(born));
-      GP_ratt[age] = gpavgift(year - 1, pgi_[age - 1]!, age - 1, andelnya, int(born), riktalder);
+      // With fewer than five years of income, PGB goes to inkomstpension only (scaled 185/160).
+      const p = pgi_[age - 1]!;
+      const b = PGB_[age - 1]!;
+      const [ipBase, ppBase, gpBase] =
+        pgbYears >= 5 ? [p + b, p + b, p + b] : pgbYears > 0 ? [p + int((b * 185) / 160), p, p + (b * 185) / 160] : [p, p, p];
+      IP_ratt[age] = ipavgift(year - 1, ipBase, age - 1, andelnya, int(born));
+      PP_ratt[age] = ppavgift(year - 1, ppBase, age - 1, andelnya, int(born));
+      GP_ratt[age] = gpavgift(year - 1, gpBase, age - 1, andelnya, int(born), riktalder);
       if (age <= riktalder) {
         if (IP_ratt[age]! > 0 || TP_points[age - 1]! > 0) pgiYears++;
       }
     }
 
     TJP_ratt[age] = tjpRatt(ctx, age, Wage_[age]!, IBB[age]!, year);
+
+    // Private saving (IPS, kapitalförsäkring or ISK), no saving after the pension
+    let IPS_ratt = 0;
+    if (adv.sparManad > 0 && adv.sparStart <= year && age < tjpPar)
+      IPS_ratt = adv.sparManad > 1 ? adv.sparManad * 12 : adv.sparManad * Income_[age]!;
 
     // Uttagsandel and delningstal
     if (age < int(PAR)) {
@@ -341,20 +502,42 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       }
     }
 
-    // Tjänstepension
+    // Tjänstepension and private saving
     if (age < int(tjpPar)) {
       TJP[age] = 0;
     } else if (year === int(born + tjpPar)) {
       TJP[age] = tjpkassa(ctx, age, (TJP_ratt[age]! + TJP_pbh[age - 1]!) * yieldF[age]! ** ((12 - Tmonth) / 12), Tmonth);
+      ips[age] = (IPS_pbh[age - 1]! * (1 + input.realReturn) ** (sparUttag / 2)) / sparUttag;
+      pps[age] = (PPS_pbh[age - 1]! * (1 + input.realReturn) ** (sparUttag / 2)) / sparUttag;
       TJP[age] = ftjp(ctx, TJP[age]!, STARTAGE, age, STP_points, tp, Tmonth);
     } else {
-      TJP[age] = (TJP[age - 1]! * pbb[age]!) / pbb[age - 1]!;
-      if (year === int(tjpPar + born + 1)) TJP[age] = TJP[age]! * (12 / Tmonth);
+      const k = (pbb[age]! / pbb[age - 1]!) * (year === int(tjpPar + born + 1) ? 12 / Tmonth : 1);
+      TJP[age] = TJP[age - 1]! * k;
+      ips[age] = ips[age - 1]! * k;
+      pps[age] = pps[age - 1]! * k;
+      // Temporary payout
+      if (adv.tempTjp > 0) {
+        if (age === tjpPar + adv.tempTjp) TJP[age] = (TJP[age]! * (12 - Tmonth)) / 12;
+        else if (age > tjpPar + adv.tempTjp) TJP[age] = 0;
+      }
+      if (adv.tempSpar > 0) {
+        if (age === tjpPar + adv.tempSpar) {
+          ips[age] = (ips[age]! * (12 - Tmonth)) / 12;
+          pps[age] = (pps[age]! * (12 - Tmonth)) / 12;
+        } else if (age > tjpPar + adv.tempSpar) {
+          ips[age] = 0;
+          pps[age] = 0;
+        }
+      }
+      // The withdrawal cannot be more than the balance
+      if (PPS_pbh[age - 1]! < pps[age]!) pps[age] = PPS_pbh[age - 1]! * yieldF[age]!;
     }
 
     ip[age] = int(ip[age]! / 12 + 0.5) * 12;
     pp[age] = int(pp[age]! / 12 + 0.5) * 12;
     TJP[age] = int(TJP[age]! / 12 + 0.5) * 12;
+    ips[age] = int(ips[age]! / 12 + 0.5) * 12;
+    pps[age] = int(pps[age]! / 12 + 0.5) * 12;
 
     // Pensionskapital, utgående balans
     if (age === STARTAGE) {
@@ -376,6 +559,8 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     }
     if (age === STARTAGE) {
       TJP_pbh[age] = TJP_ratt[age]! * yieldF[age]! ** 0.5;
+      IPS_pbh[age] = IPS_ratt * yieldF[age]! ** 0.5;
+      PPS_pbh[age] = IPS_ratt * yieldF[age]! ** 0.5;
     } else {
       const y = yieldF[age]!;
       PP_pbh[age] = PP_pbh[age]! - pp[age]! * y ** 0.5;
@@ -383,15 +568,27 @@ export function runTypfall(input: TypfallInput): TypfallResult {
         TJP_ratt[age]! * y ** 0.5 + TJP_pbh[age - 1]! * y * TP_avg[age]! + TJP_pbh[age - 1]! * (PP_arv[age - 1]! - 1) * ARV_tjp;
       const kskatt = TJP_pbh[age]! * avkskatt(year, 0);
       TJP_pbh[age] = TJP_pbh[age]! - kskatt - TJP[age]! * y ** 0.5;
+      if (adv.sparform !== 0) {
+        PPS_pbh[age] = privatSpar(PPS_pbh[age - 1]!, IPS_ratt, y, year, adv.sparform) - pps[age]! * y ** 0.5;
+      } else {
+        // IPS: no arvsvinster, the same fees as the tjänstepension and avkastningsskatt
+        IPS_pbh[age] = IPS_ratt * y ** 0.5 + IPS_pbh[age - 1]! * y * TP_avg[age]!;
+        IPS_pbh[age] = IPS_pbh[age]! - IPS_pbh[age]! * avkskatt(year, 0) - ips[age]! * y ** 0.5;
+      }
     }
     if (TJP_pbh[age]! < 0) TJP_pbh[age] = 0;
+    if (IPS_pbh[age]! < 0) IPS_pbh[age] = 0;
+    if (PPS_pbh[age]! < 0) PPS_pbh[age] = 0;
     IP_pbh[age] = int(IP_pbh[age]!);
     GP_pbh[age] = int(GP_pbh[age]!);
     PP_pbh[age] = int(PP_pbh[age]!);
     TJP_pbh[age] = int(TJP_pbh[age]!);
+    IPS_pbh[age] = int(IPS_pbh[age]!);
+    PPS_pbh[age] = int(PPS_pbh[age]!);
 
-    // Brutto och skatt
+    // Brutto och skatt. IPS is taxed as income; the deduction for IPS premiums ended in 2016.
     brutto[age] = Income_[age]! + ip[age]! + tp[age]! + garp[age]! + pp[age]! + TJP[age]! + ptillagg[age]!;
+    if (adv.sparform === 0) brutto[age] = brutto[age]! + ips[age]!;
     Gage = xage(Skyear, riktalder);
     if (Skyear >= 2020) {
       const ctxfvi = int(brutto[age]! / 100) * 100;
@@ -420,13 +617,14 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       Lön: Wage_[age]!, PGI: pgi_[age]!, IP_rätt: IP_ratt[age]!, PP_rätt: PP_ratt[age]!, GP_rätt: GP_ratt[age]!,
       IP_PBH: IP_pbh[age]!, PP_PBH: PP_pbh[age]!, GP_PBH: GP_pbh[age]!, TJP_PBH: TJP_pbh[age]!,
       IP: ip[age]!, PP: pp[age]!, GP: garp[age]!, ptillagg: ptillagg[age]!, TJP: TJP[age]!, Brutto: brutto[age]!,
-      TJP_premie: TJP_ratt[age]!,
+      TJP_premie: TJP_ratt[age]!, PGB: PGB_[age]!, IPS: ips[age]!, PPS: pps[age]!, IPS_PBH: IPS_pbh[age]!,
+      PPS_PBH: PPS_pbh[age]!,
     });
   }
 
   // ---------------- Tabell 1: the pension at PAR including the last pension right ----------------
   const fixed = (age: number) => KPI[Math.max(STARTAGE, W_REF - int(born))]! / KPI[age]!;
-  const avgYears = 5;
+  const avgYears = Math.max(1, int(adv.slutlonAr));
   let slut = 0;
   let slutNetto = 0;
   let nettoKnown = true;
@@ -461,7 +659,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   }
   ip[P] = int((ip[P]! + 0.49) / 12) * 12;
   pp[P] = int((pp[P]! + 0.49) / 12) * 12;
-  const tableBrutto = ip[P]! + tp[P]! + pp[P]! + garp[P]! + TJP[P]! + ptillagg[P]!;
+  const tableBrutto = ip[P]! + tp[P]! + pp[P]! + garp[P]! + TJP[P]! + ips[P]! + ptillagg[P]!;
 
   // Tax on the first pension year (no wage, no jobbskatteavdrag).
   let netto: number;
@@ -492,6 +690,8 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       gp: r(age === P ? verbose[age - STARTAGE]!.GP! : garp[age]!),
       tillagg: r(age === P ? verbose[age - STARTAGE]!.ptillagg! : ptillagg[age]!),
       tjp: r(TJP[age]!),
+      ips: r(ips[age]!),
+      pps: r(pps[age]!),
       brutto: r(brutto[age]!),
       netto: Number.isNaN(Netto[age]!) ? null : r(Netto[age]!),
     });
@@ -499,6 +699,8 @@ export function runTypfall(input: TypfallInput): TypfallResult {
 
   return {
     input,
+    advanced: adv,
+    forsakringstid: forstid,
     riktalder,
     lowestAge: riktl,
     pensionYear: year_[P]!,
@@ -510,6 +712,8 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     tillagg: ptillagg[P]! * j0,
     allman: (ip[P]! + tp[P]! + pp[P]! + garp[P]! + ptillagg[P]!) * j0,
     tjp: TJP[P]! * j0,
+    ips: ips[P]! * j0,
+    pps: pps[P]! * j0,
     brutto: tableBrutto * j0,
     netto: netto * j0,
     years,
