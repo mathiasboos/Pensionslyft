@@ -1,6 +1,7 @@
 // The sections under "Avancerat": the settings from the sheets Adv_settings and PGB in the model.
 import { type ReactNode, useState } from "react";
 import { Plus, X } from "lucide-react";
+import kommuner from "@/data/kommuner-2026.json";
 import { data } from "@/lib/typfall/data";
 import {
   type Avkastningsval,
@@ -14,7 +15,7 @@ import {
 } from "@/lib/typfall/model";
 import { formatPercent, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CheckRow, DateRow, ExternalLink, NumberRow, OptionalNumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
+import { CheckRow, DateRow, ExternalLink, NumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
 
 type WagePath = { age: number; year: number; income: number; wage: number }[];
 
@@ -27,9 +28,9 @@ const LONEPROFIL: { value: Loneprofil; label: string }[] = [
 ];
 
 const AVKASTNING: { value: Avkastningsval; label: string }[] = [
-  { value: 2, label: "Premiepensionens faktiska avkastning" },
-  { value: 3, label: "AP7 Såfas faktiska avkastning" },
-  { value: 1, label: "Den valda reala avkastningen" },
+  { value: 1, label: "Angiven real avkastning" },
+  { value: 2, label: "Historiskt PPM" },
+  { value: 3, label: "Historiskt AP7 Såfa" },
 ];
 
 const SPARFORM: { value: Sparform; label: string }[] = [
@@ -41,24 +42,38 @@ const SPARFORM: { value: Sparform; label: string }[] = [
 const ANDEL = [1, 0.75, 0.5, 0.25].map((v) => ({ value: v, label: formatPercent(v * 100, 0) }));
 const TEMP_YEARS = [5, 10, 15, 20];
 
-// The average burial fee (not a member) and church fee with burial fee (a member) in the last data year.
+// The fees in the last data year: the church fee with the burial fee (a member) and the burial
+// fee alone (not a member). In Stockholms stad and Tranås kommun the burial fee is a municipal
+// one, also for those who are not members.
 const lastTax = data.lastHardYear - data.taxFirstYear;
 const fraction = (percent: number) => Number((percent / 100).toFixed(6));
-const AVG_EJ_MEDLEM = fraction(data.begravning[lastTax]!);
-const AVG_MEDLEM = fraction(data.kyrkoavgift[lastTax]!);
+const AVG_MEMBER = fraction(data.kyrkoavgift[lastTax]!);
+const AVG_NON_MEMBER = fraction(data.begravning[lastTax]!);
+const FEE: Record<Exclude<Kyrka, "">, number> = {
+  member: AVG_MEMBER,
+  stockholm: 0.0007,
+  tranas: 0.00285,
+  rest: AVG_NON_MEMBER,
+};
+const percentText = (fee: number) =>
+  (fee * 100).toLocaleString("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 3 });
 
 const SCB_KOMMUNALSKATT =
-  "https://www.scb.se/hitta-statistik/statistik-efter-amne/offentlig-ekonomi/finanser-for-den-kommunala-sektorn/kommunalskatterna/";
-const SKV_KYRKOAVGIFT =
-  "https://skatteverket.se/privat/skatter/arbeteochinkomst/skattetabeller/kyrkoavgift.4.3152d9ac158968eb8fd2db3.html";
+  "https://www.scb.se/hitta-statistik/statistik-efter-amne/offentlig-ekonomi/finanser-for-den-kommunala-sektorn/kommunalskatterna/pong/tabell-och-diagram/totala-kommunala-skattesatser-2026-kommunvis/";
+const SVENSKA_KYRKAN_KYRKOAVGIFT = "https://www.svenskakyrkan.se/medlem/kyrkoavgiften";
+
+const KOMMUNER = Object.keys(kommuner.rates).sort(new Intl.Collator("sv").compare);
+const KOMMUN_OPTIONS = [
+  { value: "", label: "— Välj kommun —" },
+  ...KOMMUNER.map((name) => ({ value: name, label: name })),
+];
 
 const KYRKA: { value: Kyrka; label: string }[] = [
-  { value: "", label: "Genomsnitt för riket, ej medlem" },
-  { value: "medlem", label: "Medlem i Svenska kyrkan/annat trossamfund" },
+  { value: "member", label: "Medlem i Svenska kyrkan/annat trossamfund" },
   { value: "stockholm", label: "Inte medlem, Stockholms stad" },
   { value: "tranas", label: "Inte medlem, Tranås kommun" },
-  { value: "ovriga", label: "Inte medlem, övriga Sverige" },
-  { value: "egen", label: "— Egen sats —" },
+  { value: "rest", label: "Inte medlem, övriga Sverige" },
+  { value: "", label: "— Egen sats —" },
 ];
 
 type Key = keyof TypfallAdvanced;
@@ -71,8 +86,8 @@ const SECTIONS = {
   allman: ["defAr", "uttagIP", "uttagPP", "sysselsattning"],
   bostad: ["ansoker", "hyra", "makensInkomst", "formogenhet", "kapital"],
   garanti: ["forsakringstid"],
-  skatt: ["kommunalskatt", "begravning", "kyrka", "fack", "akassa"],
-  kapital: ["avkastningsval", "pbhYear", "efterFondavgifter"],
+  skatt: ["kommunalskatt", "begravning", "kommun", "kyrka", "fack", "akassa"],
+  kapital: ["pbhYear", "pbhIP", "pbhPP", "pbhTJP", "pbhPrivat", "avkastningsval", "efterFondavgifter"],
   lon: ["loneprofil", "andradLonAr", "andradLonFaktor", "slutlonAr", "egenLon"],
   pgb: ["barn", "pgb"],
   privat: ["sparManad"],
@@ -478,52 +493,58 @@ export function AdvancedSections({
       </Section>
 
       <Section title="Inkomstskatt" changed={differs(adv, SECTIONS.skatt)}>
+        <SelectRow
+          id="typfall-kommun"
+          label="Kommun"
+          hideLabel
+          value={adv.kommun}
+          onChange={(name) => {
+            if (name === "") return onChange({ kommun: "" });
+            const kommunalskatt = fraction(kommuner.rates[name as keyof typeof kommuner.rates]);
+            // A burial fee that has not been chosen yet starts at the average for those who are not members.
+            const chosen = adv.kyrka !== "member" || adv.begravning !== 0;
+            onChange(
+              chosen
+                ? { kommun: name, kommunalskatt }
+                : { kommun: name, kommunalskatt, kyrka: "rest", begravning: FEE.rest },
+            );
+          }}
+          options={KOMMUN_OPTIONS}
+          hint={<ExternalLink href={SCB_KOMMUNALSKATT}>SCB:s lista ({kommuner.year})</ExternalLink>}
+        />
         <NumberRow
           id="typfall-kommunalskatt"
           label="Kommunalskatt"
-          hint={
-            <>
-              0 använder det historiska genomsnittet.{" "}
-              <ExternalLink href={SCB_KOMMUNALSKATT}>SCB:s lista ({data.lastHardYear})</ExternalLink>
-            </>
-          }
+          hint="0 använder det historiska genomsnittet"
           value={adv.kommunalskatt * 100}
-          onChange={(v) => onChange({ kommunalskatt: v < 10 ? 0 : fraction(v) })}
+          onChange={(v) => onChange({ kommunalskatt: fraction(v) })}
           min={0}
-          max={40}
-          decimals={2}
+          max={100}
+          decimals={3}
         />
         <SelectRow
           id="typfall-kyrka"
           label="Medlemskap i Svenska kyrkan eller annat trossamfund"
           hideLabel
           value={adv.kyrka}
-          onChange={(k) =>
-            onChange({
-              kyrka: k,
-              begravning:
-                k === "" ? null : k === "medlem" ? AVG_MEDLEM : k === "ovriga" ? AVG_EJ_MEDLEM : k === "egen" ? (adv.begravning ?? AVG_EJ_MEDLEM) : 0,
-            })
-          }
+          onChange={(k) => onChange(k === "" ? { kyrka: "" } : { kyrka: k, begravning: FEE[k] })}
           options={KYRKA}
-          hint={<ExternalLink href={SKV_KYRKOAVGIFT}>Hitta din församling</ExternalLink>}
+          hint={<ExternalLink href={SVENSKA_KYRKAN_KYRKOAVGIFT}>Hitta din församling</ExternalLink>}
         />
         <NumberRow
           id="typfall-begravning"
           label="Begravningsavgift och samfundsavgift"
-          hint={`medlem ~${formatPercent(AVG_MEDLEM * 100, 2)}, ej medlem ~${formatPercent(AVG_EJ_MEDLEM * 100, 2)} (${data.lastHardYear})${
-            adv.kyrka === "stockholm" || adv.kyrka === "tranas" ? ". Ingår i kommunalskatten i Stockholm och Tranås." : ""
-          }`}
-          value={(adv.begravning ?? 0) * 100}
-          onChange={(v) => onChange(v === 0 && adv.kyrka === "" ? {} : { begravning: fraction(v), kyrka: "egen" })}
+          hint={`medlem ~${percentText(AVG_MEMBER)} %, ej medlem ~${percentText(AVG_NON_MEMBER)} % (${data.lastHardYear})`}
+          value={adv.begravning * 100}
+          onChange={(v) => onChange({ begravning: fraction(v) })}
           min={0}
-          max={3}
-          decimals={2}
+          max={100}
+          decimals={3}
         />
         <NumberRow
           id="typfall-fack"
           label="Fackföreningsavgift"
-          hint="kronor per månad, ingen skattereduktion efter 2019"
+          hint="kronor per månad"
           value={Math.round(adv.fack / 12)}
           onChange={(v) => onChange({ fack: v * 12 })}
           min={0}
@@ -532,7 +553,7 @@ export function AdvancedSections({
         <NumberRow
           id="typfall-akassa"
           label="A-kasseavgift"
-          hint="kronor per månad, 25 % skattereduktion från 2022"
+          hint="kronor per månad"
           value={Math.round(adv.akassa / 12)}
           onChange={(v) => onChange({ akassa: v * 12 })}
           min={0}
@@ -541,10 +562,51 @@ export function AdvancedSections({
       </Section>
 
       <Section title="Kapital och avkastning" changed={differs(adv, SECTIONS.kapital)}>
+        <NumberRow
+          id="typfall-pbh-ar"
+          label="Inkomstår som kapitalvärdet avser"
+          hint="0 = inget känt kapital"
+          value={adv.pbhYear}
+          onChange={(v) => onChange({ pbhYear: v })}
+          min={0}
+          max={2100}
+        />
+        <NumberRow
+          id="typfall-pbh-ip"
+          label="Kapitalvärde inkomstpension"
+          value={adv.pbhIP ?? 0}
+          onChange={(v) => onChange({ pbhIP: v > 0 ? v : null })}
+          min={0}
+          max={100000000}
+        />
+        <NumberRow
+          id="typfall-pbh-pp"
+          label="Kapitalvärde premiepension"
+          value={adv.pbhPP ?? 0}
+          onChange={(v) => onChange({ pbhPP: v > 0 ? v : null })}
+          min={0}
+          max={100000000}
+        />
+        <NumberRow
+          id="typfall-pbh-tjp"
+          label="Kapitalvärde tjänstepension"
+          value={adv.pbhTJP ?? 0}
+          onChange={(v) => onChange({ pbhTJP: v > 0 ? v : null })}
+          min={0}
+          max={100000000}
+        />
+        <NumberRow
+          id="typfall-pbh-privat"
+          label="Kapitalvärde privat sparande"
+          value={adv.pbhPrivat ?? 0}
+          onChange={(v) => onChange({ pbhPrivat: v > 0 ? v : null })}
+          min={0}
+          max={100000000}
+        />
         <SelectRow
           id="typfall-avkastningsval"
-          label="Avkastning fram till i dag"
-          hint="Gäller premiepension, tjänstepension och privat sparande. Framåt används den reala avkastningen du har angett."
+          label="Historisk avkastning"
+          hint="framtiden följer alltid den reala avkastningen på startsidan"
           value={adv.avkastningsval}
           onChange={(v) => onChange({ avkastningsval: v })}
           options={AVKASTNING}
@@ -553,52 +615,7 @@ export function AdvancedSections({
           checked={adv.efterFondavgifter}
           onChange={(v) => onChange({ efterFondavgifter: v })}
           label="Avkastningen är efter fondavgifter"
-          hint="Annars dras en förvaltningsavgift från premiepensionen varje år."
         />
-        <NumberRow
-          id="typfall-pbh-ar"
-          label="Inkomstår som kapitalvärdet avser"
-          hint="till exempel från det orange kuvertet, 0 = inget"
-          value={adv.pbhYear}
-          onChange={(v) => onChange({ pbhYear: v })}
-          min={0}
-          max={W_REF}
-        />
-        {adv.pbhYear > 0 && (
-          <>
-            <OptionalNumberRow
-              id="typfall-pbh-ip"
-              label="Kapitalvärde inkomstpension"
-              hint="kronor vid årets slut"
-              value={adv.pbhIP}
-              onChange={(v) => onChange({ pbhIP: v })}
-              max={100000000}
-            />
-            <OptionalNumberRow
-              id="typfall-pbh-pp"
-              label="Kapitalvärde premiepension"
-              value={adv.pbhPP}
-              onChange={(v) => onChange({ pbhPP: v })}
-              max={100000000}
-            />
-            <OptionalNumberRow
-              id="typfall-pbh-tjp"
-              label="Kapitalvärde tjänstepension"
-              hint="premiebestämd"
-              value={adv.pbhTJP}
-              onChange={(v) => onChange({ pbhTJP: v })}
-              max={100000000}
-            />
-            <OptionalNumberRow
-              id="typfall-pbh-privat"
-              label="Kapitalvärde privat sparande"
-              value={adv.pbhPrivat}
-              onChange={(v) => onChange({ pbhPrivat: v })}
-              max={100000000}
-            />
-            <Note>Tomma fält räknas fram som vanligt.</Note>
-          </>
-        )}
       </Section>
 
       <Section title="Lön" changed={differs(adv, SECTIONS.lon)}>

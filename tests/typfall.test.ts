@@ -232,12 +232,9 @@ describe("typfallsmodellen, advanced settings", () => {
     expect(run({ kommunalskatt: 0.3, begravning: 0.01 }).netto).toBeLessThan(run({ kommunalskatt: 0.3 }).netto);
   });
 
-  it("takes the burial fee as given, also without an own kommunalskatt", () => {
-    expect(run({ begravning: null }).netto).toBe(plain.netto); // the historical average, as in the workbook
-    expect(run({ begravning: 0.0132 }).netto).toBeLessThan(plain.netto); // a member of the church
-    expect(run({ begravning: 0 }).netto).toBeGreaterThan(plain.netto); // in the municipal tax (Stockholm, Tranås)
-    // with an own kommunalskatt and no fee given, the average fee is still used
-    expect(run({ kommunalskatt: 0.3 }).netto).toBeLessThan(run({ kommunalskatt: 0.3, begravning: 0 }).netto);
+  it("uses the burial fee only together with an own kommunalskatt, as the VBA does", () => {
+    expect(run({ begravning: 0.0132 }).netto).toBe(plain.netto);
+    expect(run({ kommunalskatt: 0.3, begravning: 0.0132 }).netto).toBeLessThan(run({ kommunalskatt: 0.3 }).netto);
   });
 
   it("gives a reduction for the a-kassa fee, a yearly amount, but none for the union fee", () => {

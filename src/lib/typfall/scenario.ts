@@ -96,10 +96,12 @@ export function loadSaved(): SavedScenario[] {
       let slot = Number.isInteger(s.slot) && s.slot >= 0 && s.slot < MAX_SAVED && !used.has(s.slot) ? s.slot : -1;
       if (slot < 0) slot = [0, 1, 2, 3].find((k) => !used.has(k))!;
       used.add(slot);
-      const adv = { ...DEFAULT_ADVANCED, ...s.form?.adv };
-      // Before the choice of church the burial fee was 0 when it was not used (no own kommunalskatt).
-      if (s.form?.adv?.kyrka === undefined && s.form?.adv?.begravning === 0 && !(adv.kommunalskatt >= 0.1)) adv.begravning = null;
-      return { id: String(s.id), name: String(s.name), slot, form: { ...DEFAULT_FORM, ...s.form, adv } };
+      return {
+        id: String(s.id),
+        name: String(s.name),
+        slot,
+        form: { ...DEFAULT_FORM, ...s.form, adv: { ...DEFAULT_ADVANCED, ...s.form?.adv } },
+      };
     });
   } catch {
     return [];

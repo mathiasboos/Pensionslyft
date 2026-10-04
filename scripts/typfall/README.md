@@ -19,3 +19,11 @@ Do not commit the workbook itself.
 typfall that was last run in the workbook. `tests/typfall.test.ts` checks that the port gives the
 same kronor. If the rules in the VBA code change, port the changes to `src/lib/typfall/` and
 refresh the fixture from a new run.
+
+## Municipal tax rates
+
+`src/data/kommuner-2026.json` has the total municipal tax rate (kommun and region, without the church
+and burial fees) of every municipality, from SCB's table "Totala kommunala skattesatser 2026,
+kommunvis". It was taken from the model's web version (`typfallsmodellen.html`) and is not in the
+workbook. Replace it with the new year's table when SCB publishes it; `tests/typfall-kommuner.test.ts`
+checks the number of municipalities and SCB's highest and lowest rate.
