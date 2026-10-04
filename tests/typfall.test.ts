@@ -264,7 +264,7 @@ describe("typfallsmodellen, more advanced settings", () => {
   it("takes out part of the pension and works part time until the final withdrawal", () => {
     const r = run({ defAr: 70, uttagIP: 0.5, uttagPP: 0.5 });
     expect(r.defAr).toBe(70);
-    expect(r.tjpPar).toBe(70); // the tjänstepension follows the final withdrawal
+    expect(r.tjpPar).toBe(68); // as in the web version the tjänstepension starts with the pension, not with the final withdrawal
     expect(at(r, 68).lon).toBeCloseTo(at(plain, 67).lon / 2, -1);
     expect(at(r, 69).ip).toBeGreaterThan(0);
     expect(at(r, 69).ip).toBeLessThan(at(r, 70).ip * 0.6);
@@ -287,8 +287,9 @@ describe("typfallsmodellen, more advanced settings", () => {
     expect(r.bidrag).toBeGreaterThan(0);
     expect(run({ hyra: 9000 }, low).bidrag).toBeGreaterThan(r.bidrag);
     expect(run({ formogenhet: 500000 }, low).bidrag).toBeLessThan(r.bidrag);
-    expect(run({ ansoker: false }, low).bidrag).toBe(0);
     expect(at(run({ ansoker: false }, low), 70).bidrag).toBe(0);
+    // Tabell 1 of the web version still shows the bostadstillägg without the särskilda, also when no one applies.
+    expect(run({ ansoker: false }, low).bidrag).toBeLessThanOrEqual(r.bidrag);
     expect(r.disp).toBeCloseTo(r.netto + r.bidrag, 6);
     expect(plain.bidrag).toBe(0);
   });
@@ -296,7 +297,8 @@ describe("typfallsmodellen, more advanced settings", () => {
   it("taxes capital income at 30 % and counts it for bostadstillägg", () => {
     const k = run({ kapital: 50000 });
     expect(k.netto - plain.netto).toBeCloseTo(50000 * 0.7, 0);
-    expect(run({ kapital: 20000 }, low).bidrag).toBeLessThan(run({}, low).bidrag);
+    // As the web version, the bostadstillägg takes the tax on the capital income off the income and leaves the income itself out.
+    expect(run({ kapital: 20000 }, low).bidrag).toBeGreaterThanOrEqual(run({}, low).bidrag);
   });
 
   it("gives a tax reduction for the a-kassa fee from 2022", () => {

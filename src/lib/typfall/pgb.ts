@@ -2,6 +2,7 @@
 // aktivitetsersättning (column E, given per year), värnplikt (columns G-I, from the dates of
 // service) and studier (columns L-P, from the number of terms). Barnår are in model.ts.
 import { at, type Series } from "./series";
+import { int } from "./vba";
 
 export interface PgbSa {
   from: number; // första året
@@ -66,7 +67,8 @@ export function pgbByYear(input: PgbInput, s: Series, year: number) {
     const days = vplDays(input.vpl).get(year) ?? 0;
     // Half the average PGI for service 1995-2010 and from 2018.
     const g = at(s.MPGI, s, year) * ((year >= 1995 && year <= 2010) || year >= 2018 ? 0.5 : 0);
-    vpl = (days * g) / 365;
+    // Rounded down to hundreds of kronor, as the web version does.
+    vpl = int(((days * g) / 365) / 100) * 100;
   }
   let studier = 0;
   for (const e of input.studier) {

@@ -42,6 +42,7 @@ const SPARFORM: { value: Sparform; label: string }[] = [
 
 const ANDEL = [1, 0.75, 0.5, 0.25].map((v) => ({ value: v, label: formatPercent(v * 100, 0) }));
 const TEMP_YEARS = [5, 10, 15, 20];
+const HYRA_DEFAULT = 6300;
 
 // The fees in the last data year: the church fee with the burial fee (a member) and the burial
 // fee alone (not a member). In Stockholms stad and Tranås kommun the burial fee is a municipal
@@ -195,11 +196,8 @@ export function AdvancedSections({
   par,
   wStart,
   avtal,
-  gift,
-  monthlyWage,
   forsakringstid,
   defAr,
-  tjpPar,
   lifeExpectancy,
   pgbRows,
   computedWagePath,
@@ -211,12 +209,9 @@ export function AdvancedSections({
   par: number;
   wStart: number;
   avtal: Avtal;
-  gift: boolean;
-  monthlyWage: number;
   /** Values the model used, after its own checks. */
   forsakringstid: number;
   defAr: number;
-  tjpPar: number;
   /** Remaining life expectancy at the pension age, the default payout time for private saving. */
   lifeExpectancy: number;
   /** What the model counts as PGB, by year. */
@@ -230,8 +225,6 @@ export function AdvancedSections({
   const lastWorkYear = born + par - 1;
   const sparStartMin = Math.min(Math.max(firstWorkYear, 1990), lastWorkYear);
   const one = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 1 });
-  const hyraDefault = 6300 + 1200 * (gift ? 1 : 0);
-  const makeDefault = gift ? Math.round(0.8 * monthlyWage * 12) : 0;
   const partial = defAr > par;
 
   return (
@@ -291,22 +284,20 @@ export function AdvancedSections({
           id="typfall-hyra"
           label="Boendekostnad per månad"
           hint={`kronor, ${W_REF} års priser`}
-          value={adv.hyra ?? hyraDefault}
-          onChange={(v) => onChange({ hyra: v === hyraDefault ? null : v })}
+          value={adv.hyra ?? HYRA_DEFAULT}
+          onChange={(v) => onChange({ hyra: v === HYRA_DEFAULT ? null : v })}
           min={0}
           max={50000}
         />
-        {gift && (
-          <NumberRow
-            id="typfall-make"
-            label="Makens/makans årsinkomst"
-            hint="kronor per år, förvalt 80 % av din lön"
-            value={adv.makensInkomst ?? makeDefault}
-            onChange={(v) => onChange({ makensInkomst: v === makeDefault ? null : v })}
-            min={0}
-            max={10000000}
-          />
-        )}
+        <NumberRow
+          id="typfall-make"
+          label="Makens/makans årsinkomst"
+          hint="kronor per år, räknas bara om Gift är ikryssat"
+          value={adv.makensInkomst ?? 0}
+          onChange={(v) => onChange({ makensInkomst: v === 0 ? null : v })}
+          min={0}
+          max={10000000}
+        />
         <NumberRow
           id="typfall-formogenhet"
           label="Förmögenhet utöver bostaden"
@@ -616,11 +607,11 @@ export function AdvancedSections({
         <NumberRow
           id="typfall-tjp-par"
           label="Uttagsålder för tjänstepension"
-          hint={adv.tjpPar > 0 ? "55–75" : "55–75, samma som det definitiva uttaget av allmän pension"}
-          value={tjpPar}
-          onChange={(v) => onChange({ tjpPar: v === defAr ? 0 : v })}
-          min={55}
-          max={75}
+          hint="0 = samma som den allmänna pensionen"
+          value={adv.tjpPar}
+          onChange={(v) => onChange({ tjpPar: v })}
+          min={0}
+          max={100}
         />
         <SelectRow
           id="typfall-temp-tjp"

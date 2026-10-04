@@ -418,11 +418,8 @@ export default function TypfallCalculator() {
               par={parUsed}
               wStart={wStartUsed}
               avtal={avtal}
-              gift={gift}
-              monthlyWage={monthlyWage}
               forsakringstid={result.forsakringstid}
               defAr={result.defAr}
-              tjpPar={result.tjpPar}
               lifeExpectancy={cohortValue(born, "eLife", parUsed)}
               pgbRows={result.pgbRows}
               computedWagePath={computedWagePath}
