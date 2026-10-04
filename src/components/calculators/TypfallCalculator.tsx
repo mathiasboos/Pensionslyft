@@ -1,13 +1,27 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChevronDown, Download } from "lucide-react";
-import { FIRST_COHORT, LAST_COHORT, cohortValue, riktaldrar } from "@/lib/typfall/data";
-import { type Avtal, DEFAULT_ADVANCED, runTypfall, type TypfallAdvanced, W_REF } from "@/lib/typfall/model";
+import { FIRST_COHORT, LAST_COHORT, cohortValue } from "@/lib/typfall/data";
+import { type Avtal, DEFAULT_ADVANCED, type TypfallAdvanced, W_REF } from "@/lib/typfall/model";
+import {
+  DEFAULT_FORM,
+  freeSlot,
+  keyFigures,
+  loadSaved,
+  MAX_PAR,
+  runScenario,
+  type SavedScenario,
+  type ScenarioForm,
+  storeSaved,
+  usedAges,
+} from "@/lib/typfall/scenario";
 import { pensionTable, type TableRow } from "@/lib/typfall/table";
 import { formatPercent, formatSek, formatSekShort, num } from "@/lib/format";
+import { downloadCsv } from "@/lib/csv";
 import { cn } from "@/lib/utils";
 import { AdvancedSections, changedSections } from "./TypfallAdvanced";
-import { CheckRow, Disclosure, NumberRow, SelectRow } from "./TypfallFields";
+import { ScenarioCompare } from "./TypfallCompare";
+import { CheckRow, Disclosure, NumberRow, Segmented, SelectRow } from "./TypfallFields";
 
 const AVTAL: { value: Avtal; label: string }[] = [
   { value: 1, label: "Ingen tjänstepension" },
@@ -20,8 +34,6 @@ const AVTAL: { value: Avtal; label: string }[] = [
   { value: 8, label: "PA 16 avdelning 1 – statligt anställda, födda 1988 och senare" },
 ];
 
-const MAX_PAR = 72;
-const AVERAGE_YEARS = 20; // "Genomsnittlig pension under pensionstiden": the pension age and 20 years on
 
 // Fixed order, so a series keeps its colour.
 const SERIES = [
@@ -34,76 +46,47 @@ const SERIES = [
 ] as const;
 const WAGE_COLOR = "#C9C3B8";
 
-type Mode = "normal" | "avancerat";
-
-/** Saves rows as a CSV file that Excel opens with Swedish settings (semicolon, decimal comma). */
-function downloadCsv(filename: string, rows: (string | number | null)[][]) {
-  const cell = (v: string | number | null) =>
-    v === null
-      ? ""
-      : typeof v === "number"
-        ? String(Math.round(v * 1000) / 1000).replace(".", ",")
-        : `"${v.replace(/"/g, '""')}"`;
-  const csv = "﻿" + rows.map((r) => r.map(cell).join(";")).join("\r\n");
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+type Mode = ScenarioForm["mode"];
 
 const csvButton =
   "flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-foreground/70 bg-card px-3 text-xs font-medium hover:bg-muted";
 
 export default function TypfallCalculator() {
-  const [mode, setMode] = useState<Mode>("normal");
-  const [born, setBorn] = useState(1975);
-  const [par, setPar] = useState(68);
-  const [useRikt, setUseRikt] = useState(false);
-  const [wStart, setWStart] = useState(23);
-  const [monthlyWage, setMonthlyWage] = useState(33200);
-  const [avtal, setAvtal] = useState<Avtal>(1);
-  const [gift, setGift] = useState(false);
-  const [inflation, setInflation] = useState(0);
-  const [realGrowth, setRealGrowth] = useState(0);
-  const [realReturn, setRealReturn] = useState(1.7);
-  const [adv, setAdv] = useState<TypfallAdvanced>(DEFAULT_ADVANCED);
+  const [form, setForm] = useState<ScenarioForm>(DEFAULT_FORM);
+  const [view, setView] = useState<"prognos" | "jamfor">("prognos");
+  const [saved, setSaved] = useState<SavedScenario[]>([]);
   const [tableOpen, setTableOpen] = useState(false);
-  const changeAdv = (patch: Partial<TypfallAdvanced>) => setAdv((a) => ({ ...a, ...patch }));
+  const { mode, born, par, useRikt, wStart, monthlyWage, avtal, gift, inflation, realGrowth, realReturn, adv } = form;
+  const patch = (p: Partial<ScenarioForm>) => setForm((f) => ({ ...f, ...p }));
+  const setMode = (v: Mode) => patch({ mode: v });
+  const setBorn = (v: number) => patch({ born: v });
+  const setPar = (v: number) => patch({ par: v });
+  const setUseRikt = (v: boolean) => patch({ useRikt: v });
+  const setWStart = (v: number) => patch({ wStart: v });
+  const setMonthlyWage = (v: number) => patch({ monthlyWage: v });
+  const setAvtal = (v: Avtal) => patch({ avtal: v });
+  const setGift = (v: boolean) => patch({ gift: v });
+  const setInflation = (v: number) => patch({ inflation: v });
+  const setRealGrowth = (v: number) => patch({ realGrowth: v });
+  const setRealReturn = (v: number) => patch({ realReturn: v });
+  const setAdv = (v: TypfallAdvanced) => patch({ adv: v });
+  const changeAdv = (p: Partial<TypfallAdvanced>) => setForm((f) => ({ ...f, adv: { ...f.adv, ...p } }));
 
-  const { lowest, rikt } = riktaldrar(born);
-  const parUsed = useRikt ? rikt : Math.min(Math.max(par, lowest), MAX_PAR);
-  const wStartUsed = Math.min(wStart, parUsed - 1);
-  // "Normalt" uses the model's normal settings; the advanced choices are kept for "Avancerat".
-  const advUsed = useMemo(
-    () => ({ ...(mode === "avancerat" ? adv : DEFAULT_ADVANCED), inflation: inflation / 100 }),
-    [mode, adv, inflation],
-  );
+  // Saved scenarios are read after the first render, so the server render and the page agree.
+  useEffect(() => setSaved(loadSaved()), []);
+  const updateSaved = (list: SavedScenario[]) => {
+    setSaved(list);
+    storeSaved(list);
+  };
 
-  const baseInput = useMemo(
-    () => ({
-      born,
-      par: parUsed,
-      wStart: wStartUsed,
-      monthlyWage,
-      avtal,
-      gift,
-      realGrowth: realGrowth / 100,
-      realReturn: realReturn / 100,
-    }),
-    [born, parUsed, wStartUsed, monthlyWage, avtal, gift, realGrowth, realReturn],
-  );
-  const result = useMemo(() => runTypfall({ ...baseInput, advanced: advUsed }), [baseInput, advUsed]);
+  const { par: parUsed, wStart: wStartUsed, lowest, rikt } = usedAges(form);
+  const result = useMemo(() => runScenario(form), [form]);
   // The wage path from the form, to fill in "egen löneutveckling".
   const computedWagePath = () =>
-    runTypfall({ ...baseInput, advanced: { ...adv, inflation: inflation / 100, egenLon: null } }).wagePath;
+    runScenario({ ...form, mode: "avancerat", adv: { ...form.adv, egenLon: null } }).wagePath;
   const table = pensionTable(result);
 
-  const kgrad = result.slutlon > 0 ? (result.brutto / result.slutlon) * 100 : 0;
-  const lastAverageAge = parUsed + AVERAGE_YEARS;
-  const averageYears = result.years.filter((y) => y.age >= parUsed && y.age <= lastAverageAge);
-  const averagePension = averageYears.reduce((sum, y) => sum + y.brutto, 0) / averageYears.length / 12;
+  const { kgrad, average: averagePension, lastAge: lastAverageAge } = keyFigures(result);
   const hasPrivat = result.years.some((y) => y.ips > 0 || y.pps > 0);
   const series = SERIES.filter((s) => s.key !== "privat" || hasPrivat);
   const changed = changedSections(adv);
@@ -372,207 +355,244 @@ export default function TypfallCalculator() {
       </div>
 
       <div className="min-w-0 space-y-6">
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            {
-              label: "Pension vid pensionering",
-              value: formatSek(result.brutto / 12),
-              note: "Total pension brutto, per månad, före skatt",
-            },
-            {
-              label: "Kompensationsgrad vid pensionering",
-              value: formatPercent(kgrad, 1),
-              note: "Total pension brutto, som andel av slutlön",
-            },
-            {
-              label: "Genomsnittlig pension under pensionstiden",
-              value: formatSek(averagePension),
-              note: `Per månad, ${parUsed}–${lastAverageAge} års ålder, före skatt`,
-            },
-          ].map((k) => (
-            <div key={k.label} className="rounded-xl border border-border border-t-[3px] border-t-primary bg-card p-5">
-              <p className="text-xs font-semibold tracking-wider text-primary uppercase">{k.label}</p>
-              <p className="mt-2 font-serif text-3xl font-semibold">{k.value}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{k.note}</p>
-            </div>
-          ))}
+        <div className="max-w-md">
+          <Segmented
+            label="Visa"
+            value={view}
+            onChange={setView}
+            options={[
+              { value: "prognos", label: "Prognos" },
+              {
+                value: "jamfor",
+                label: (
+                  <>
+                    Jämför scenarier
+                    {saved.length > 0 && <span className="ml-1.5 font-normal opacity-75">({saved.length})</span>}
+                  </>
+                ),
+              },
+            ]}
+          />
         </div>
+        {view === "jamfor" ? (
+          <ScenarioCompare
+            current={form}
+            currentResult={result}
+            saved={saved}
+            onSave={(name) =>
+              updateSaved([...saved, { id: Date.now().toString(36), name, form, slot: freeSlot(saved) }])
+            }
+            onRemove={(id) => updateSaved(saved.filter((s) => s.id !== id))}
+            onLoad={(s) => {
+              setForm(s.form);
+              setView("prognos");
+            }}
+          />
+        ) : (
+          <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                label: "Pension vid pensionering",
+                value: formatSek(result.brutto / 12),
+                note: "Total pension brutto, per månad, före skatt",
+              },
+              {
+                label: "Kompensationsgrad vid pensionering",
+                value: formatPercent(kgrad, 1),
+                note: "Total pension brutto, som andel av slutlön",
+              },
+              {
+                label: "Genomsnittlig pension under pensionstiden",
+                value: formatSek(averagePension),
+                note: `Per månad, ${parUsed}–${lastAverageAge} års ålder, före skatt`,
+              },
+            ].map((k) => (
+              <div key={k.label} className="rounded-xl border border-border border-t-[3px] border-t-primary bg-card p-5">
+                <p className="text-xs font-semibold tracking-wider text-primary uppercase">{k.label}</p>
+                <p className="mt-2 font-serif text-3xl font-semibold">{k.value}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{k.note}</p>
+              </div>
+            ))}
+          </div>
 
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-secondary px-4 py-3 sm:px-6">
-            <h2 className="font-serif text-xl font-semibold">Pensionsinkomst</h2>
-            <button type="button" onClick={tableCsv} className={csvButton}>
-              <Download className="size-3.5" aria-hidden="true" />
-              Ladda ner CSV
-            </button>
-          </div>
-          <div className="overflow-x-auto px-4 pt-2 pb-5 sm:px-6">
-            <table className="w-full text-sm tabular-nums">
-              <thead>
-                <tr className="border-b border-border text-xs text-muted-foreground">
-                  <th scope="col" className="py-2 pr-3 text-left font-medium">
-                    {table.title}
-                  </th>
-                  <th scope="col" className="hidden py-2 pr-3 text-right font-medium md:table-cell">
-                    Löpande priser, kronor
-                  </th>
-                  <th scope="col" className="hidden py-2 pr-3 text-right font-medium sm:table-cell">
-                    Fasta priser ({W_REF}), kronor
-                  </th>
-                  <th scope="col" className="py-2 pr-3 text-right font-medium">
-                    Per månad, kronor
-                  </th>
-                  <th scope="col" className="py-2 text-right font-medium">
-                    Som andel av slut&shy;lön
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {table.wage.map(renderRow)}
-                <tr aria-hidden="true">
-                  <td colSpan={5} className="h-3" />
-                </tr>
-                {table.pension.map(renderRow)}
-                <tr>
-                  <td colSpan={5} className="pt-5 pb-2 text-right text-xs text-muted-foreground">
-                    Efter skatt: som andel av lönen efter skatt, disponibel inkomst av den före pensionen
-                  </td>
-                </tr>
-                {table.afterTax.map(renderRow)}
-              </tbody>
-            </table>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Tabellen visar värden inklusive den sista pensionsrätten, som av taxeringsskäl räknas med först året
-              efter.
-              {avtal !== 1 &&
-                (result.advanced.tempTjp > 0
-                  ? ` Tjänstepensionen betalas ut under ${result.advanced.tempTjp} år`
-                  : " Tjänstepensionen betalas ut livsvarigt")}
-              {avtal !== 1 && (result.tjpPar === parUsed ? "." : ` från ${result.tjpPar} år.`)}
-              {result.defAr > parUsed &&
-                ` Allmän pension tas ut delvis från ${parUsed} år och helt från ${result.defAr} år.`}
-            </p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-serif text-xl font-semibold">Inkomst per månad</h2>
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <span className="size-2.5 rounded-sm" style={{ background: WAGE_COLOR }} aria-hidden="true" />
-                Lön
-              </li>
-              {series.map((s) => (
-                <li key={s.key} className="flex items-center gap-2">
-                  <span className="size-2.5 rounded-sm" style={{ background: s.color }} aria-hidden="true" />
-                  {s.label}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Före skatt, i {W_REF} års priser.
-            {result.pps > 0 && " Uttagen från ISK och kapitalförsäkring är redan beskattade."}
-          </p>
-          <div className="mt-4 h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 8 }} barCategoryGap={2}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                <XAxis dataKey="age" tickLine={false} axisLine={false} fontSize={12} minTickGap={12} />
-                <YAxis tickFormatter={formatSekShort} tickLine={false} axisLine={false} fontSize={12} width={72} />
-                <Tooltip
-                  formatter={(v: number) => formatSek(v)}
-                  labelFormatter={(age) => `Vid ${age} år`}
-                  separator=": "
-                  itemStyle={{ color: "var(--color-foreground)" }}
-                  cursor={{ fill: "var(--color-muted)" }}
-                />
-                <ReferenceLine
-                  x={parUsed}
-                  stroke="var(--color-foreground)"
-                  strokeDasharray="3 3"
-                  label={{ value: "Pension", position: "top", fontSize: 12, fill: "var(--color-foreground)" }}
-                />
-                <Bar dataKey="lon" name="Lön" stackId="a" fill={WAGE_COLOR} />
-                {series.map((s) => (
-                  <Bar key={s.key} dataKey={s.key} name={s.label} stackId="a" fill={s.color} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card">
-          <div className="flex flex-wrap items-start justify-between gap-3 p-4 sm:px-6">
-            <div>
-              <button
-                type="button"
-                className="flex cursor-pointer items-center gap-2 font-serif text-lg font-semibold"
-                aria-expanded={tableOpen}
-                aria-controls="typfall-table"
-                onClick={() => setTableOpen(!tableOpen)}
-              >
-                År för år
-                <ChevronDown className={cn("size-5 transition-transform", tableOpen && "rotate-180")} aria-hidden="true" />
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-secondary px-4 py-3 sm:px-6">
+              <h2 className="font-serif text-xl font-semibold">Pensionsinkomst</h2>
+              <button type="button" onClick={tableCsv} className={csvButton}>
+                <Download className="size-3.5" aria-hidden="true" />
+                Ladda ner CSV
               </button>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Kronor i månaden, i {W_REF} års priser. Bidrag är bostadstillägg, bostadsbidrag, barnbidrag och
-                bistånd. Disponibel inkomst är efter skatt med bidrag och uttag från ISK och kapitalförsäkring.
-              </p>
             </div>
-            <button type="button" onClick={yearsCsv} className={csvButton}>
-              <Download className="size-3.5" aria-hidden="true" />
-              Ladda ner CSV
-            </button>
-          </div>
-          {tableOpen && (
-            <div id="typfall-table" className="max-h-96 overflow-auto border-t border-border">
-              <table className="w-full text-right text-xs tabular-nums">
-                <thead className="sticky top-0 bg-muted">
-                  <tr>
-                    {[
-                      "År",
-                      "Ålder",
-                      "Lön",
-                      "Inkomst­pension",
-                      "Premie­pension",
-                      "Garanti och tillägg",
-                      "Tjänste­pension",
-                      ...(hasPrivat ? ["Privat sparande"] : []),
-                      "Före skatt",
-                      "Efter skatt",
-                      "Bidrag",
-                      "Disponibel inkomst",
-                    ].map((h) => (
-                      <th key={h} scope="col" className="px-3 py-2 font-medium first:text-left">
-                        {h}
-                      </th>
-                    ))}
+            <div className="overflow-x-auto px-4 pt-2 pb-5 sm:px-6">
+              <table className="w-full text-sm tabular-nums">
+                <thead>
+                  <tr className="border-b border-border text-xs text-muted-foreground">
+                    <th scope="col" className="py-2 pr-3 text-left font-medium">
+                      {table.title}
+                    </th>
+                    <th scope="col" className="hidden py-2 pr-3 text-right font-medium md:table-cell">
+                      Löpande priser, kronor
+                    </th>
+                    <th scope="col" className="hidden py-2 pr-3 text-right font-medium sm:table-cell">
+                      Fasta priser ({W_REF}), kronor
+                    </th>
+                    <th scope="col" className="py-2 pr-3 text-right font-medium">
+                      Per månad, kronor
+                    </th>
+                    <th scope="col" className="py-2 text-right font-medium">
+                      Som andel av slut&shy;lön
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {tableYears.map((y) => (
-                    <tr key={y.age} className={cn("border-t border-border", y.age === parUsed && "bg-secondary/50 font-semibold")}>
-                      <td className="px-3 py-1.5 text-left">{y.year}</td>
-                      <td className="px-3 py-1.5">{y.age}</td>
-                      {[y.lon, y.ip, y.pp, y.gp + y.tillagg, y.tjp, ...(hasPrivat ? [y.ips + y.pps] : []), y.brutto].map((v, i) => (
-                        <td key={i} className="px-3 py-1.5 whitespace-nowrap">
-                          {num.format(v / 12)}
-                        </td>
-                      ))}
-                      {[y.netto, y.bidrag, y.disp].map((v, i) => (
-                        <td key={`n${i}`} className="px-3 py-1.5 whitespace-nowrap">
-                          {v === null ? "–" : num.format(v / 12)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                  {table.wage.map(renderRow)}
+                  <tr aria-hidden="true">
+                    <td colSpan={5} className="h-3" />
+                  </tr>
+                  {table.pension.map(renderRow)}
+                  <tr>
+                    <td colSpan={5} className="pt-5 pb-2 text-right text-xs text-muted-foreground">
+                      Efter skatt: som andel av lönen efter skatt, disponibel inkomst av den före pensionen
+                    </td>
+                  </tr>
+                  {table.afterTax.map(renderRow)}
                 </tbody>
               </table>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Tabellen visar värden inklusive den sista pensionsrätten, som av taxeringsskäl räknas med först året
+                efter.
+                {avtal !== 1 &&
+                  (result.advanced.tempTjp > 0
+                    ? ` Tjänstepensionen betalas ut under ${result.advanced.tempTjp} år`
+                    : " Tjänstepensionen betalas ut livsvarigt")}
+                {avtal !== 1 && (result.tjpPar === parUsed ? "." : ` från ${result.tjpPar} år.`)}
+                {result.defAr > parUsed &&
+                  ` Allmän pension tas ut delvis från ${parUsed} år och helt från ${result.defAr} år.`}
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-serif text-xl font-semibold">Inkomst per månad</h2>
+              <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="size-2.5 rounded-sm" style={{ background: WAGE_COLOR }} aria-hidden="true" />
+                  Lön
+                </li>
+                {series.map((s) => (
+                  <li key={s.key} className="flex items-center gap-2">
+                    <span className="size-2.5 rounded-sm" style={{ background: s.color }} aria-hidden="true" />
+                    {s.label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Före skatt, i {W_REF} års priser.
+              {result.pps > 0 && " Uttagen från ISK och kapitalförsäkring är redan beskattade."}
+            </p>
+            <div className="mt-4 h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 8 }} barCategoryGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="age" tickLine={false} axisLine={false} fontSize={12} minTickGap={12} />
+                  <YAxis tickFormatter={formatSekShort} tickLine={false} axisLine={false} fontSize={12} width={72} />
+                  <Tooltip
+                    formatter={(v: number) => formatSek(v)}
+                    labelFormatter={(age) => `Vid ${age} år`}
+                    separator=": "
+                    itemStyle={{ color: "var(--color-foreground)" }}
+                    cursor={{ fill: "var(--color-muted)" }}
+                  />
+                  <ReferenceLine
+                    x={parUsed}
+                    stroke="var(--color-foreground)"
+                    strokeDasharray="3 3"
+                    label={{ value: "Pension", position: "top", fontSize: 12, fill: "var(--color-foreground)" }}
+                  />
+                  <Bar dataKey="lon" name="Lön" stackId="a" fill={WAGE_COLOR} />
+                  {series.map((s) => (
+                    <Bar key={s.key} dataKey={s.key} name={s.label} stackId="a" fill={s.color} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card">
+            <div className="flex flex-wrap items-start justify-between gap-3 p-4 sm:px-6">
+              <div>
+                <button
+                  type="button"
+                  className="flex cursor-pointer items-center gap-2 font-serif text-lg font-semibold"
+                  aria-expanded={tableOpen}
+                  aria-controls="typfall-table"
+                  onClick={() => setTableOpen(!tableOpen)}
+                >
+                  År för år
+                  <ChevronDown className={cn("size-5 transition-transform", tableOpen && "rotate-180")} aria-hidden="true" />
+                </button>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Kronor i månaden, i {W_REF} års priser. Bidrag är bostadstillägg, bostadsbidrag, barnbidrag och
+                  bistånd. Disponibel inkomst är efter skatt med bidrag och uttag från ISK och kapitalförsäkring.
+                </p>
+              </div>
+              <button type="button" onClick={yearsCsv} className={csvButton}>
+                <Download className="size-3.5" aria-hidden="true" />
+                Ladda ner CSV
+              </button>
+            </div>
+            {tableOpen && (
+              <div id="typfall-table" className="max-h-96 overflow-auto border-t border-border">
+                <table className="w-full text-right text-xs tabular-nums">
+                  <thead className="sticky top-0 bg-muted">
+                    <tr>
+                      {[
+                        "År",
+                        "Ålder",
+                        "Lön",
+                        "Inkomst­pension",
+                        "Premie­pension",
+                        "Garanti och tillägg",
+                        "Tjänste­pension",
+                        ...(hasPrivat ? ["Privat sparande"] : []),
+                        "Före skatt",
+                        "Efter skatt",
+                        "Bidrag",
+                        "Disponibel inkomst",
+                      ].map((h) => (
+                        <th key={h} scope="col" className="px-3 py-2 font-medium first:text-left">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableYears.map((y) => (
+                      <tr key={y.age} className={cn("border-t border-border", y.age === parUsed && "bg-secondary/50 font-semibold")}>
+                        <td className="px-3 py-1.5 text-left">{y.year}</td>
+                        <td className="px-3 py-1.5">{y.age}</td>
+                        {[y.lon, y.ip, y.pp, y.gp + y.tillagg, y.tjp, ...(hasPrivat ? [y.ips + y.pps] : []), y.brutto].map((v, i) => (
+                          <td key={i} className="px-3 py-1.5 whitespace-nowrap">
+                            {num.format(v / 12)}
+                          </td>
+                        ))}
+                        {[y.netto, y.bidrag, y.disp].map((v, i) => (
+                          <td key={`n${i}`} className="px-3 py-1.5 whitespace-nowrap">
+                            {v === null ? "–" : num.format(v / 12)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+          </>
+        )}
       </div>
     </div>
   );
