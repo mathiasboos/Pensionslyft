@@ -37,7 +37,7 @@ const SPARFORM: { value: Sparform; label: string }[] = [
   { value: 2, label: "ISK" },
 ];
 
-const ANDEL = [0, 0.25, 0.5, 0.75, 1].map((v) => ({ value: v, label: formatPercent(v * 100, 0) }));
+const ANDEL = [1, 0.75, 0.5, 0.25].map((v) => ({ value: v, label: formatPercent(v * 100, 0) }));
 const TEMP_YEARS = [5, 10, 15, 20];
 
 // The average municipal tax and burial fee in the last data year, as a starting point for an own rate.
@@ -356,45 +356,46 @@ export function AdvancedSections({
   return (
     <div className="space-y-2">
       <Section title="Allmän pension" changed={differs(adv, SECTIONS.allman)}>
+        <SelectRow
+          id="typfall-uttag-ip"
+          label="Andel uttag, inkomstpension"
+          hint={`mellan pensionsåldern och "Definitivt vid" nedan`}
+          value={adv.uttagIP}
+          onChange={(v) => onChange({ uttagIP: v })}
+          options={ANDEL}
+        />
+        <SelectRow
+          id="typfall-uttag-pp"
+          label="Andel uttag, premiepension"
+          value={adv.uttagPP}
+          onChange={(v) => onChange({ uttagPP: v })}
+          options={ANDEL}
+        />
         <NumberRow
           id="typfall-defar"
           label="Definitivt uttag vid ålder"
-          hint={`${par}–75. Ett partiellt uttag görs från ${par} år.`}
-          value={defAr}
-          onChange={(v) => onChange({ defAr: v === par ? 0 : v })}
-          min={par}
+          hint="0 eller pensionsåldern = fullt uttag direkt, som idag"
+          value={partial ? defAr : 0}
+          onChange={(v) => onChange({ defAr: v > par ? v : 0 })}
+          min={0}
           max={75}
         />
         {partial ? (
-          <>
-            <SelectRow
-              id="typfall-uttag-ip"
-              label={`Andel uttag, inkomstpension (${par}–${defAr - 1} år)`}
-              value={adv.uttagIP}
-              onChange={(v) => onChange({ uttagIP: v })}
-              options={ANDEL}
-            />
-            <SelectRow
-              id="typfall-uttag-pp"
-              label={`Andel uttag, premiepension (${par}–${defAr - 1} år)`}
-              value={adv.uttagPP}
-              onChange={(v) => onChange({ uttagPP: v })}
-              options={ANDEL}
-            />
-            <SelectRow
-              id="typfall-syss"
-              label="Arbete under det partiella uttaget"
-              value={adv.sysselsattning === "deltid" ? 2 : adv.sysselsattning}
-              onChange={(v) => onChange({ sysselsattning: v === 2 ? "deltid" : (v as 0 | 1) })}
-              options={[
-                { value: 2, label: "Deltid, den andel som inte tas ut" },
-                { value: 1, label: "Heltid" },
-                { value: 0, label: "Arbetar inte" },
-              ]}
-            />
-          </>
+          <SelectRow
+            id="typfall-syss"
+            label={`Arbete under det partiella uttaget (${par}–${defAr - 1} år)`}
+            value={adv.sysselsattning === "deltid" ? 2 : adv.sysselsattning}
+            onChange={(v) => onChange({ sysselsattning: v === 2 ? "deltid" : (v as 0 | 1) })}
+            options={[
+              { value: 2, label: "Deltid, den andel som inte tas ut" },
+              { value: 1, label: "Heltid" },
+              { value: 0, label: "Arbetar inte" },
+            ]}
+          />
         ) : (
-          <Note>Välj en högre ålder för att ta ut en del av inkomst- och premiepensionen först.</Note>
+          (adv.uttagIP < 1 || adv.uttagPP < 1) && (
+            <Note>Andelen gäller när du anger en ålder för definitivt uttag över pensionsåldern ({par} år).</Note>
+          )
         )}
       </Section>
 
