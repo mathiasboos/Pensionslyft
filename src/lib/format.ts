@@ -35,3 +35,12 @@ export function formatPercent(value: number, digits: number): string {
     maximumFractionDigits: digits,
   }).format(value)} %`;
 }
+
+const compact = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 1 });
+
+/** Short amounts for chart axes, e.g. 1500000 -> "1,5 mkr", 250000 -> "250 tkr". */
+export function formatSekShort(value: number): string {
+  if (Math.abs(value) >= 1_000_000) return `${compact.format(value / 1_000_000)} mkr`;
+  if (Math.abs(value) >= 1_000) return `${num.format(value / 1_000)} tkr`;
+  return `${num.format(value)} kr`;
+}
