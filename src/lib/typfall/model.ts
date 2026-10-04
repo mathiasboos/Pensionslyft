@@ -115,6 +115,7 @@ export interface TypfallResult {
   slutlon: number; // average wage the advanced.slutlonAr years before the pension
   slutlonNetto: number | null;
   ip: number;
+  tp: number; // tilläggspension (ATP), 0 for those born 1954 and later
   pp: number;
   gp: number;
   tillagg: number;
@@ -124,6 +125,22 @@ export interface TypfallResult {
   pps: number;
   brutto: number;
   netto: number;
+  /** Tabell 1 in current prices (the column "Löpande priser"). */
+  current: {
+    slutlon: number;
+    slutlonNetto: number | null;
+    ip: number;
+    tp: number;
+    pp: number;
+    gp: number;
+    tillagg: number;
+    allman: number;
+    tjp: number;
+    ips: number;
+    pps: number;
+    brutto: number;
+    netto: number;
+  };
   years: TypfallYear[];
   /** Raw yearly values in current prices, for comparison with the model's verbose output. */
   verbose: Record<string, number>[];
@@ -627,15 +644,21 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const avgYears = Math.max(1, int(adv.slutlonAr));
   let slut = 0;
   let slutNetto = 0;
+  let slutNominal = 0;
+  let slutNettoNominal = 0;
   let nettoKnown = true;
   for (let k = 1; k <= avgYears; k++) {
     const a = int(PAR) - k;
     slut += Income_[a]! * fixed(a);
+    slutNominal += Income_[a]!;
     if (Number.isNaN(Netto[a]!)) nettoKnown = false;
     slutNetto += Netto[a]! * fixed(a);
+    slutNettoNominal += Netto[a]!;
   }
   slut /= avgYears;
   slutNetto /= avgYears;
+  slutNominal /= avgYears;
+  slutNettoNominal /= avgYears;
 
   const P = int(PAR);
   const dIPn = deltal(PAR, int(born), PAR, defAr, "IP");
@@ -707,6 +730,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     slutlon: slut,
     slutlonNetto: nettoKnown ? slutNetto : null,
     ip: ip[P]! * j0,
+    tp: tp[P]! * j0,
     pp: pp[P]! * j0,
     gp: garp[P]! * j0,
     tillagg: ptillagg[P]! * j0,
@@ -716,6 +740,21 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     pps: pps[P]! * j0,
     brutto: tableBrutto * j0,
     netto: netto * j0,
+    current: {
+      slutlon: slutNominal,
+      slutlonNetto: nettoKnown ? slutNettoNominal : null,
+      ip: ip[P]!,
+      tp: tp[P]!,
+      pp: pp[P]!,
+      gp: garp[P]!,
+      tillagg: ptillagg[P]!,
+      allman: ip[P]! + tp[P]! + pp[P]! + garp[P]! + ptillagg[P]!,
+      tjp: TJP[P]!,
+      ips: ips[P]!,
+      pps: pps[P]!,
+      brutto: tableBrutto,
+      netto,
+    },
     years,
     verbose,
   };

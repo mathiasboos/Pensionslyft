@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FIRST_COHORT, LAST_COHORT, riktaldrar } from "../src/lib/typfall/data";
 import { type Avtal, DEFAULT_ADVANCED, runTypfall } from "../src/lib/typfall/model";
+import { pensionTable } from "../src/lib/typfall/table";
 import fixture from "./fixtures/typfall-1959.json";
 
 // The fixture is the model's own output (sheets Utdata and Start) for its default typfall:
@@ -75,6 +76,30 @@ describe("typfallsmodellen, compared with the model's own run for born 1959", ()
     expect(result.tjp).toBe(col("Tjänstepension"));
     expect(result.brutto).toBe(col("Total pension brutto"));
     expect(result.netto).toBe(col("Efter skatt"));
+  });
+
+  it("matches all four columns of Tabell 1", () => {
+    const t = fixture.table1 as Record<string, (number | null)[]>;
+    const table = pensionTable(result);
+    const rows = [...table.wage, ...table.pension, ...table.afterTax];
+    const labels: [string, string][] = [
+      ["Slutlön, 61 - 65 års ålder", "Slutlön, 61 - 65 års ålder"], ["Lön efter skatt", "Lön efter skatt"],
+      ["Inkomstpension", "Inkomstpension"], ["Tilläggspension", "Tilläggspension"], ["Premiepension", "Premiepension"],
+      ["Garantipension", "Garantipension"], ["Pensionstillägg (IPT) (40/40)", "Pensionstillägg (IPT)"],
+      ["Total allmän pension", "Total allmän pension"], ["Tjänstepension", "Tjänstepension"],
+      ["Privat pensionssparande (med avdragsrätt)", "Privat pensionssparande (med avdragsrätt)"],
+      ["Total pension brutto", "Total pension brutto"], ["Efter skatt", "Efter skatt"],
+      ["Privat pensionssparande (ISK / KF)", "Privat pensionssparande (ISK / KF)"],
+    ];
+    expect(table.title).toBe("Pension vid 66 års ålder");
+    for (const [excel, mine] of labels) {
+      const row = rows.find((r) => r.label === mine)!;
+      const [current, fixedPrice, monthly, share] = t[excel]!;
+      expect(row.current!, `${mine} löpande`).toBeCloseTo(current!, 6);
+      expect(row.fixed!, `${mine} fasta`).toBeCloseTo(fixedPrice!, 6);
+      expect(row.fixed! / 12, `${mine} per månad`).toBeCloseTo(monthly!, 6);
+      expect(row.share ?? 0, `${mine} andel`).toBeCloseTo(share as number, 9);
+    }
   });
 });
 
