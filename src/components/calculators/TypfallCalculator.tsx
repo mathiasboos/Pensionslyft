@@ -128,7 +128,7 @@ export default function TypfallCalculator() {
   const [mikroRows, setMikroRows] = useState<MikrosimRow[]>(() => [newRow("1")]);
   const [saved, setSaved] = useState<SavedScenario[]>([]);
   const [tableOpen, setTableOpen] = useState(false);
-  const [afterTax, setAfterTax] = useState(false);
+  const [afterTax, setAfterTax] = useState(true);
   const { mode, born, par, useRikt, wStart, monthlyWage, avtal, gift, inflation, realGrowth, realReturn, adv } = form;
   const patch = (p: Partial<ScenarioForm>) => setForm((f) => ({ ...f, ...p }));
   const setMode = (v: Mode) => patch({ mode: v });
@@ -169,27 +169,20 @@ export default function TypfallCalculator() {
     () =>
       result.years
         .filter((y) => y.age >= firstAge && y.age <= 100)
-        .map((y) => {
-          // After tax the tax is spread over the taxed incomes in proportion to their size. The tax rules are only in
-          // the model from 2020, so earlier years have no figures after tax.
-          const share = !afterTax ? 1 : y.netto === null ? null : y.brutto > 0 ? y.netto / y.brutto : 0;
-          const month = (v: number) => (share === null ? null : (v * share) / 12);
-          return {
-            age: y.age,
-            lon: month(y.lon),
-            ip: month(y.ip),
-            pp: month(y.pp),
-            tjp: month(y.tjp),
-            skydd: month(y.gp + y.tillagg),
-            // The withdrawals from ISK and kapitalförsäkring are taxed already.
-            privat: share === null ? null : (y.ips * share + y.pps) / 12,
-            // The other side, as the dashed line.
-            other: afterTax ? y.brutto / 12 : y.netto === null ? null : y.netto / 12,
-          };
-        }),
+        .map((y) => ({
+          age: y.age,
+          lon: y.lon / 12,
+          ip: y.ip / 12,
+          pp: y.pp / 12,
+          tjp: y.tjp / 12,
+          skydd: (y.gp + y.tillagg) / 12,
+          privat: (y.ips + y.pps) / 12,
+          // The line: the income after tax (the tax rules are only in the model from 2020, so earlier years have no
+          // line) or the income before tax.
+          line: afterTax ? (y.netto === null ? null : y.netto / 12) : y.brutto / 12,
+        })),
     [result, firstAge, afterTax],
   );
-  const missingTax = afterTax && result.years.some((y) => y.age >= firstAge && y.age <= 100 && y.netto === null);
   // The table starts ten years before the pension, as in the web version, and only has the columns with something in them.
   const tableYears = result.years.filter((y) => y.age >= parUsed - 10 && y.age <= 100);
   const yearColumns = YEAR_COLUMNS.filter((c) => tableYears.some((y) => (c.get(y) ?? 0) > 0));
@@ -576,22 +569,22 @@ export default function TypfallCalculator() {
                   </li>
                 ))}
                 <li className="flex items-center gap-2">
-                  <span className="w-4 border-t-2 border-dashed border-foreground" aria-hidden="true" />
-                  {afterTax ? "Inkomst före skatt" : "Inkomst efter skatt"}
+                  <span
+                    className={cn("w-4 border-t-2 border-foreground", afterTax ? "border-dashed" : "border-solid")}
+                    aria-hidden="true"
+                  />
+                  {afterTax ? "Inkomst efter skatt" : "Inkomst brutto"}
                 </li>
               </ul>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Fasta priser ({W_REF}).{" "}
-              {afterTax
-                ? "Staplarna är efter skatt, med skatten fördelad på inkomstslagen i förhållande till deras storlek, och den streckade linjen före skatt."
-                : "Staplarna är före skatt och den streckade linjen efter skatt."}
+              Fasta priser ({W_REF}). Staplarna är före skatt och linjen visar inkomsten{" "}
+              {afterTax ? "efter skatt" : "före skatt (brutto)"}.
               {result.pps > 0 && " Uttagen från ISK och kapitalförsäkring är redan beskattade."}
-              {missingTax && " Skatten finns i modellen från 2020, så tidigare år saknar staplar."}
             </p>
             <div className="mt-3 max-w-xs">
               <Segmented
-                label="Skatt i diagrammet"
+                label="Linjen i diagrammet"
                 size="sm"
                 value={afterTax ? "efter" : "fore"}
                 onChange={(v) => setAfterTax(v === "efter")}
@@ -626,12 +619,12 @@ export default function TypfallCalculator() {
                     <Bar key={s.key} dataKey={s.key} name={s.label} stackId="a" fill={s.color} isAnimationActive={false} />
                   ))}
                   <Line
-                    dataKey="other"
-                    name={afterTax ? "Inkomst före skatt" : "Inkomst efter skatt"}
+                    dataKey="line"
+                    name={afterTax ? "Inkomst efter skatt" : "Inkomst brutto"}
                     type="linear"
                     stroke="var(--color-foreground)"
                     strokeWidth={2}
-                    strokeDasharray="6 4"
+                    strokeDasharray={afterTax ? "6 4" : undefined}
                     dot={false}
                     activeDot={{ r: 4, stroke: "var(--color-card)", strokeWidth: 2 }}
                     connectNulls={false}
