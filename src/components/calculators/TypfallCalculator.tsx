@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChevronDown, Download } from "lucide-react";
 import { FIRST_COHORT, LAST_COHORT, cohortValue } from "@/lib/typfall/data";
 import { type Avtal, DEFAULT_ADVANCED, type TypfallAdvanced, W_REF } from "@/lib/typfall/model";
@@ -18,9 +18,12 @@ import {
 import { pensionTable, type TableRow } from "@/lib/typfall/table";
 import { formatPercent, formatSek, formatSekShort, num } from "@/lib/format";
 import { downloadCsv } from "@/lib/csv";
+import { type MikrosimRow, newRow } from "@/lib/typfall/mikrosim";
 import { cn } from "@/lib/utils";
 import { AdvancedSections, changedSections } from "./TypfallAdvanced";
+import { DisposableChart, TaxChart, WageChart } from "./TypfallCharts";
 import { ScenarioCompare } from "./TypfallCompare";
+import { Mikrosim } from "./TypfallMikrosim";
 import { CheckRow, Disclosure, NumberRow, Segmented, SelectRow } from "./TypfallFields";
 
 const AVTAL: { value: Avtal; label: string }[] = [
@@ -46,6 +49,74 @@ const SERIES = [
 ] as const;
 const WAGE_COLOR = "#C9C3B8";
 
+type Year = ReturnType<typeof runScenario>["years"][number];
+
+/** The columns of "År för år" with the explanations of the model's web version. */
+const YEAR_COLUMNS: { key: string; head: string; info: string; get: (y: Year) => number | null }[] = [
+  { key: "lon", head: "Lön", info: "Årets lön eller annan förvärvsinkomst.", get: (y) => y.lon },
+  {
+    key: "ip",
+    head: "Inkomst- och tilläggspension",
+    info: "Inkomstpension, den största delen av den allmänna pensionen, plus tilläggspension för den som är född 1953 eller tidigare.",
+    get: (y) => y.ip,
+  },
+  {
+    key: "pp",
+    head: "Premiepension",
+    info: "Premiepension: den del av den allmänna pensionen du själv väljer placering för.",
+    get: (y) => y.pp,
+  },
+  {
+    key: "tjp",
+    head: "Tjänste\u00ADpension+IPS",
+    info: "Tjänstepension från arbetsgivaren plus eventuellt individuellt pensionssparande (IPS), före skatt.",
+    get: (y) => y.tjp + y.ips,
+  },
+  {
+    key: "gp",
+    head: "Garantipension",
+    info: "Garantipension (lägstanivå för den som haft låg eller ingen inkomst) plus inkomstpensionstillägg och, för den som är född 1938–1953, garantitillägg.",
+    get: (y) => y.gp + y.tillagg,
+  },
+  {
+    key: "brutto",
+    head: "Inkomst brutto",
+    info: "Summan av lön, allmän pension, tjänstepension och privat pensionssparande, före skatt.",
+    get: (y) => y.brutto,
+  },
+  {
+    key: "kommunal",
+    head: "Kommunal skatt",
+    info: "Kommunal inkomstskatt och kyrko-/begravningsavgift, efter jobbskatteavdrag och andra skattereduktioner.",
+    get: (y) => y.municipalTax,
+  },
+  {
+    key: "statlig",
+    head: "Statlig skatt",
+    info: "Statlig inkomstskatt (20 % över brytpunkten), public service-avgiften, och eventuell skatt på kapital efter pensionering.",
+    get: (y) => y.stateTax,
+  },
+  { key: "netto", head: "Inkomst efter skatt", info: "Bruttoinkomst minus kommunal och statlig skatt.", get: (y) => y.netto },
+  {
+    key: "bidrag",
+    head: "Bidrag (BT, ÄFS, m.m.)",
+    info: "Bostadstillägg, äldreförsörjningsstöd och andra behovsprövade tillägg.",
+    get: (y) => y.bidrag,
+  },
+  {
+    key: "pps",
+    head: "Privat pensionssparande (ISK / KF)",
+    info: "Utbetalning från privat pensionssparande (ISK eller kapitalförsäkring), som inte beskattas som inkomst.",
+    get: (y) => y.pps,
+  },
+  {
+    key: "disp",
+    head: "Disponibel inkomst",
+    info: "Inkomst efter skatt plus bidrag och privat pensionssparande efter skatt.",
+    get: (y) => y.disp,
+  },
+];
+
 type Mode = ScenarioForm["mode"];
 
 const csvButton =
@@ -53,7 +124,8 @@ const csvButton =
 
 export default function TypfallCalculator() {
   const [form, setForm] = useState<ScenarioForm>(DEFAULT_FORM);
-  const [view, setView] = useState<"prognos" | "jamfor">("prognos");
+  const [view, setView] = useState<"prognos" | "jamfor" | "mikrosim">("prognos");
+  const [mikroRows, setMikroRows] = useState<MikrosimRow[]>(() => [newRow("1")]);
   const [saved, setSaved] = useState<SavedScenario[]>([]);
   const [tableOpen, setTableOpen] = useState(false);
   const { mode, born, par, useRikt, wStart, monthlyWage, avtal, gift, inflation, realGrowth, realReturn, adv } = form;
@@ -95,7 +167,7 @@ export default function TypfallCalculator() {
   const chartData = useMemo(
     () =>
       result.years
-        .filter((y) => y.age >= firstAge && y.age <= 90)
+        .filter((y) => y.age >= firstAge && y.age <= 100)
         .map((y) => ({
           age: y.age,
           lon: y.lon / 12,
@@ -104,10 +176,14 @@ export default function TypfallCalculator() {
           tjp: y.tjp / 12,
           skydd: (y.gp + y.tillagg) / 12,
           privat: (y.ips + y.pps) / 12,
+          // After tax; the tax rules are only in the model from 2020, so earlier years have no line.
+          netto: y.netto === null ? null : y.netto / 12,
         })),
     [result, firstAge],
   );
-  const tableYears = result.years.filter((y) => y.age >= firstAge && y.age <= 100);
+  // The table starts ten years before the pension, as in the web version, and only has the columns with something in them.
+  const tableYears = result.years.filter((y) => y.age >= parUsed - 10 && y.age <= 100);
+  const yearColumns = YEAR_COLUMNS.filter((c) => tableYears.some((y) => (c.get(y) ?? 0) > 0));
 
   const tableCsv = () =>
     downloadCsv(`typfall-${born}-${parUsed}.csv`, [
@@ -174,7 +250,7 @@ export default function TypfallCalculator() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
-      <div className="self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1">
+      <div className="min-w-0 self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1">
         <div className="grid grid-cols-2 gap-2" role="group" aria-label="Inställningar">
           {(["normal", "avancerat"] as const).map((m) => (
             <button
@@ -342,12 +418,10 @@ export default function TypfallCalculator() {
               par={parUsed}
               wStart={wStartUsed}
               avtal={avtal}
-              gift={gift}
-              monthlyWage={monthlyWage}
               forsakringstid={result.forsakringstid}
               defAr={result.defAr}
-              tjpPar={result.tjpPar}
               lifeExpectancy={cohortValue(born, "eLife", parUsed)}
+              pgbRows={result.pgbRows}
               computedWagePath={computedWagePath}
             />
           </div>
@@ -355,7 +429,7 @@ export default function TypfallCalculator() {
       </div>
 
       <div className="min-w-0 space-y-6">
-        <div className="max-w-md">
+        <div className="max-w-lg">
           <Segmented
             label="Visa"
             value={view}
@@ -371,10 +445,13 @@ export default function TypfallCalculator() {
                   </>
                 ),
               },
+              { value: "mikrosim", label: "Mikrosim" },
             ]}
           />
         </div>
-        {view === "jamfor" ? (
+        {view === "mikrosim" ? (
+          <Mikrosim form={form} saved={saved} rows={mikroRows} onRows={setMikroRows} />
+        ) : view === "jamfor" ? (
           <ScenarioCompare
             current={form}
             currentResult={result}
@@ -473,6 +550,8 @@ export default function TypfallCalculator() {
             </div>
           </div>
 
+          <WageChart years={result.years} wStart={wStartUsed} par={parUsed} />
+
           <div className="rounded-xl border border-border bg-card p-6">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-serif text-xl font-semibold">Inkomst per månad</h2>
@@ -487,15 +566,19 @@ export default function TypfallCalculator() {
                     {s.label}
                   </li>
                 ))}
+                <li className="flex items-center gap-2">
+                  <span className="w-4 border-t-2 border-dashed border-foreground" aria-hidden="true" />
+                  Inkomst efter skatt
+                </li>
               </ul>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Före skatt, i {W_REF} års priser.
+              Fasta priser ({W_REF}). Staplarna är före skatt och den streckade linjen efter skatt.
               {result.pps > 0 && " Uttagen från ISK och kapitalförsäkring är redan beskattade."}
             </p>
             <div className="mt-4 h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 8 }} barCategoryGap={2}>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 8 }} barCategoryGap={2}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                   <XAxis dataKey="age" tickLine={false} axisLine={false} fontSize={12} minTickGap={12} />
                   <YAxis tickFormatter={formatSekShort} tickLine={false} axisLine={false} fontSize={12} width={72} />
@@ -506,6 +589,7 @@ export default function TypfallCalculator() {
                     itemStyle={{ color: "var(--color-foreground)" }}
                     cursor={{ fill: "var(--color-muted)" }}
                   />
+                  <ReferenceArea x1={parUsed} x2={chartData.at(-1)?.age} fill="var(--color-muted)" fillOpacity={0.7} ifOverflow="visible" />
                   <ReferenceLine
                     x={parUsed}
                     stroke="var(--color-foreground)"
@@ -516,10 +600,24 @@ export default function TypfallCalculator() {
                   {series.map((s) => (
                     <Bar key={s.key} dataKey={s.key} name={s.label} stackId="a" fill={s.color} />
                   ))}
-                </BarChart>
+                  <Line
+                    dataKey="netto"
+                    name="Inkomst efter skatt"
+                    type="linear"
+                    stroke="var(--color-foreground)"
+                    strokeWidth={2}
+                    strokeDasharray="6 4"
+                    dot={false}
+                    activeDot={{ r: 4, stroke: "var(--color-card)", strokeWidth: 2 }}
+                    connectNulls={false}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </div>
+
+          <DisposableChart years={result.years} par={parUsed} />
+          <TaxChart years={result.years} par={parUsed} />
 
           <div className="rounded-xl border border-border bg-card">
             <div className="flex flex-wrap items-start justify-between gap-3 p-4 sm:px-6">
@@ -549,22 +647,17 @@ export default function TypfallCalculator() {
                 <table className="w-full text-right text-xs tabular-nums">
                   <thead className="sticky top-0 bg-muted">
                     <tr>
-                      {[
-                        "År",
-                        "Ålder",
-                        "Lön",
-                        "Inkomst­pension",
-                        "Premie­pension",
-                        "Garanti och tillägg",
-                        "Tjänste­pension",
-                        ...(hasPrivat ? ["Privat sparande"] : []),
-                        "Före skatt",
-                        "Efter skatt",
-                        "Bidrag",
-                        "Disponibel inkomst",
-                      ].map((h) => (
-                        <th key={h} scope="col" className="px-3 py-2 font-medium first:text-left">
-                          {h}
+                      <th scope="col" className="px-3 py-2 text-left align-bottom font-medium">
+                        År
+                      </th>
+                      <th scope="col" className="px-3 py-2 align-bottom font-medium">
+                        Ålder
+                      </th>
+                      {yearColumns.map((c) => (
+                        <th key={c.key} scope="col" className="px-3 py-2 align-bottom font-medium">
+                          <abbr title={c.info} className="cursor-help underline decoration-dotted underline-offset-2">
+                            {c.head}
+                          </abbr>
                         </th>
                       ))}
                     </tr>
@@ -574,16 +667,14 @@ export default function TypfallCalculator() {
                       <tr key={y.age} className={cn("border-t border-border", y.age === parUsed && "bg-secondary/50 font-semibold")}>
                         <td className="px-3 py-1.5 text-left">{y.year}</td>
                         <td className="px-3 py-1.5">{y.age}</td>
-                        {[y.lon, y.ip, y.pp, y.gp + y.tillagg, y.tjp, ...(hasPrivat ? [y.ips + y.pps] : []), y.brutto].map((v, i) => (
-                          <td key={i} className="px-3 py-1.5 whitespace-nowrap">
-                            {num.format(v / 12)}
-                          </td>
-                        ))}
-                        {[y.netto, y.bidrag, y.disp].map((v, i) => (
-                          <td key={`n${i}`} className="px-3 py-1.5 whitespace-nowrap">
-                            {v === null ? "–" : num.format(v / 12)}
-                          </td>
-                        ))}
+                        {yearColumns.map((c) => {
+                          const v = c.get(y);
+                          return (
+                            <td key={c.key} className="px-3 py-1.5 whitespace-nowrap">
+                              {v === null ? "–" : num.format(v / 12)}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
                   </tbody>

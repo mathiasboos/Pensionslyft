@@ -50,9 +50,9 @@ export function btp(a: BtpArgs): number {
   if (year === 2022) extra = (540 * 7 + 840 * 5) / (gift + 1);
   if (year > 2022) extra = (840 * 12) / (gift + 1);
   max += extra;
-  // 15 % of the wealth above 100 000 kr counts as income. (The VBA keeps a wealth below
-  // 100 000 kr as it is, which adds all of it to the income; that is not the rule.)
-  const form = Math.max(0, 0.15 * (a.form - 100000));
+  // 15 % of the wealth above 100 000 kr counts as income. As in the VBA and the web version, a
+  // wealth below 100 000 kr is kept as it is, so all of it is added to the income.
+  const form = a.form > 100000 ? 0.15 * (a.form - 100000) : Math.max(a.form, 0);
   const inkomst = a.inkomst + form;
   const inkomstm = a.inkomstm + form;
   const fri = (single: number, married: number, newSingle: number, newMarried: number) => {

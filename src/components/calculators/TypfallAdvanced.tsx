@@ -1,19 +1,22 @@
 // The sections under "Avancerat": the settings from the sheets Adv_settings and PGB in the model.
 import { type ReactNode, useState } from "react";
-import { Plus, X } from "lucide-react";
+import kommuner from "@/data/kommuner-2026.json";
 import { data } from "@/lib/typfall/data";
 import {
   type Avkastningsval,
   type Avtal,
   DEFAULT_ADVANCED,
+  type Kyrka,
   type Loneprofil,
   type Sparform,
   type TypfallAdvanced,
+  type TypfallResult,
   W_REF,
 } from "@/lib/typfall/model";
 import { formatPercent, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CheckRow, DateRow, NumberRow, OptionalNumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
+import { CheckRow, ExternalLink, NumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
+import { PgbSection } from "./TypfallPgb";
 
 type WagePath = { age: number; year: number; income: number; wage: number }[];
 
@@ -26,9 +29,9 @@ const LONEPROFIL: { value: Loneprofil; label: string }[] = [
 ];
 
 const AVKASTNING: { value: Avkastningsval; label: string }[] = [
-  { value: 2, label: "Premiepensionens faktiska avkastning" },
-  { value: 3, label: "AP7 Såfas faktiska avkastning" },
-  { value: 1, label: "Den valda reala avkastningen" },
+  { value: 1, label: "Angiven real avkastning" },
+  { value: 2, label: "Historiskt PPM" },
+  { value: 3, label: "Historiskt AP7 Såfa" },
 ];
 
 const SPARFORM: { value: Sparform; label: string }[] = [
@@ -39,11 +42,41 @@ const SPARFORM: { value: Sparform; label: string }[] = [
 
 const ANDEL = [1, 0.75, 0.5, 0.25].map((v) => ({ value: v, label: formatPercent(v * 100, 0) }));
 const TEMP_YEARS = [5, 10, 15, 20];
+const HYRA_DEFAULT = 6300;
 
-// The average municipal tax and burial fee in the last data year, as a starting point for an own rate.
+// The fees in the last data year: the church fee with the burial fee (a member) and the burial
+// fee alone (not a member). In Stockholms stad and Tranås kommun the burial fee is a municipal
+// one, also for those who are not members.
 const lastTax = data.lastHardYear - data.taxFirstYear;
-const AVG_KOMMUNALSKATT = data.komSkatt[lastTax]! / 100;
-const AVG_BEGRAVNING = data.begravning[lastTax]! / 100;
+const fraction = (percent: number) => Number((percent / 100).toFixed(6));
+const AVG_MEMBER = fraction(data.kyrkoavgift[lastTax]!);
+const AVG_NON_MEMBER = fraction(data.begravning[lastTax]!);
+const FEE: Record<Exclude<Kyrka, "">, number> = {
+  member: AVG_MEMBER,
+  stockholm: 0.0007,
+  tranas: 0.00285,
+  rest: AVG_NON_MEMBER,
+};
+const percentText = (fee: number) =>
+  (fee * 100).toLocaleString("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+
+const SCB_KOMMUNALSKATT =
+  "https://www.scb.se/hitta-statistik/statistik-efter-amne/offentlig-ekonomi/finanser-for-den-kommunala-sektorn/kommunalskatterna/pong/tabell-och-diagram/totala-kommunala-skattesatser-2026-kommunvis/";
+const SVENSKA_KYRKAN_KYRKOAVGIFT = "https://www.svenskakyrkan.se/medlem/kyrkoavgiften";
+
+const KOMMUNER = Object.keys(kommuner.rates).sort(new Intl.Collator("sv").compare);
+const KOMMUN_OPTIONS = [
+  { value: "", label: "— Välj kommun —" },
+  ...KOMMUNER.map((name) => ({ value: name, label: name })),
+];
+
+const KYRKA: { value: Kyrka; label: string }[] = [
+  { value: "member", label: "Medlem i Svenska kyrkan/annat trossamfund" },
+  { value: "stockholm", label: "Inte medlem, Stockholms stad" },
+  { value: "tranas", label: "Inte medlem, Tranås kommun" },
+  { value: "rest", label: "Inte medlem, övriga Sverige" },
+  { value: "", label: "— Egen sats —" },
+];
 
 type Key = keyof TypfallAdvanced;
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -55,8 +88,8 @@ const SECTIONS = {
   allman: ["defAr", "uttagIP", "uttagPP", "sysselsattning"],
   bostad: ["ansoker", "hyra", "makensInkomst", "formogenhet", "kapital"],
   garanti: ["forsakringstid"],
-  skatt: ["kommunalskatt", "begravning", "fack", "akassa"],
-  kapital: ["avkastningsval", "pbhYear", "efterFondavgifter"],
+  skatt: ["kommunalskatt", "begravning", "kommun", "kyrka", "fack", "akassa"],
+  kapital: ["pbhYear", "pbhIP", "pbhPP", "pbhTJP", "pbhPrivat", "avkastningsval", "efterFondavgifter"],
   lon: ["loneprofil", "andradLonAr", "andradLonFaktor", "slutlonAr", "egenLon"],
   pgb: ["barn", "pgb"],
   privat: ["sparManad"],
@@ -74,159 +107,6 @@ function Note({ children }: { children: ReactNode }) {
 
 const smallButton =
   "flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-foreground/70 bg-card px-3 text-xs font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50";
-
-/** "Pensionsgrundande belopp": choose a type, fill in and add. */
-function PgbSection({
-  adv,
-  onChange,
-  born,
-}: {
-  adv: TypfallAdvanced;
-  onChange: (patch: Partial<TypfallAdvanced>) => void;
-  born: number;
-}) {
-  type Typ = "barn" | "vpl" | "sa" | "studier";
-  const [typ, setTyp] = useState<Typ>("barn");
-  const [barn, setBarn] = useState(born + 30);
-  const [vplStart, setVplStart] = useState(`${Math.max(born + 19, 1995)}-01-15`);
-  const [vplEnd, setVplEnd] = useState(`${Math.max(born + 20, 1996)}-01-14`);
-  const [from, setFrom] = useState(Math.max(born + 20, 1995));
-  const [to, setTo] = useState(Math.max(born + 22, 1997));
-  const [belopp, setBelopp] = useState(150000);
-  const [terminer, setTerminer] = useState(2);
-  const pgb = adv.pgb;
-  const children = adv.barn.filter((b) => b > 0);
-
-  const add = () => {
-    if (typ === "barn" && children.length < 4) onChange({ barn: [...children, barn].sort((a, b) => a - b) });
-    if (typ === "vpl") onChange({ pgb: { ...pgb, vpl: { start: vplStart, end: vplEnd } } });
-    const [a, b] = from <= to ? [from, to] : [to, from];
-    if (typ === "sa") onChange({ pgb: { ...pgb, sa: [...pgb.sa, { from: a, to: b, belopp }] } });
-    if (typ === "studier") onChange({ pgb: { ...pgb, studier: [...pgb.studier, { from: a, to: b, terminer }] } });
-  };
-
-  const entries: { key: string; text: string; remove: () => void }[] = [
-    ...children.map((b, i) => ({
-      key: `barn-${i}`,
-      text: `Barn fött ${b}`,
-      remove: () => onChange({ barn: children.filter((_, k) => k !== i) }),
-    })),
-    ...(pgb.vpl
-      ? [{ key: "vpl", text: `Värnplikt ${pgb.vpl.start} – ${pgb.vpl.end}`, remove: () => onChange({ pgb: { ...pgb, vpl: null } }) }]
-      : []),
-    ...pgb.sa.map((e, i) => ({
-      key: `sa-${i}`,
-      text: `Sjuk-/aktivitetsersättning ${e.from}–${e.to}, ${num.format(e.belopp)} kr per år`,
-      remove: () => onChange({ pgb: { ...pgb, sa: pgb.sa.filter((_, k) => k !== i) } }),
-    })),
-    ...pgb.studier.map((e, i) => ({
-      key: `stud-${i}`,
-      text: `Studier ${e.from}–${e.to}, ${e.terminer} ${e.terminer === 1 ? "termin" : "terminer"} per år`,
-      remove: () => onChange({ pgb: { ...pgb, studier: pgb.studier.filter((_, k) => k !== i) } }),
-    })),
-  ];
-
-  const yearRange = { min: born + 16, max: born + 70 };
-  return (
-    <>
-      <Note>
-        Barnår, sjuk- eller aktivitetsersättning, värnplikt och studier ger alla pensionsrätt utöver den vanliga
-        inkomsten. Välj typ nedan, fyll i det som gäller och klicka Lägg till.
-      </Note>
-      <SelectRow
-        id="typfall-pgb-typ"
-        label="Typ"
-        value={(["barn", "vpl", "sa", "studier"] as Typ[]).indexOf(typ)}
-        onChange={(i) => setTyp((["barn", "vpl", "sa", "studier"] as Typ[])[i]!)}
-        options={[
-          { value: 0, label: "Barn" },
-          { value: 1, label: "Värnplikt" },
-          { value: 2, label: "Sjuk-/aktivitetsersättning" },
-          { value: 3, label: "Studier" },
-        ]}
-      />
-      {typ === "barn" && (
-        <NumberRow
-          id="typfall-pgb-barn"
-          label="Barnets födelseår"
-          hint="ger pensionsrätt de fyra första åren, högst fyra barn"
-          value={barn}
-          onChange={setBarn}
-          min={yearRange.min}
-          max={born + 60}
-        />
-      )}
-      {typ === "vpl" && (
-        <>
-          <DateRow id="typfall-pgb-vpl-start" label="Inryckning" value={vplStart} onChange={setVplStart} />
-          <DateRow id="typfall-pgb-vpl-end" label="Muck" value={vplEnd} onChange={setVplEnd} />
-          <Note>
-            Plikttjänst 1995–2010 och från 2018, minst 120 dagar. Ger pensionsrätt på halva den genomsnittliga
-            pensionsgrundande inkomsten.
-          </Note>
-        </>
-      )}
-      {(typ === "sa" || typ === "studier") && (
-        <>
-          <NumberRow id="typfall-pgb-from" label="Från år" value={from} onChange={setFrom} {...yearRange} />
-          <NumberRow id="typfall-pgb-to" label="Till och med år" value={to} onChange={setTo} {...yearRange} />
-        </>
-      )}
-      {typ === "sa" && (
-        <NumberRow
-          id="typfall-pgb-sa"
-          label="Pensionsgrundande belopp"
-          hint="kronor per år"
-          value={belopp}
-          onChange={setBelopp}
-          min={0}
-          max={1000000}
-        />
-      )}
-      {typ === "studier" && (
-        <>
-          <SelectRow
-            id="typfall-pgb-terminer"
-            label="Terminer per år"
-            value={terminer}
-            onChange={setTerminer}
-            options={[
-              { value: 1, label: "1 termin" },
-              { value: 2, label: "2 terminer" },
-            ]}
-          />
-          <Note>138 procent av studiebidraget. Modellen ger pensionsrätt för studier från 1997.</Note>
-        </>
-      )}
-      <button
-        type="button"
-        className={cn(smallButton, "w-full")}
-        disabled={typ === "barn" && children.length >= 4}
-        onClick={add}
-      >
-        <Plus className="size-3.5" aria-hidden="true" />
-        {typ === "vpl" && pgb.vpl ? "Ersätt" : "Lägg till"}
-      </button>
-      {entries.length > 0 && (
-        <ul className="space-y-1.5 border-t border-border pt-3">
-          {entries.map((e) => (
-            <li key={e.key} className="flex items-center justify-between gap-2 text-sm">
-              <span>{e.text}</span>
-              <button
-                type="button"
-                className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label={`Ta bort ${e.text}`}
-                onClick={e.remove}
-              >
-                <X className="size-4" aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
-  );
-}
 
 /** "Använd egen löneutveckling": income and wage by age, filled in from the computed path. */
 function EgenLon({
@@ -316,12 +196,10 @@ export function AdvancedSections({
   par,
   wStart,
   avtal,
-  gift,
-  monthlyWage,
   forsakringstid,
   defAr,
-  tjpPar,
   lifeExpectancy,
+  pgbRows,
   computedWagePath,
 }: {
   adv: TypfallAdvanced;
@@ -331,26 +209,22 @@ export function AdvancedSections({
   par: number;
   wStart: number;
   avtal: Avtal;
-  gift: boolean;
-  monthlyWage: number;
   /** Values the model used, after its own checks. */
   forsakringstid: number;
   defAr: number;
-  tjpPar: number;
   /** Remaining life expectancy at the pension age, the default payout time for private saving. */
   lifeExpectancy: number;
+  /** What the model counts as PGB, by year. */
+  pgbRows: TypfallResult["pgbRows"];
   /** The wage path computed from the main form, to fill in "egen löneutveckling". */
   computedWagePath: () => WagePath;
 }) {
   const [sparMode, setSparMode] = useState<"belopp" | "andel">(adv.sparManad > 0 && adv.sparManad <= 1 ? "andel" : "belopp");
-  const ownTax = adv.kommunalskatt >= 0.1;
   const wageChange = adv.andradLonAr > 0;
   const firstWorkYear = born + wStart;
   const lastWorkYear = born + par - 1;
   const sparStartMin = Math.min(Math.max(firstWorkYear, 1990), lastWorkYear);
   const one = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 1 });
-  const hyraDefault = 6300 + 1200 * (gift ? 1 : 0);
-  const makeDefault = gift ? Math.round(0.8 * monthlyWage * 12) : 0;
   const partial = defAr > par;
 
   return (
@@ -410,22 +284,20 @@ export function AdvancedSections({
           id="typfall-hyra"
           label="Boendekostnad per månad"
           hint={`kronor, ${W_REF} års priser`}
-          value={adv.hyra ?? hyraDefault}
-          onChange={(v) => onChange({ hyra: v === hyraDefault ? null : v })}
+          value={adv.hyra ?? HYRA_DEFAULT}
+          onChange={(v) => onChange({ hyra: v === HYRA_DEFAULT ? null : v })}
           min={0}
           max={50000}
         />
-        {gift && (
-          <NumberRow
-            id="typfall-make"
-            label="Makens/makans årsinkomst"
-            hint="kronor per år, förvalt 80 % av din lön"
-            value={adv.makensInkomst ?? makeDefault}
-            onChange={(v) => onChange({ makensInkomst: v === makeDefault ? null : v })}
-            min={0}
-            max={10000000}
-          />
-        )}
+        <NumberRow
+          id="typfall-make"
+          label="Makens/makans årsinkomst"
+          hint="kronor per år, räknas bara om Gift är ikryssat"
+          value={adv.makensInkomst ?? 0}
+          onChange={(v) => onChange({ makensInkomst: v === 0 ? null : v })}
+          min={0}
+          max={10000000}
+        />
         <NumberRow
           id="typfall-formogenhet"
           label="Förmögenhet utöver bostaden"
@@ -463,63 +335,120 @@ export function AdvancedSections({
       </Section>
 
       <Section title="Inkomstskatt" changed={differs(adv, SECTIONS.skatt)}>
-        <CheckRow
-          checked={ownTax}
-          onChange={(v) =>
-            onChange(v ? { kommunalskatt: AVG_KOMMUNALSKATT, begravning: AVG_BEGRAVNING } : { kommunalskatt: 0, begravning: 0 })
-          }
-          label="Egen kommunalskatt"
-          hint={`Annars används genomsnittet för riket, ${formatPercent(AVG_KOMMUNALSKATT * 100, 2)} ${data.lastHardYear}.`}
+        <SelectRow
+          id="typfall-kommun"
+          label="Kommun"
+          hideLabel
+          value={adv.kommun}
+          onChange={(name) => {
+            if (name === "") return onChange({ kommun: "" });
+            const kommunalskatt = fraction(kommuner.rates[name as keyof typeof kommuner.rates]);
+            // A burial fee that has not been chosen yet starts at the average for those who are not members.
+            const chosen = adv.kyrka !== "member" || adv.begravning !== 0;
+            onChange(
+              chosen
+                ? { kommun: name, kommunalskatt }
+                : { kommun: name, kommunalskatt, kyrka: "rest", begravning: FEE.rest },
+            );
+          }}
+          options={KOMMUN_OPTIONS}
+          hint={<ExternalLink href={SCB_KOMMUNALSKATT}>SCB:s lista ({kommuner.year})</ExternalLink>}
         />
-        {ownTax && (
-          <>
-            <NumberRow
-              id="typfall-kommunalskatt"
-              label="Kommunalskatt"
-              hint="%, 25–40"
-              value={adv.kommunalskatt * 100}
-              onChange={(v) => onChange({ kommunalskatt: v / 100 })}
-              min={25}
-              max={40}
-              decimals={2}
-            />
-            <NumberRow
-              id="typfall-begravning"
-              label="Begravningsavgift och samfundsavgift"
-              hint="%, 0–2"
-              value={adv.begravning * 100}
-              onChange={(v) => onChange({ begravning: v / 100 })}
-              min={0}
-              max={2}
-              decimals={2}
-            />
-          </>
-        )}
+        <NumberRow
+          id="typfall-kommunalskatt"
+          label="Kommunalskatt"
+          hint="0 använder det historiska genomsnittet"
+          value={adv.kommunalskatt * 100}
+          onChange={(v) => onChange({ kommunalskatt: fraction(v) })}
+          min={0}
+          max={100}
+          decimals={3}
+        />
+        <SelectRow
+          id="typfall-kyrka"
+          label="Medlemskap i Svenska kyrkan eller annat trossamfund"
+          hideLabel
+          value={adv.kyrka}
+          onChange={(k) => onChange(k === "" ? { kyrka: "" } : { kyrka: k, begravning: FEE[k] })}
+          options={KYRKA}
+          hint={<ExternalLink href={SVENSKA_KYRKAN_KYRKOAVGIFT}>Hitta din församling</ExternalLink>}
+        />
+        <NumberRow
+          id="typfall-begravning"
+          label="Begravningsavgift och samfundsavgift"
+          hint={`medlem ~${percentText(AVG_MEMBER)} %, ej medlem ~${percentText(AVG_NON_MEMBER)} % (${data.lastHardYear})`}
+          value={adv.begravning * 100}
+          onChange={(v) => onChange({ begravning: fraction(v) })}
+          min={0}
+          max={100}
+          decimals={3}
+        />
         <NumberRow
           id="typfall-fack"
           label="Fackföreningsavgift"
-          hint="kronor per år, ger ingen skattereduktion efter 2019"
-          value={adv.fack}
-          onChange={(v) => onChange({ fack: v })}
+          hint="kronor per månad"
+          value={Math.round(adv.fack / 12)}
+          onChange={(v) => onChange({ fack: v * 12 })}
           min={0}
-          max={100000}
+          max={10000}
         />
         <NumberRow
           id="typfall-akassa"
           label="A-kasseavgift"
-          hint="kronor per år, 25 % skattereduktion från 2022"
-          value={adv.akassa}
-          onChange={(v) => onChange({ akassa: v })}
+          hint="kronor per månad"
+          value={Math.round(adv.akassa / 12)}
+          onChange={(v) => onChange({ akassa: v * 12 })}
           min={0}
-          max={100000}
+          max={10000}
         />
       </Section>
 
       <Section title="Kapital och avkastning" changed={differs(adv, SECTIONS.kapital)}>
+        <NumberRow
+          id="typfall-pbh-ar"
+          label="Inkomstår som kapitalvärdet avser"
+          hint="0 = inget känt kapital"
+          value={adv.pbhYear}
+          onChange={(v) => onChange({ pbhYear: v })}
+          min={0}
+          max={2100}
+        />
+        <NumberRow
+          id="typfall-pbh-ip"
+          label="Kapitalvärde inkomstpension"
+          value={adv.pbhIP ?? 0}
+          onChange={(v) => onChange({ pbhIP: v > 0 ? v : null })}
+          min={0}
+          max={100000000}
+        />
+        <NumberRow
+          id="typfall-pbh-pp"
+          label="Kapitalvärde premiepension"
+          value={adv.pbhPP ?? 0}
+          onChange={(v) => onChange({ pbhPP: v > 0 ? v : null })}
+          min={0}
+          max={100000000}
+        />
+        <NumberRow
+          id="typfall-pbh-tjp"
+          label="Kapitalvärde tjänstepension"
+          value={adv.pbhTJP ?? 0}
+          onChange={(v) => onChange({ pbhTJP: v > 0 ? v : null })}
+          min={0}
+          max={100000000}
+        />
+        <NumberRow
+          id="typfall-pbh-privat"
+          label="Kapitalvärde privat sparande"
+          value={adv.pbhPrivat ?? 0}
+          onChange={(v) => onChange({ pbhPrivat: v > 0 ? v : null })}
+          min={0}
+          max={100000000}
+        />
         <SelectRow
           id="typfall-avkastningsval"
-          label="Avkastning fram till i dag"
-          hint="Gäller premiepension, tjänstepension och privat sparande. Framåt används den reala avkastningen du har angett."
+          label="Historisk avkastning"
+          hint="framtiden följer alltid den reala avkastningen på startsidan"
           value={adv.avkastningsval}
           onChange={(v) => onChange({ avkastningsval: v })}
           options={AVKASTNING}
@@ -528,52 +457,7 @@ export function AdvancedSections({
           checked={adv.efterFondavgifter}
           onChange={(v) => onChange({ efterFondavgifter: v })}
           label="Avkastningen är efter fondavgifter"
-          hint="Annars dras en förvaltningsavgift från premiepensionen varje år."
         />
-        <NumberRow
-          id="typfall-pbh-ar"
-          label="Inkomstår som kapitalvärdet avser"
-          hint="till exempel från det orange kuvertet, 0 = inget"
-          value={adv.pbhYear}
-          onChange={(v) => onChange({ pbhYear: v })}
-          min={0}
-          max={W_REF}
-        />
-        {adv.pbhYear > 0 && (
-          <>
-            <OptionalNumberRow
-              id="typfall-pbh-ip"
-              label="Kapitalvärde inkomstpension"
-              hint="kronor vid årets slut"
-              value={adv.pbhIP}
-              onChange={(v) => onChange({ pbhIP: v })}
-              max={100000000}
-            />
-            <OptionalNumberRow
-              id="typfall-pbh-pp"
-              label="Kapitalvärde premiepension"
-              value={adv.pbhPP}
-              onChange={(v) => onChange({ pbhPP: v })}
-              max={100000000}
-            />
-            <OptionalNumberRow
-              id="typfall-pbh-tjp"
-              label="Kapitalvärde tjänstepension"
-              hint="premiebestämd"
-              value={adv.pbhTJP}
-              onChange={(v) => onChange({ pbhTJP: v })}
-              max={100000000}
-            />
-            <OptionalNumberRow
-              id="typfall-pbh-privat"
-              label="Kapitalvärde privat sparande"
-              value={adv.pbhPrivat}
-              onChange={(v) => onChange({ pbhPrivat: v })}
-              max={100000000}
-            />
-            <Note>Tomma fält räknas fram som vanligt.</Note>
-          </>
-        )}
       </Section>
 
       <Section title="Lön" changed={differs(adv, SECTIONS.lon)}>
@@ -643,7 +527,7 @@ export function AdvancedSections({
       </Section>
 
       <Section title="Pensionsgrundande belopp (PGB)" changed={differs(adv, SECTIONS.pgb)}>
-        <PgbSection adv={adv} onChange={onChange} born={born} />
+        <PgbSection adv={adv} onChange={onChange} born={born} rows={pgbRows} />
       </Section>
 
       <Section title="Privat sparande" changed={differs(adv, SECTIONS.privat)}>
@@ -723,11 +607,11 @@ export function AdvancedSections({
         <NumberRow
           id="typfall-tjp-par"
           label="Uttagsålder för tjänstepension"
-          hint={adv.tjpPar > 0 ? "55–75" : "55–75, samma som det definitiva uttaget av allmän pension"}
-          value={tjpPar}
-          onChange={(v) => onChange({ tjpPar: v === defAr ? 0 : v })}
-          min={55}
-          max={75}
+          hint="0 = samma som den allmänna pensionen"
+          value={adv.tjpPar}
+          onChange={(v) => onChange({ tjpPar: v })}
+          min={0}
+          max={100}
         />
         <SelectRow
           id="typfall-temp-tjp"

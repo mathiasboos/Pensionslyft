@@ -33,7 +33,7 @@ import { at, buildSeries } from "./series";
 import { avdragxx, faAred, jobbxx, publicAvg, statlig, xage } from "./tax";
 import { type Avtal, type TjpContext, ftjp, tjpRatt, tjpkassa } from "./tjp";
 import { avkskatt } from "./rules";
-import { excelRound, int, maxi, vbaRound } from "./vba";
+import { int, maxi, vbaRound } from "./vba";
 
 export type { Avtal };
 
@@ -55,6 +55,8 @@ export type Loneprofil = 0 | 1 | 2 | 3 | 4;
 export type Avkastningsval = 1 | 2 | 3;
 /** rng_Kapitalförsäkring: 0 IPS, 1 kapitalförsäkring, 2 investeringssparkonto. */
 export type Sparform = 0 | 1 | 2;
+/** The choice of church membership in the form: "" is an own rate. */
+export type Kyrka = "member" | "stockholm" | "tranas" | "rest" | "";
 
 /** The settings in the sheet Adv_settings that the calculator offers. */
 export interface TypfallAdvanced {
@@ -75,16 +77,19 @@ export interface TypfallAdvanced {
   tempSpar: number; // rng_Temp_IPS_Uttag: years, 0 = over the remaining life expectancy
   kommunalskatt: number; // rng_Kommunalskatt: 0 = historical average, otherwise e.g. 0.3241
   begravning: number; // rng_Begravningsavgift, used with an own kommunalskatt
+  // The municipality and church membership chosen in the form, only to show them again
+  kommun: string;
+  kyrka: Kyrka;
   // Allmän pension: partial withdrawal from par, all of it from defAr
   defAr: number; // rng_def_ar: 0 = everything from par
   uttagIP: number; // UttagIP before defAr: 0, 0.25, 0.5, 0.75 or 1
   uttagPP: number; // UttagPP before defAr
   sysselsattning: "deltid" | 0 | 1; // rngLönPartUttag: work during partial withdrawal
-  tjpPar: number; // TJP_PAR: 0 = the same age as the final withdrawal
+  tjpPar: number; // TJP_PAR: 0 = the same age as the public pension (the first withdrawal)
   // Bostadstillägg
   ansoker: boolean; // Rng_Ansokt
-  hyra: number | null; // boendekostnad per månad in w_ref prices; null = 6 300 kr (+1 200 kr for married)
-  makensInkomst: number | null; // per år; null = 80 % of the own wage for married, else 0
+  hyra: number | null; // boendekostnad per månad in w_ref prices; null = 6 300 kr, as in the web version
+  makensInkomst: number | null; // per år, counted for married only; null = 0, as in the web version
   formogenhet: number; // utöver bostaden
   kapital: number; // kapitalinkomster brutto per år, from the pension
   // Inkomstskatt
@@ -120,6 +125,8 @@ export const DEFAULT_ADVANCED: TypfallAdvanced = {
   tempSpar: 0,
   kommunalskatt: 0,
   begravning: 0,
+  kommun: "",
+  kyrka: "member",
   defAr: 0,
   uttagIP: 1,
   uttagPP: 1,
@@ -158,6 +165,11 @@ export interface TypfallYear {
   netto: number | null; // null for years before 2020 (tax rules not included)
   bidrag: number | null; // bostadstillägg, bostadsbidrag, barnbidrag and bistånd
   disp: number | null; // disponibel inkomst: netto + bidrag + pps
+  municipalTax: number | null; // kommunal skatt with church and burial fee, net of reductions
+  stateTax: number | null; // statlig skatt with the public service fee and tax on capital
+  /** Brutto in the prices of the year ("löpande priser") and in today's wage level (the index of the reference year). */
+  bruttoCurrent: number;
+  bruttoWageLevel: number;
 }
 
 export interface TypfallResult {
@@ -205,6 +217,8 @@ export interface TypfallResult {
     dispFore: number | null;
   };
   years: TypfallYear[];
+  /** The pensionsgrundande belopp from barn, studier, värnplikt and sjuk-/aktivitetsersättning by year, in current prices (years with any). */
+  pgbRows: { year: number; age: number; barn: number; studier: number; vpl: number; sa: number }[];
   /** Income and wage by age in current prices, as used (for the table "egen löneutveckling"). */
   wagePath: { age: number; year: number; income: number; wage: number }[];
   /** Ages actually used: pension, final withdrawal and tjänstepension. */
@@ -288,8 +302,9 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const defAr = adv.defAr > PAR && adv.defAr <= 100 ? adv.defAr : PAR;
   const UttagIP = defAr > PAR ? adv.uttagIP : 1;
   const UttagPP = defAr > PAR ? adv.uttagPP : 1;
-  const tjpPar = adv.tjpPar >= 55 ? adv.tjpPar : defAr;
-  const s = buildSeries(input.realGrowth, input.realReturn, adv.inflation);
+  // As the VBA and the web version: the same age as the first withdrawal of the public pension.
+  const tjpPar = adv.tjpPar >= 55 ? adv.tjpPar : PAR;
+  const s = buildSeries(input.realGrowth, input.realReturn, adv.inflation, adv.efterFondavgifter);
   const civ = input.gift ? 1 : 0;
   const wStart = input.wStart;
   const egenW = adv.egenLon !== null;
@@ -304,9 +319,9 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const wTime = W_REF - born;
   const iyear = int(born) + SLUTAGE; // rng_Boundray_Year = 0, so the rules are never income-indexed
   // Bostadstillägg: boendekostnad per månad and the spouse's income
-  let hyra = adv.hyra ?? 6300 + 1200 * civ;
+  let hyra = adv.hyra ?? 6300;
   if (hyra > 60000) hyra = hyra / 12;
-  const makensInkomst = adv.makensInkomst ?? (civ ? 0.8 * income : 0);
+  const makensInkomst = adv.makensInkomst ?? 0;
   const makaRatio = makensInkomst > 0 && income > 0 ? makensInkomst / income : 0;
   const kapital = adv.kapital;
 
@@ -319,7 +334,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const IP_arv1 = arr(), IP_arv2 = arr(), PP_arv = arr();
   const Kom_skatt = arr(), Begravavg = arr(), Tax_limit1 = arr(), Tax_limit2 = arr();
   const Income_ = arr(), Wage_ = arr();
-  const pgbSA = arr(), pgbVPL = arr(), pgbStud = arr();
+  const pgbSA = arr(), pgbVPL = arr(), pgbStud = arr(), pgbBarnA = arr();
 
   // ---------------- startsetup ----------------
   const nyck = (series: number[], year: number) => at(series, s, year);
@@ -457,6 +472,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const STP_points = arr(), PGB_ = arr();
   const IPS_pbh = arr(), PPS_pbh = arr(), ips = arr(), pps = arr();
   const brutto = arr(), Netto = new Array<number>(n).fill(NaN);
+  const StateTax = new Array<number>(n).fill(NaN), MunicipalTax = new Array<number>(n).fill(NaN);
   const Bidrag = new Array<number>(n).fill(NaN), IndDisp = new Array<number>(n).fill(NaN);
   const pmonth = 12 - int(12 * (born + PAR - int(born + PAR)));
   const Tmonth = 12 - int(12 * (born + tjpPar - int(born + tjpPar)));
@@ -500,11 +516,9 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     tempYears: adv.tempTjp,
   };
 
-  // Garantipensionens delningstal: mortality!L5 for born 1959 and later.
-  const gpDeltal = excelRound(
-    cohortValue(born, "mIP", riktalder) * (cohortValue(born, "dIPn", PAR) / cohortValue(born, "mIP", PAR)),
-    2,
-  );
+  // Garantipensionens delningstal, as the web version takes it: the published figure at riktåldern (the cohorts
+  // from 1959 that the model has).
+  const gpDeltal = cohortValue(born, "dIPn", riktalder);
 
   for (let age = STARTAGE; age <= SLUTAGE; age++) {
     const year = year_[age]!;
@@ -529,6 +543,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
           const uink = k === 0 ? (pgi_[age]! * KPI[counter]!) / KPI[counter - 1]! + PGB_[age]! : pgi_[age]! + PGB_[age]!;
           barnPgb = pgbBarn(year, Income_[counter]!, uink, barn, age, MPGI[age]!, IBB[age]!, riktalder);
         });
+        pgbBarnA[age] = barnPgb;
         PGB_[age] = PGB_[age]! + barnPgb;
         PGB_[age] = PGB_[age]! + pgbVPL[age]!;
         cap();
@@ -617,7 +632,8 @@ export function runTypfall(input: TypfallInput): TypfallResult {
         mpension = gpUnd / pmonth;
         if (age === int(PAR)) gpundtab1 = mpension;
       }
-      pp[age] = ppkassa(PAR, born, age, PP_pbh[age - 1]! * yieldF[age]! ** ((12 - pmonth) / 12), defAr, uttagPP, UttagPP);
+      // The first year takes the whole payout (the share 1), as the web version does; the VBA gives the share of the withdrawal.
+      pp[age] = ppkassa(PAR, born, age, PP_pbh[age - 1]! * yieldF[age]! ** ((12 - pmonth) / 12), defAr, 1, UttagPP);
       if (age < riktalder || year < int(PAR) + born) ptillagg[age] = 0;
       else {
         const i2021 = 2021 - int(born) > STARTAGE ? Iindex[2021 - int(born)]! : 186.52;
@@ -635,7 +651,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       garp[age] = age >= riktalder ? gp(gpUnd, civ, int(born), pbb[age]!, forstid, age, Utgyear, riktalder, uttagIP) : 0;
       mpension = gpUnd / pmonth;
       if (mpension === 0 && ip[age]! > 0) mpension = (ip[age]! * (185 / 160) * (1 / uttagIP)) / ppmonth;
-      pp[age] = ppkassa(PAR, born, age, PP_pbh[age - 1]!, defAr, uttagPP, UttagPP);
+      pp[age] = ppkassa(PAR, born, age, PP_pbh[age - 1]!, defAr, 1, UttagPP);
       if (age < riktalder || year < int(PAR) + born) ptillagg[age] = 0;
       else {
         const i2021 = 2021 - int(born) > STARTAGE ? Iindex[2021 - int(born)]! : 182.58;
@@ -724,20 +740,14 @@ export function runTypfall(input: TypfallInput): TypfallResult {
     if (IPS_pbh[age]! < 0) IPS_pbh[age] = 0;
     if (PPS_pbh[age]! < 0) PPS_pbh[age] = 0;
 
-    // Known balances at the end of an income year (rng_PBHYear). The VBA sets GP_pbh to
-    // PBH_IP / IP_pbh; here the GP balance is scaled by the same ratio as the IP balance, and
-    // only the balances that are given are replaced.
+    // Known balances at the end of an income year (rng_PBHYear): all four are replaced, a value not
+    // given is 0, and the GP balance is the given IP balance divided by the calculated one, as in the VBA.
     if (adv.pbhYear > 0 && year === adv.pbhYear) {
-      if (adv.pbhIP !== null && adv.pbhIP > 0) {
-        if (IP_pbh[age]! > 0) GP_pbh[age] = (GP_pbh[age]! * adv.pbhIP) / IP_pbh[age]!;
-        IP_pbh[age] = adv.pbhIP;
-      }
-      if (adv.pbhPP !== null && adv.pbhPP > 0) PP_pbh[age] = adv.pbhPP;
-      if (adv.pbhTJP !== null && adv.pbhTJP > 0) TJP_pbh[age] = adv.pbhTJP;
-      if (adv.pbhPrivat !== null && adv.pbhPrivat > 0) {
-        if (adv.sparform === 0) IPS_pbh[age] = adv.pbhPrivat;
-        else PPS_pbh[age] = adv.pbhPrivat;
-      }
+      GP_pbh[age] = IP_pbh[age]! > 0 ? (adv.pbhIP ?? 0) / IP_pbh[age]! : 0;
+      IP_pbh[age] = adv.pbhIP ?? 0;
+      PP_pbh[age] = adv.pbhPP ?? 0;
+      TJP_pbh[age] = adv.pbhTJP ?? 0;
+      IPS_pbh[age] = adv.pbhPrivat ?? 0;
     }
     IP_pbh[age] = int(IP_pbh[age]!);
     GP_pbh[age] = int(GP_pbh[age]!);
@@ -789,12 +799,14 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       rakassa = int(rakassa);
       let faAvdrag = faAred(cbefvi, Skyear);
       if (kinkskatt - faAvdrag - jobbavdrag < faAvdrag) faAvdrag = kinkskatt - faAvdrag - jobbavdrag;
-      // The VBA leaves the capital income itself out of the yearly netto (only its tax is in);
-      // it is added here, as in Tabell 1.
-      Netto[age] =
-        brutto[age]! +
-        (age >= int(PAR) ? kapital : 0) -
-        maxi(kinkskatt + kyrkskatt + statskatt + pensionavgift - pensredukt - jobbavdrag - rakassa - faAvdrag, 0);
+      // As the VBA and the web version, the yearly netto leaves the capital income itself out (only its tax is in);
+      // Tabell 1 adds it.
+      const totalTax = maxi(kinkskatt + kyrkskatt + statskatt + pensionavgift - pensredukt - jobbavdrag - rakassa - faAvdrag, 0);
+      Netto[age] = brutto[age]! - totalTax;
+      // As the web version splits the tax: the state tax (with the public service fee and the tax
+      // on capital), and the rest, the municipal tax, church and burial fee and pension fee net of the reductions.
+      StateTax[age] = statskatt;
+      MunicipalTax[age] = totalTax - statskatt;
 
       // Bidrag: barnbidrag, underhållsstöd, bostadsbidrag, bostadstillägg and ekonomiskt bistånd
       const antal = antalBarn(year, barnAll);
@@ -817,12 +829,9 @@ export function runTypfall(input: TypfallInput): TypfallResult {
         }
         const finalYear = int(defAr) === age;
         const scale = finalYear ? 12 / pmonth : 1;
-        // The VBA subtracts the tax on the capital income but leaves the income itself out, so a
-        // capital income would raise the bostadstillägg. It is counted after tax here, as the
-        // VBA does for äldreförsörjningsstödet in Tabell 1.
-        const kap = age >= int(PAR) ? kapital : 0;
-        const btpIncome =
-          (finalYear ? (brutto[age]! - Wage_[age]!) * scale : brutto[age]!) + kap - kapskatt - ptillagg[age]!;
+        // As the VBA and the web version: the tax on the capital income is taken from the income, the
+        // income itself is left out, and the capital income counts after tax in the äldreförsörjningsstöd.
+        const btpIncome = (brutto[age]! - (finalYear ? Wage_[age]! : 0) - kapskatt - ptillagg[age]!) * scale;
         const b =
           uttagIP *
           btp({
@@ -849,7 +858,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
           pbb: pbb[age]!,
           year: Utgyear,
           bald: age,
-          kapital: 0,
+          kapital,
           inkomstm: makaInk,
           born,
           age,
@@ -943,6 +952,10 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       netto: Number.isNaN(Netto[age]!) ? null : r(Netto[age]!),
       bidrag: Number.isNaN(Bidrag[age]!) ? null : r(Bidrag[age]!),
       disp: Number.isNaN(IndDisp[age]!) ? null : r(IndDisp[age]!),
+      municipalTax: Number.isNaN(MunicipalTax[age]!) ? null : r(MunicipalTax[age]!),
+      stateTax: Number.isNaN(StateTax[age]!) ? null : r(StateTax[age]!),
+      bruttoCurrent: Math.round(brutto[age]!),
+      bruttoWageLevel: Math.round((brutto[age]! * Iindex[Math.max(STARTAGE, W_REF - int(born))]!) / Iindex[age]!),
     });
   }
 
@@ -999,7 +1012,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   if (PAR >= riktalder && uttagIP === 1 && uttagPP === 1) {
     const scale = 12 / pmonth;
     const b = btp({
-      inkomst: tableBrutto * scale + kapital - kapskatt - ptillagg[P]!, // the VBA sets Wage_(PAR) to 0 first
+      inkomst: tableBrutto * scale - kapskatt - ptillagg[P]!, // the VBA sets Wage_(PAR) to 0 first
       inkomstm: makaInk * scale,
       hyra: 12 * hyraT,
       gift: civ as 0 | 1,
@@ -1030,9 +1043,9 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       ageIBB: IBB[P]!,
       iyear,
     });
-    // The VBA keeps BTP here when there is no application; it is left out as in the yearly table.
+    // Without an application only the supplement beyond BTP is left out, as in the VBA and the web version.
     if (!adv.ansoker) sb = 0;
-    bostadstillaggTab = adv.ansoker ? btpSbtp(b, sb) : 0;
+    bostadstillaggTab = btpSbtp(b, sb);
   }
   const bidragTab = barnbidragLast + bostadsbidragLast + bostadstillaggTab;
   const dispTab = netto + bidragTab + pps[P]!;
@@ -1040,6 +1053,18 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   const j0 = fixed(P);
   const wagePath = [];
   for (let age = 15; age <= SLUTAGE; age++) wagePath.push({ age, year: year_[age]!, income: Income_[age]!, wage: Wage_[age]! });
+  const pgbRows: TypfallResult["pgbRows"] = [];
+  for (let age = 15; age <= SLUTAGE; age++) {
+    const row = {
+      year: year_[age]!,
+      age,
+      barn: Math.round(pgbBarnA[age]!),
+      studier: int(pgbStud[age]! / 100) * 100,
+      vpl: Math.round(pgbVPL[age]!),
+      sa: Math.round(pgbSA[age]!),
+    };
+    if (row.barn > 0 || row.studier > 0 || row.vpl > 0 || row.sa > 0) pgbRows.push(row);
+  }
 
   return {
     input,
@@ -1083,6 +1108,7 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       dispFore: nettoKnown ? slutDispNominal : null,
     },
     years,
+    pgbRows,
     wagePath,
     defAr,
     tjpPar,

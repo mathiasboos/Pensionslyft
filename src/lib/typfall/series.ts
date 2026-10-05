@@ -40,7 +40,12 @@ export function balansindex(bi: number, btal: number, ital1: number, ital2: numb
   return int(b * 100 + 0.49) / 100;
 }
 
-export function buildSeries(realGrowth: number, realReturn: number, inflation = 0): Series {
+// The premium pension's fund management fee from 2000 and the administration fee from 2026 that
+// are taken from the return when it is given before fees (the web version's series).
+const FEE_MANAGEMENT = 0.0014;
+const FEE_ADMIN_PROJECTED = 2662e-9;
+
+export function buildSeries(realGrowth: number, realReturn: number, inflation = 0, netOfFees = true): Series {
   const first = data.firstYear;
   const lastHard = data.lastHardYear;
   const n = LAST_YEAR - first + 1;
@@ -97,9 +102,13 @@ export function buildSeries(realGrowth: number, realReturn: number, inflation = 
   // Fund return from 2026 and Riksgälden's rate from 2025 follow the user's assumptions.
   const rgk = ((1 + inflation) * (1 + realGrowth) * 1.01 - 1) * 100;
   for (let y = first; y <= LAST_YEAR; y++) {
-    if (y >= 2026) s.yieldQ[i(y)] = s.yieldR[i(y)] = (1 + realReturn) * (1 + inflation) - 1;
+    const fees = netOfFees ? 0 : FEE_MANAGEMENT + FEE_ADMIN_PROJECTED;
+    if (y >= 2026) s.yieldQ[i(y)] = s.yieldR[i(y)] = (1 + realReturn - fees) * (1 + inflation) - 1;
     if (y >= 2025) s.rgkPct[i(y)] = rgk;
   }
+  // Before fees, the share left of the premium pension is also reduced by the fees.
+  if (!netOfFees)
+    for (let y = 2000; y <= LAST_YEAR; y++) s.ppAvg[i(y)] = s.ppAvg[i(y)]! - FEE_MANAGEMENT - (y >= 2026 ? FEE_ADMIN_PROJECTED : 0);
 
   // Municipal tax and burial fee: data to 2026, then unchanged.
   const tf = data.taxFirstYear;
