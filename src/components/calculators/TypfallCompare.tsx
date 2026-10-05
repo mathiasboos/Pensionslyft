@@ -2,7 +2,7 @@
 // income per month by age.
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Download, Upload, X } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { downloadCsv } from "@/lib/csv";
 import { formatPercent, formatSek, formatSekShort, num } from "@/lib/format";
@@ -339,13 +339,8 @@ export function ScenarioCompare({
                         <button type="button" className={button} onClick={() => onLoad(c.saved!)}>
                           Visa
                         </button>
-                        <button
-                          type="button"
-                          className="grid size-8 cursor-pointer place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                          aria-label={`Ta bort ${c.name}`}
-                          onClick={() => onRemove(c.saved!.id)}
-                        >
-                          <X className="size-4" aria-hidden="true" />
+                        <button type="button" className={button} aria-label={`Ta bort ${c.name}`} onClick={() => onRemove(c.saved!.id)}>
+                          Ta bort
                         </button>
                       </span>
                     )}
