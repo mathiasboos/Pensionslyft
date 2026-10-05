@@ -128,6 +128,7 @@ export default function TypfallCalculator() {
   const [mikroRows, setMikroRows] = useState<MikrosimRow[]>(() => [newRow("1")]);
   const [saved, setSaved] = useState<SavedScenario[]>([]);
   const [tableOpen, setTableOpen] = useState(false);
+  const [afterTax, setAfterTax] = useState(true);
   const { mode, born, par, useRikt, wStart, monthlyWage, avtal, gift, inflation, realGrowth, realReturn, adv } = form;
   const patch = (p: Partial<ScenarioForm>) => setForm((f) => ({ ...f, ...p }));
   const setMode = (v: Mode) => patch({ mode: v });
@@ -176,10 +177,11 @@ export default function TypfallCalculator() {
           tjp: y.tjp / 12,
           skydd: (y.gp + y.tillagg) / 12,
           privat: (y.ips + y.pps) / 12,
-          // After tax; the tax rules are only in the model from 2020, so earlier years have no line.
-          netto: y.netto === null ? null : y.netto / 12,
+          // The line: the income after tax (the tax rules are only in the model from 2020, so earlier years have no
+          // line) or the income before tax.
+          line: afterTax ? (y.netto === null ? null : y.netto / 12) : y.brutto / 12,
         })),
-    [result, firstAge],
+    [result, firstAge, afterTax],
   );
   // The table starts ten years before the pension, as in the web version, and only has the columns with something in them.
   const tableYears = result.years.filter((y) => y.age >= parUsed - 10 && y.age <= 100);
@@ -567,15 +569,31 @@ export default function TypfallCalculator() {
                   </li>
                 ))}
                 <li className="flex items-center gap-2">
-                  <span className="w-4 border-t-2 border-dashed border-foreground" aria-hidden="true" />
-                  Inkomst efter skatt
+                  <span
+                    className={cn("w-4 border-t-2 border-foreground", afterTax ? "border-dashed" : "border-solid")}
+                    aria-hidden="true"
+                  />
+                  {afterTax ? "Inkomst efter skatt" : "Inkomst brutto"}
                 </li>
               </ul>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Fasta priser ({W_REF}). Staplarna är före skatt och den streckade linjen efter skatt.
+              Fasta priser ({W_REF}). Staplarna är före skatt och linjen visar inkomsten{" "}
+              {afterTax ? "efter skatt" : "före skatt (brutto)"}.
               {result.pps > 0 && " Uttagen från ISK och kapitalförsäkring är redan beskattade."}
             </p>
+            <div className="mt-3 max-w-xs">
+              <Segmented
+                label="Linjen i diagrammet"
+                size="sm"
+                value={afterTax ? "efter" : "fore"}
+                onChange={(v) => setAfterTax(v === "efter")}
+                options={[
+                  { value: "fore", label: "Före skatt" },
+                  { value: "efter", label: "Efter skatt" },
+                ]}
+              />
+            </div>
             <div className="mt-4 h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 20, right: 8 }} barCategoryGap={2}>
@@ -596,20 +614,21 @@ export default function TypfallCalculator() {
                     strokeDasharray="3 3"
                     label={{ value: "Pension", position: "top", fontSize: 12, fill: "var(--color-foreground)" }}
                   />
-                  <Bar dataKey="lon" name="Lön" stackId="a" fill={WAGE_COLOR} />
+                  <Bar dataKey="lon" name="Lön" stackId="a" fill={WAGE_COLOR} isAnimationActive={false} />
                   {series.map((s) => (
-                    <Bar key={s.key} dataKey={s.key} name={s.label} stackId="a" fill={s.color} />
+                    <Bar key={s.key} dataKey={s.key} name={s.label} stackId="a" fill={s.color} isAnimationActive={false} />
                   ))}
                   <Line
-                    dataKey="netto"
-                    name="Inkomst efter skatt"
+                    dataKey="line"
+                    name={afterTax ? "Inkomst efter skatt" : "Inkomst brutto"}
                     type="linear"
                     stroke="var(--color-foreground)"
                     strokeWidth={2}
-                    strokeDasharray="6 4"
+                    strokeDasharray={afterTax ? "6 4" : undefined}
                     dot={false}
                     activeDot={{ r: 4, stroke: "var(--color-card)", strokeWidth: 2 }}
                     connectNulls={false}
+                    isAnimationActive={false}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
