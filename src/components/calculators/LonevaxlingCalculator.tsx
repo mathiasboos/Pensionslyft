@@ -279,7 +279,7 @@ export default function LonevaxlingCalculator() {
                   Inklusive <b>{fmtUplift(result.uplift)}</b> som
                   arbetsgivaren skjuter till{" "}
                   <Info
-                    style={{ color: "#fff", borderColor: "#fff", opacity: 0.55 }}
+                    style={{ color: "var(--primary-foreground)", borderColor: "var(--primary-foreground)", opacity: 0.55 }}
                     tip={`Arbetsgivaren betalar lägre löneskatt på pensionspremier (${fmtRate(SLP_PCT)} %) än arbetsgivaravgift på lön (${fmtRate(AG_PCT)} %). Skillnaden läggs ovanpå din pensionspremie.`}
                   />
                 </div>

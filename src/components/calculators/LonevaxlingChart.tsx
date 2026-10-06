@@ -1,12 +1,16 @@
 // "Så växer ditt sparande": the chart of the löneväxlingskalkylator, drawn on a canvas as in the supplied
-// Salary_Exchange_Consumer.html (github.com/mathiasboos/Calculators). The geometry, the colours and the
-// tooltip are the original's.
+// Salary_Exchange_Consumer.html (github.com/mathiasboos/Calculators). The geometry and the tooltip are the
+// original's; the colours are the site's (src/styles/global.css), as in the Pensionskalkylatorn.
 import { useLayoutEffect, useRef, useState } from "react";
 import { clamp, fmtKr, fmtOneDecimal, simSeries } from "@/lib/lonevaxling";
 
 const C_H = 360; // the white fill of the original is 360 px high, also on a phone
-const GREEN = "#015d34";
-const BLUE = "#4885c4";
+// A canvas needs plain colours, so these are the values of the site's tokens.
+const NAVY = "#0c2a49"; // --chart-1, the capital
+const GOLD = "#a18142"; // --chart-2, the capital paid in
+const NAVY_RGB = "12,42,73";
+const GRID = "#dfdad0"; // --border
+const INK = "#545f6c"; // --muted-foreground
 
 /** The measures of the chart, which are smaller on a phone. */
 function geometry(W: number) {
@@ -41,7 +45,7 @@ function draw(cv: HTMLCanvasElement, { W, premie, years, selPct, hoverIdx }: Dra
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   // White background
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "#fff"; // --card
   ctx.fillRect(0, 0, W, C_H);
 
   const mainSeries = simSeries(premie, selPct, years);
@@ -55,9 +59,9 @@ function draw(cv: HTMLCanvasElement, { W, premie, years, selPct, hoverIdx }: Dra
   const Y = (v: number) => padT + ih * (1 - v / maxV);
 
   // Grid lines and the labels of the y axis, in kronor
-  ctx.strokeStyle = "#e8e4d8";
+  ctx.strokeStyle = GRID;
   ctx.lineWidth = 1;
-  ctx.fillStyle = "#444";
+  ctx.fillStyle = INK;
   ctx.font = `${fontSize}px system-ui,sans-serif`;
   ctx.textAlign = "right";
   for (let g = 1; g <= 4; g++) {
@@ -73,8 +77,8 @@ function draw(cv: HTMLCanvasElement, { W, premie, years, selPct, hoverIdx }: Dra
 
   // The area under the main curve
   const grad = ctx.createLinearGradient(0, padT, 0, padT + ih);
-  grad.addColorStop(0, "rgba(1,93,52,0.18)");
-  grad.addColorStop(1, "rgba(1,93,52,0.04)");
+  grad.addColorStop(0, `rgba(${NAVY_RGB},0.18)`);
+  grad.addColorStop(1, `rgba(${NAVY_RGB},0.04)`);
   ctx.beginPath();
   mainSeries.forEach((v, i) => (i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))));
   ctx.lineTo(X(years), Y(0));
@@ -83,24 +87,24 @@ function draw(cv: HTMLCanvasElement, { W, premie, years, selPct, hoverIdx }: Dra
   ctx.fillStyle = grad;
   ctx.fill();
 
-  // Blue dashed line: the capital paid in
+  // Gold dashed line: the capital paid in
   ctx.beginPath();
   inbetalt.forEach((v, i) => (i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))));
-  ctx.strokeStyle = BLUE;
+  ctx.strokeStyle = GOLD;
   ctx.lineWidth = mobile ? 2 : 2.5;
   ctx.setLineDash([7, 5]);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Dark green main line
+  // Navy main line
   ctx.beginPath();
   mainSeries.forEach((v, i) => (i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))));
-  ctx.strokeStyle = GREEN;
+  ctx.strokeStyle = NAVY;
   ctx.lineWidth = mobile ? 2 : 3;
   ctx.stroke();
 
   // The labels of the x axis
-  ctx.fillStyle = "#555";
+  ctx.fillStyle = INK;
   ctx.font = `${fontSize}px system-ui,sans-serif`;
   const stepX = years > 30 ? 10 : years > 12 ? 5 : years > 6 ? 2 : 1;
   for (let y = 0; y <= years; y += stepX) {
@@ -111,7 +115,7 @@ function draw(cv: HTMLCanvasElement, { W, premie, years, selPct, hoverIdx }: Dra
   // The line and the dots at the hovered year
   if (hoverIdx !== null) {
     const i = Math.min(hoverIdx, years);
-    ctx.strokeStyle = "#ccc";
+    ctx.strokeStyle = GRID;
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
@@ -121,14 +125,14 @@ function draw(cv: HTMLCanvasElement, { W, premie, years, selPct, hoverIdx }: Dra
     ctx.setLineDash([]);
     ctx.beginPath();
     ctx.arc(X(i), Y(mainSeries[i]!), 5, 0, Math.PI * 2);
-    ctx.fillStyle = GREEN;
+    ctx.fillStyle = NAVY;
     ctx.fill();
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(X(i), Y(inbetalt[i]!), 5, 0, Math.PI * 2);
-    ctx.fillStyle = BLUE;
+    ctx.fillStyle = GOLD;
     ctx.fill();
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 2;
@@ -221,22 +225,22 @@ export default function LonevaxlingChart({ premie, years, avkastning }: Props) {
         <div className="compound-tip vis" ref={tipRef}>
           <div className="ct-yr">{i === 0 ? "Idag" : "Om " + i + " år"}</div>
           <div className="ct-row">
-            <span style={{ display: "inline-block", width: 22, height: 0, borderTop: `2px dashed ${BLUE}` }} />
+            <span style={{ display: "inline-block", width: 22, height: 0, borderTop: `2px dashed ${GOLD}` }} />
             Inbetalt<b>{fmtKr(premie * i * 12)}</b>
           </div>
           <div className="ct-row">
-            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: GREEN }} />
+            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: NAVY }} />
             {`${selFmt} %`}<b>{fmtKr(main[i]!)}</b>
           </div>
         </div>
       )}
       <div className="compound-legend">
         <span>
-          <span className="leg-swatch" style={{ display: "inline-block", width: 22, height: 0, borderTop: `2.5px dashed ${BLUE}` }} />
+          <span className="leg-swatch" style={{ display: "inline-block", width: 22, height: 0, borderTop: `2.5px dashed ${GOLD}` }} />
           Inbetalt kapital
         </span>
         <span>
-          <span className="leg-swatch" style={{ background: GREEN }} />
+          <span className="leg-swatch" style={{ background: NAVY }} />
           {`Värde vid ${selFmt} %`}
         </span>
       </div>

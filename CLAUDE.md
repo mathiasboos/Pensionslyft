@@ -38,8 +38,14 @@ look at on the preview.
   self-contained file, `public/typfallsmodellen-app.html`, built by `node scripts/sync-typfallsmodellen.mjs`
   (clones the project, builds `apps/web`, copies the file and writes `src/data/typfallsmodellen-source.json`,
   which the page shows as the version). Never edit the HTML by hand; to update the calculator, run the script
-  and commit the new file. The app keeps its own look and follows the OS dark mode. The old React port
-  (`src/lib/typfall/`) is in git history up to commit a4c6971.
+  and commit the new file. The script also puts the site's colours into the app
+  (`scripts/typfallsmodellen-theme.css`, which sets the app's colour variables and turns off its dark mode),
+  so that the page looks like the other calculators; change colours there, never in the HTML. The old React
+  port (`src/lib/typfall/`) is in git history up to commit a4c6971.
+- **One palette for all calculators.** The owner wants every calculator in the colours of the
+  Pensionskalkylatorn, the tokens in `src/styles/global.css` (navy, sand, gold, off-white; the `chart-*` colours
+  in diagrams). A calculator taken from GitHub keeps its calculation, texts and layout, but not its own palette:
+  map its colours to the tokens, and check diagram colours with the dataviz validator.
 - **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
   public repositories: `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
   `Salary_Exchange_Consumer.html`, and others, with the tax constants to check every December in its
@@ -48,8 +54,9 @@ look at on the preview.
   current file in those repositories first (a read-only shallow clone is enough) and port from it, instead of
   working from an older copy. They are newer than anything uploaded to a chat.
 - `src/lib/lonevaxling.ts`, `src/components/calculators/Lonevaxling*.tsx` and `src/styles/lonevaxling.css`
-  are a port of `Salary_Exchange_Consumer.html`. The page keeps that file's own green look, scoped under
-  `.lv`, instead of the site's tokens, and `tests/lonevaxling.test.ts` compares the calculation with what the
+  are a port of `Salary_Exchange_Consumer.html`. The layout and texts are that file's, scoped under `.lv`,
+  but every colour is a site token (`--lv-*` in the CSS are `var(--primary)` and so on; the canvas chart has
+  the same values as hex), and `tests/lonevaxling.test.ts` compares the calculation with what the
   original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
 - Never commit `.env` files or secrets. The repository is public.
 

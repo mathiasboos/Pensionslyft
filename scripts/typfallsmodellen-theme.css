@@ -1,0 +1,70 @@
+/*
+ * The colours of the Typfallsmodellen app on pensionslyft.se.
+ *
+ * The app on GitHub has its own palette (SEB's green and yellow, and a dark mode). On this site it is shown in the
+ * site's palette, the one of the Pensionskalkylatorn (src/styles/global.css). scripts/sync-typfallsmodellen.mjs puts
+ * this file into the built app, after the app's own style, and sets data-theme="light" on <html> so that the app's
+ * dark mode, which the rest of the site does not have, stays off. Only variables and a few rules for the page itself
+ * are set, so the app's layout and behaviour are untouched.
+ *
+ * Site tokens used, with their values:
+ *   background #fbf8f3   foreground #0f2034   primary #0c2a49   primary-soft #22507b   secondary #ece0ca
+ *   accent #e6d5b7   muted #f2eee6   muted-foreground #545f6c   border #dfdad0   destructive #cc2827
+ *   chart-1 #0c2a49 navy   chart-2 #a18142 gold   chart-3 #4675a4 steel blue   chart-4 #72b3a6 teal   chart-5 #9c4438 brick
+ *
+ * The figures take the site's chart colours in the site's order. Run through the dataviz validator, the sets the app
+ * draws next to each other (Figur 2's stack, the seven bands of mikrosim, the scenarios, the tax pair) pass the colour
+ * vision (ΔE >= 12) and normal-vision (ΔE >= 15) checks between neighbours. As with the muted palette of the site
+ * itself, the lightness band and chroma floor fail and teal and sand are below 3:1 against white; the relief the
+ * validator asks for is in the app: a legend and a hover readout on every figure, and every plotted number in a table.
+ */
+:root {
+  color-scheme: light;
+  --surface-sunken: #f2eee6;
+  --border: #dfdad0;
+  --rule: #bdb6a6;
+  --text-primary: #0f2034;
+  --text-secondary: #0c2a49;
+  --text-muted: #545f6c;
+  --grid: #ebe6da;
+  --axis: #a3a9b1;
+  --accent: #0c2a49;
+  --danger: #cc2827;
+  --danger-tint: #fbe9e6;
+  --danger-ink: #0f2034;
+  --banner: #ece0ca;
+  --banner-ink: #0c2a49;
+  --retired: #ece7dc;
+
+  --fig-salary: #4675a4;
+  --fig-income-pension: #0c2a49;
+  --fig-guarantee: #a18142;
+  --fig-premium: #72b3a6;
+  --fig-occupational: #e6d5b7;
+  --fig-after-tax: #0f2034;
+  --fig-current: #4675a4;
+  --fig-fixed: #0c2a49;
+  --fig-wage-level: #9c4438;
+  --fig-net: #0c2a49;
+  --fig-gross: #a9b8c9;
+  --fig-municipal-tax: #a18142;
+  --fig-state-tax: #9c4438;
+  --fig-disposable: #0f2034;
+  --fig-supplementary: #4675a4;
+  --fig-ipt: #9c4438;
+  --fig-private-saving: #2f6f73;
+  --fig-scenario-0: #0c2a49;
+  --fig-scenario-1: #a18142;
+  --fig-scenario-2: #4675a4;
+  --fig-scenario-3: #72b3a6;
+  --fig-retirement-line: #cfc9bb;
+}
+
+body {
+  background: #fbf8f3;
+}
+
+/* The note box and the table banners of the app, in the site's gold and sand. */
+.disclaimer {
+  border-left-color: #a18142;
+}
