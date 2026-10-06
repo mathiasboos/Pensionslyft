@@ -1,5 +1,5 @@
 ---
-import { ArrowRight, Calculator, Flame, LineChart, UsersRound } from "lucide-react";
+import { ArrowRight, Calculator, Flame, LineChart, PiggyBank, UsersRound } from "lucide-react";
 import ArticleCard from "@/components/ArticleCard.astro";
 import { buttonVariants } from "@/components/ui/button";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -42,7 +42,7 @@ const latest = (await getArticles()).slice(0, 3);
   </section>
 
   <section class="mx-auto max-w-6xl px-4 py-16">
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <a
         href="/pensionskalkylator"
         class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
@@ -90,6 +90,19 @@ const latest = (await getArticles()).slice(0, 3);
         <h2 class="mt-4 font-serif text-2xl font-semibold">Typfallsmodellen</h2>
         <p class="mt-2 text-muted-foreground">
           Allmän pension och tjänstepension år för år, enligt Pensionsmyndighetens modell.
+        </p>
+        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
+          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
+        </span>
+      </a>
+      <a
+        href="/lonevaxlingskalkylator"
+        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
+      >
+        <PiggyBank className="size-8 text-primary-soft" aria-hidden="true" />
+        <h2 class="mt-4 font-serif text-2xl font-semibold">Löneväxlingskalkylatorn</h2>
+        <p class="mt-2 text-muted-foreground">
+          Se vad löneväxling ger i extra pensionskapital och när det passar din lönenivå.
         </p>
         <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
           Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />

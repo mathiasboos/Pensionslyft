@@ -125,6 +125,7 @@ export type FireInput = {
 export type FireYear = {
   year: number;
   age: number;
+  monthlySalary: number; // after tax
   monthlySavings: number;
   yearlySavings: number;
   opening: number;
@@ -177,6 +178,7 @@ export function calculateFire(input: FireInput): FireResult {
     rows.push({
       year,
       age: input.currentAge + year,
+      monthlySalary: input.monthlySalary,
       monthlySavings,
       yearlySavings,
       opening,

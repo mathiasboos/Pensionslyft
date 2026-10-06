@@ -32,11 +32,32 @@ look at on the preview.
   `tests/pension.test.ts` are the reference: only change them when a change to the
   math is intended.
 - The site must work at phone width (375 px) with no horizontal scrolling.
-- `src/lib/typfall/` is a line-by-line port of the VBA in Pensionsmyndighetens typfallsmodell
-  (ver. 4.8), with data in `src/data/typfall.json`. `tests/typfall.test.ts` compares it with the
-  model's own output, so keep the VBA's rounding and quirks when changing it. The settings from the
-  sheet Adv_settings are `TypfallAdvanced` in `model.ts`; at their defaults the result must stay
-  identical to the model's run. See `scripts/typfall/README.md` for how to refresh the data.
+- **Typfallsmodellen is not ported to this site.** `/typfallsmodellen` shows the real web app of
+  `github.com/mathiasboos/Typfallsmodellen` in a same-origin iframe the height of the window (the app
+  uses `position: fixed`, a sticky input column and `100vh`, so it must not be auto-height). The app is one
+  self-contained file, `public/typfallsmodellen-app.html`, built by `node scripts/sync-typfallsmodellen.mjs`
+  (clones the project, builds `apps/web`, copies the file and writes `src/data/typfallsmodellen-source.json`,
+  which the page shows as the version). Never edit the HTML by hand; to update the calculator, run the script
+  and commit the new file. The script also puts the site's colours into the app
+  (`scripts/typfallsmodellen-theme.css`, which sets the app's colour variables and turns off its dark mode),
+  so that the page looks like the other calculators; change colours there, never in the HTML. The old React
+  port (`src/lib/typfall/`) is in git history up to commit a4c6971.
+- **One palette for all calculators.** The owner wants every calculator in the colours of the
+  Pensionskalkylatorn, the tokens in `src/styles/global.css` (navy, sand, gold, off-white; the `chart-*` colours
+  in diagrams). A calculator taken from GitHub keeps its calculation, texts and layout, but not its own palette:
+  map its colours to the tokens, and check diagram colours with the dataviz validator.
+- **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
+  public repositories: `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
+  `Salary_Exchange_Consumer.html`, and others, with the tax constants to check every December in its
+  CLAUDE.md) and `github.com/mathiasboos/Typfallsmodellen` (the TypeScript engine and the web app that is
+  built into `typfallsmodellen.html`). When a calculator on this site is added, changed or checked, read the
+  current file in those repositories first (a read-only shallow clone is enough) and port from it, instead of
+  working from an older copy. They are newer than anything uploaded to a chat.
+- `src/lib/lonevaxling.ts`, `src/components/calculators/Lonevaxling*.tsx` and `src/styles/lonevaxling.css`
+  are a port of `Salary_Exchange_Consumer.html`. The layout and texts are that file's, scoped under `.lv`,
+  but every colour is a site token (`--lv-*` in the CSS are `var(--primary)` and so on; the canvas chart has
+  the same values as hex), and `tests/lonevaxling.test.ts` compares the calculation with what the
+  original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
 - Never commit `.env` files or secrets. The repository is public.
 
 ## Before opening a PR

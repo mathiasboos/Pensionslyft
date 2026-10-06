@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Area,
   CartesianGrid,
@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ChevronDown, Download } from "lucide-react";
+import { ChevronDown, Download, LineChart, SlidersHorizontal, Table } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { calculateFire, FIRE_YEARS, ISK_TAX_FREE_AMOUNT, type FireYear } from "@/lib/pension";
 import { formatPercent, formatSek, formatSekShort, num } from "@/lib/format";
@@ -20,6 +20,7 @@ import { SliderField } from "./fields";
 const COLUMNS: { label: string; value: (r: FireYear) => number }[] = [
   { label: "År", value: (r) => r.year },
   { label: "Ålder", value: (r) => r.age },
+  { label: "Månadslön", value: (r) => r.monthlySalary },
   { label: "Månadssparande", value: (r) => r.monthlySavings },
   { label: "Årssparande", value: (r) => r.yearlySavings },
   { label: "Portfölj vid årets start", value: (r) => r.opening },
@@ -74,6 +75,17 @@ export default function FireCalculator() {
   const [taxFreeAmount, setTaxFreeAmount] = useState(ISK_TAX_FREE_AMOUNT);
   const [startCapital, setStartCapital] = useState(0);
   const [tableOpen, setTableOpen] = useState(false);
+  // On a phone (620 px or less) the page is three tabs, as in the original calculator.
+  const [tab, setTab] = useState<"inputs" | "results" | "table">("inputs");
+  const tableRef = useRef<HTMLDivElement>(null);
+  const chooseTab = (next: typeof tab) => {
+    setTab(next);
+    if (next === "results") setTableOpen(false);
+    if (next === "table") {
+      setTableOpen(true);
+      setTimeout(() => tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    }
+  };
 
   const result = useMemo(
     () =>
@@ -112,329 +124,361 @@ export default function FireCalculator() {
     ];
   }, [rows, fireAge, currentAge, startCapital, result.target]);
 
+  const tabs = [
+    { key: "inputs", label: "Inställningar", Icon: SlidersHorizontal },
+    { key: "results", label: "Resultat", Icon: LineChart },
+    { key: "table", label: "Tabell", Icon: Table },
+  ] as const;
+
   return (
-    <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
-      <div className="space-y-6 self-start">
-        <div className="space-y-6 rounded-xl border border-border bg-card p-6">
-          <SliderField
-            label="Din ålder"
-            value={currentAge}
-            onChange={setCurrentAge}
-            min={15}
-            max={60}
-            step={1}
-            display={`${currentAge} år`}
-          />
-          <div>
-            <SliderField
-              label="Månadslön efter skatt"
-              value={monthlySalary}
-              onChange={setMonthlySalary}
-              min={5000}
-              max={200000}
-              step={1000}
-              display={formatSek(monthlySalary)}
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Du sparar {formatSek(result.monthlySavings)} och lever på{" "}
-              {formatSek(result.monthlySpending)} i månaden.
-            </p>
-          </div>
-          <SliderField
-            label="Sparkvot"
-            value={savingsRate}
-            onChange={setSavingsRate}
-            min={5}
-            max={95}
-            step={1}
-            display={formatPercent(savingsRate, 0)}
-          />
-          <div>
-            <SliderField
-              label="FIRE-multipel"
-              value={fireMultiple}
-              onChange={setFireMultiple}
-              min={10}
-              max={50}
-              step={1}
-              display={`${fireMultiple}\u00a0×`}
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Målet är {fireMultiple} gånger dina årsutgifter. 25&nbsp;× motsvarar 4&nbsp;%-regeln.
-            </p>
-          </div>
-          <div>
-            <SliderField
-              label="Nuvarande sparande"
-              value={startCapital}
-              onChange={setStartCapital}
-              min={0}
-              max={2000000}
-              step={10000}
-              display={formatSek(startCapital)}
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Det du redan har sparat och investerat.
-            </p>
-          </div>
-
-          <div className="h-px bg-border" />
-
-          <SliderField
-            label="Avkastning per år"
-            value={annualReturn}
-            onChange={setAnnualReturn}
-            min={1}
-            max={15}
-            step={0.1}
-            display={formatPercent(annualReturn, 1)}
-          />
-          <SliderField
-            label="Avgifter per år"
-            value={annualFee}
-            onChange={setAnnualFee}
-            min={0}
-            max={2}
-            step={0.05}
-            display={formatPercent(annualFee, 2)}
-          />
-          <div>
-            <SliderField
-              label="Skatt på ISK/KF per år"
-              value={yieldTax}
-              onChange={setYieldTax}
-              min={0}
-              max={3}
-              step={0.05}
-              display={formatPercent(yieldTax, 2)}
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Schablonskatten på investeringssparkonto och kapitalförsäkring.
-            </p>
-          </div>
-          <div>
-            <SliderField
-              label="Skattefritt belopp"
-              value={taxFreeAmount}
-              onChange={setTaxFreeAmount}
-              min={0}
-              max={500000}
-              step={10000}
-              display={formatSek(taxFreeAmount)}
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Från 2026 är de första {formatSek(ISK_TAX_FREE_AMOUNT)} skattefria, totalt för ISK,
-              kapitalförsäkring och PEPP-konto. Välj 0 kr för att räkna utan.
-            </p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-6 text-sm">
-          <h2 className="font-serif text-lg font-semibold">Avkastning efter kostnader</h2>
-          <dl className="mt-3 space-y-2">
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Avkastning</dt>
-              <dd>{formatPercent(annualReturn, 2)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">− Skatt</dt>
-              <dd>{formatPercent(yieldTax, 2)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">− Avgifter</dt>
-              <dd>{formatPercent(annualFee, 2)}</dd>
-            </div>
-            <div className="flex justify-between border-t border-border pt-2 font-semibold">
-              <dt>= Netto, ungefär</dt>
-              <dd>{formatPercent(result.netReturn, 2)}</dd>
-            </div>
-          </dl>
-          {taxFreeAmount > 0 && (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Skatten tas bara ut på det som överstiger {formatSek(taxFreeAmount)}, så den blir lägre
-              än så. Mest märks det i början, när portföljen är liten.
-            </p>
-          )}
-        </div>
+    <div>
+      <div role="tablist" aria-label="Visa" className="mb-4 hidden gap-1.5 max-[620px]:flex">
+        {tabs.map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            onClick={() => chooseTab(key)}
+            className={cn(
+              "flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full border px-2 text-xs font-semibold transition-colors",
+              tab === key ? "border-primary bg-primary text-primary-foreground" : "border-foreground/70 bg-card hover:bg-muted",
+            )}
+          >
+            <Icon className="size-4" aria-hidden="true" />
+            {label}
+          </button>
+        ))}
       </div>
+      <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
+        <div className={cn("space-y-6 self-start", tab !== "inputs" && "max-[620px]:hidden")}>
+          <div className="space-y-6 rounded-xl border border-border bg-card p-6">
+            <SliderField
+              label="Din ålder"
+              value={currentAge}
+              onChange={setCurrentAge}
+              min={15}
+              max={60}
+              step={1}
+              display={`${currentAge} år`}
+            />
+            <div>
+              <SliderField
+                label="Månadslön efter skatt"
+                value={monthlySalary}
+                onChange={setMonthlySalary}
+                min={5000}
+                max={200000}
+                step={1000}
+                display={formatSek(monthlySalary)}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Du sparar {formatSek(result.monthlySavings)} och lever på{" "}
+                {formatSek(result.monthlySpending)} i månaden.
+              </p>
+            </div>
+            <SliderField
+              label="Sparkvot"
+              value={savingsRate}
+              onChange={setSavingsRate}
+              min={5}
+              max={95}
+              step={1}
+              display={formatPercent(savingsRate, 0)}
+            />
+            <div>
+              <SliderField
+                label="FIRE-multipel"
+                value={fireMultiple}
+                onChange={setFireMultiple}
+                min={10}
+                max={50}
+                step={1}
+                display={`${fireMultiple}\u00a0×`}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Målet är {fireMultiple} gånger dina årsutgifter. 25&nbsp;× motsvarar 4&nbsp;%-regeln.
+              </p>
+            </div>
+            <div>
+              <SliderField
+                label="Nuvarande sparande"
+                value={startCapital}
+                onChange={setStartCapital}
+                min={0}
+                max={2000000}
+                step={10000}
+                display={formatSek(startCapital)}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Det du redan har sparat och investerat.
+              </p>
+            </div>
 
-      <div className="min-w-0 space-y-6">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-border bg-primary p-5 text-primary-foreground">
-            <p className="text-xs tracking-wider uppercase opacity-75">FIRE-ålder</p>
-            {fireAge === null ? (
-              <p className="mt-2 font-serif text-xl font-semibold">Nås inte inom {FIRE_YEARS} år</p>
-            ) : (
-              <>
-                <p className="mt-2 font-serif text-4xl font-semibold">{fireAge} år</p>
-                <p className="mt-1 text-sm opacity-75">om {fireYear} år</p>
-              </>
+            <div className="h-px bg-border" />
+
+            <SliderField
+              label="Avkastning per år"
+              value={annualReturn}
+              onChange={setAnnualReturn}
+              min={1}
+              max={15}
+              step={0.1}
+              display={formatPercent(annualReturn, 1)}
+            />
+            <SliderField
+              label="Avgifter per år"
+              value={annualFee}
+              onChange={setAnnualFee}
+              min={0}
+              max={2}
+              step={0.05}
+              display={formatPercent(annualFee, 2)}
+            />
+            <div>
+              <SliderField
+                label="Skatt på ISK/KF per år"
+                value={yieldTax}
+                onChange={setYieldTax}
+                min={0}
+                max={3}
+                step={0.05}
+                display={formatPercent(yieldTax, 2)}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Schablonskatten på investeringssparkonto och kapitalförsäkring.
+              </p>
+            </div>
+            <div>
+              <SliderField
+                label="Skattefritt belopp"
+                value={taxFreeAmount}
+                onChange={setTaxFreeAmount}
+                min={0}
+                max={500000}
+                step={10000}
+                display={formatSek(taxFreeAmount)}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Från 2026 är de första {formatSek(ISK_TAX_FREE_AMOUNT)} skattefria, totalt för ISK,
+                kapitalförsäkring och PEPP-konto. Välj 0 kr för att räkna utan.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-6 text-sm">
+            <h2 className="font-serif text-lg font-semibold">Avkastning efter kostnader</h2>
+            <dl className="mt-3 space-y-2">
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Avkastning</dt>
+                <dd>{formatPercent(annualReturn, 2)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">− Skatt</dt>
+                <dd>{formatPercent(yieldTax, 2)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">− Avgifter</dt>
+                <dd>{formatPercent(annualFee, 2)}</dd>
+              </div>
+              <div className="flex justify-between border-t border-border pt-2 font-semibold">
+                <dt>= Netto, ungefär</dt>
+                <dd>{formatPercent(result.netReturn, 2)}</dd>
+              </div>
+            </dl>
+            {taxFreeAmount > 0 && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                Skatten tas bara ut på det som överstiger {formatSek(taxFreeAmount)}, så den blir lägre
+                än så. Mest märks det i början, när portföljen är liten.
+              </p>
             )}
           </div>
-          <div className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs tracking-wider text-muted-foreground uppercase">FIRE-mål</p>
-            <p className="mt-2 font-serif text-2xl font-semibold">{formatSek(result.target)}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {formatSek(result.monthlySpending)}/mån × 12 × {fireMultiple}
-            </p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs tracking-wider text-muted-foreground uppercase">Månadssparande</p>
-            <p className="mt-2 font-serif text-2xl font-semibold">{formatSek(result.monthlySavings)}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {formatSek(result.monthlySavings * 12)}/år
-            </p>
-          </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="font-serif text-xl font-semibold">Vägen till målet</h2>
-          <ol className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {result.milestones.map((m) => (
-              <li
-                key={m.percent}
-                className={cn(
-                  "rounded-lg border p-3 text-center",
-                  m.age === null ? "border-border text-muted-foreground" : "border-primary/20 bg-secondary/60",
-                )}
-              >
-                <p className="font-serif text-lg font-semibold">{m.percent}&nbsp;%</p>
-                <p className="text-xs">{m.age === null ? "–" : `vid ${m.age} år`}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-serif text-xl font-semibold">Portföljens utveckling</h2>
-            <ul className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <span className="h-2.5 w-4 rounded-sm bg-chart-1/70" aria-hidden="true" />
-                Portfölj
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-4 border-t-2 border-dashed border-chart-2" aria-hidden="true" />
-                FIRE-mål
-              </li>
-            </ul>
-          </div>
-          <div className="mt-4 h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData} margin={{ top: 20, right: 8 }}>
-                <defs>
-                  <linearGradient id="fire-portfolio" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                <XAxis dataKey="age" tickLine={false} axisLine={false} fontSize={12} minTickGap={16} />
-                <YAxis
-                  tickFormatter={formatSekShort}
-                  tickLine={false}
-                  axisLine={false}
-                  fontSize={12}
-                  width={80}
-                />
-                <Tooltip
-                  formatter={(v: number) => formatSek(v)}
-                  labelFormatter={(age) => `Vid ${age} år`}
-                  separator=": "
-                  itemStyle={{ color: "var(--color-foreground)" }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="closing"
-                  name="Portfölj"
-                  stroke="var(--color-chart-1)"
-                  strokeWidth={2}
-                  fill="url(#fire-portfolio)"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="target"
-                  name="FIRE-mål"
-                  stroke="var(--color-chart-2)"
-                  strokeWidth={2}
-                  strokeDasharray="6 4"
-                  dot={false}
-                />
-                {fireAge !== null && (
-                  <ReferenceLine
-                    x={fireAge}
-                    stroke="var(--color-foreground)"
-                    strokeDasharray="3 3"
-                    label={{
-                      value: `FIRE vid ${fireAge}`,
-                      position: "top",
-                      fontSize: 12,
-                      fill: "var(--color-foreground)",
-                    }}
-                  />
-                )}
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:px-6">
-            <button
-              type="button"
-              className="flex cursor-pointer items-center gap-2 font-serif text-lg font-semibold"
-              aria-expanded={tableOpen}
-              aria-controls="fire-table"
-              onClick={() => setTableOpen(!tableOpen)}
-            >
-              År för år ({rows.length} år)
-              <ChevronDown
-                className={cn("size-5 transition-transform", tableOpen && "rotate-180")}
-                aria-hidden="true"
-              />
-            </button>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => downloadCsv(rows)}>
-                <Download aria-hidden="true" /> CSV
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => downloadExcel(rows)}>
-                <Download aria-hidden="true" /> Excel
-              </Button>
+        <div className={cn("min-w-0 space-y-6", tab === "inputs" && "max-[620px]:hidden")}>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-primary p-5 text-primary-foreground">
+              <p className="text-xs tracking-wider uppercase opacity-75">FIRE-ålder</p>
+              {fireAge === null ? (
+                <p className="mt-2 font-serif text-xl font-semibold">Nås inte inom {FIRE_YEARS} år</p>
+              ) : (
+                <>
+                  <p className="mt-2 font-serif text-4xl font-semibold">{fireAge} år</p>
+                  <p className="mt-1 text-sm opacity-75">om {fireYear} år</p>
+                </>
+              )}
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5">
+              <p className="text-xs tracking-wider text-muted-foreground uppercase">FIRE-mål</p>
+              <p className="mt-2 font-serif text-2xl font-semibold">{formatSek(result.target)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {formatSek(result.monthlySpending)}/mån × 12 × {fireMultiple}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5">
+              <p className="text-xs tracking-wider text-muted-foreground uppercase">Månadssparande</p>
+              <p className="mt-2 font-serif text-2xl font-semibold">{formatSek(result.monthlySavings)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {formatSek(result.monthlySavings * 12)}/år
+              </p>
             </div>
           </div>
-          {tableOpen && (
-            <div id="fire-table" className="max-h-96 overflow-auto border-t border-border">
-              <table className="w-full text-right text-xs tabular-nums">
-                <thead className="sticky top-0 bg-muted">
-                  <tr>
-                    {COLUMNS.map((c) => (
-                      <th key={c.label} scope="col" className="px-3 py-2 font-medium whitespace-nowrap first:text-left">
-                        {c.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r) => (
-                    <tr
-                      key={r.year}
-                      className={cn(
-                        "border-t border-border",
-                        r.gap <= 0 && "bg-secondary/50",
-                        r.year === fireYear && "font-semibold",
-                      )}
-                    >
-                      {COLUMNS.map((c, i) => (
-                        <td key={c.label} className="px-3 py-1.5 whitespace-nowrap first:text-left">
-                          {i < 2 ? c.value(r) : num.format(c.value(r))}
-                        </td>
+
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h2 className="font-serif text-xl font-semibold">Vägen till målet</h2>
+            <ol className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {result.milestones.map((m) => (
+                <li
+                  key={m.percent}
+                  className={cn(
+                    "rounded-lg border p-3 text-center",
+                    m.age === null ? "border-border text-muted-foreground" : "border-primary/20 bg-secondary/60",
+                  )}
+                >
+                  <p className="font-serif text-lg font-semibold">{m.percent}&nbsp;%</p>
+                  <p className="text-xs">{m.age === null ? "–" : `vid ${m.age} år`}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-serif text-xl font-semibold">Portföljens utveckling</h2>
+              <ul className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="h-2.5 w-4 rounded-sm bg-chart-1/70" aria-hidden="true" />
+                  Portfölj
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-4 border-t-2 border-dashed border-chart-2" aria-hidden="true" />
+                  FIRE-mål
+                </li>
+              </ul>
+            </div>
+            <div className="mt-4 h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData} margin={{ top: 20, right: 8 }}>
+                  <defs>
+                    <linearGradient id="fire-portfolio" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.45} />
+                      <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="age" tickLine={false} axisLine={false} fontSize={12} minTickGap={16} />
+                  <YAxis
+                    tickFormatter={formatSekShort}
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={12}
+                    width={80}
+                  />
+                  <Tooltip
+                    formatter={(v: number) => formatSek(v)}
+                    labelFormatter={(age) => `Vid ${age} år`}
+                    separator=": "
+                    itemStyle={{ color: "var(--color-foreground)" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="closing"
+                    name="Portfölj"
+                    stroke="var(--color-chart-1)"
+                    strokeWidth={2}
+                    fill="url(#fire-portfolio)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="target"
+                    name="FIRE-mål"
+                    stroke="var(--color-chart-2)"
+                    strokeWidth={2}
+                    strokeDasharray="6 4"
+                    dot={false}
+                  />
+                  {fireAge !== null && (
+                    <ReferenceLine
+                      x={fireAge}
+                      stroke="var(--color-foreground)"
+                      strokeDasharray="3 3"
+                      label={{
+                        value: `FIRE vid ${fireAge}`,
+                        position: "top",
+                        fontSize: 12,
+                        fill: "var(--color-foreground)",
+                      }}
+                    />
+                  )}
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div ref={tableRef} className="rounded-xl border border-border bg-card">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:px-6">
+              <button
+                type="button"
+                className="flex cursor-pointer items-center gap-2 font-serif text-lg font-semibold"
+                aria-expanded={tableOpen}
+                aria-controls="fire-table"
+                onClick={() => setTableOpen(!tableOpen)}
+              >
+                År för år ({rows.length} år)
+                <ChevronDown
+                  className={cn("size-5 transition-transform", tableOpen && "rotate-180")}
+                  aria-hidden="true"
+                />
+              </button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => downloadCsv(rows)}>
+                  <Download aria-hidden="true" /> CSV
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => downloadExcel(rows)}>
+                  <Download aria-hidden="true" /> Excel
+                </Button>
+              </div>
+            </div>
+            {tableOpen && (
+              <div id="fire-table" className="max-h-96 overflow-auto border-t border-border">
+                <table className="w-full text-right text-xs tabular-nums">
+                  <thead className="sticky top-0 bg-muted">
+                    <tr>
+                      {COLUMNS.map((c) => (
+                        <th key={c.label} scope="col" className="px-3 py-2 font-medium whitespace-nowrap first:text-left">
+                          {c.label}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {rows.map((r) => (
+                      <tr
+                        key={r.year}
+                        className={cn(
+                          "border-t border-border",
+                          r.gap <= 0 && "bg-secondary/50",
+                          r.year === fireYear && "font-semibold",
+                        )}
+                      >
+                        {COLUMNS.map((c, i) => (
+                          <td key={c.label} className="px-3 py-1.5 whitespace-nowrap first:text-left">
+                            {i < 2 ? c.value(r) : num.format(c.value(r))}
+                            {i === 1 && r.year === fireYear && (
+                              <span role="img" aria-label="FIRE-året">
+                                {" "}
+                                🔥
+                              </span>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
