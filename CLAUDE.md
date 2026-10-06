@@ -66,6 +66,9 @@ look at on the preview.
   (`tests/fixtures/nettolon-web.json`). The page itself is built in the site's own components, colours and
   fonts (`AmountField`, `SelectField` and `SwitchRow` are in `fields.tsx`), not in the original's look. The rules
   are for income year 2026 and the list of municipalities is SCB's of 2025-12-15: check both every December.
+- Sliders are native range inputs (`SliderField` in `fields.tsx`, the `.range` class in `global.css`). The
+  Radix slider that was used before did not follow a finger on a phone, so do not bring it back; test any
+  new slider with touch events (Playwright with an iPhone profile and CDP `Input.dispatchTouchEvent`).
 - Never commit `.env` files or secrets. The repository is public.
 
 ## Before opening a PR

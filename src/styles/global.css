@@ -90,6 +90,72 @@
   }
 }
 
+/*
+ * The slider of the calculators: a native range input (so that dragging works with a finger on a phone, which the
+ * Radix slider did not), with the filled part in the primary colour and a large knob. The input is as high as the
+ * knob, so the whole knob is where a finger can take hold. --fill is the share of the range that is filled and is
+ * set on the element (see SliderField).
+ */
+@layer components {
+  .range {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 2rem;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--primary) var(--fill, 50%),
+      color-mix(in srgb, var(--primary) 20%, var(--card)) var(--fill, 50%)
+    );
+  }
+  .range::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--primary) var(--fill, 50%),
+      color-mix(in srgb, var(--primary) 20%, var(--card)) var(--fill, 50%)
+    );
+  }
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    margin-top: -11px; /* centred on the 6 px track */
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    background: var(--background);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 25%, transparent);
+  }
+  .range::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    background: var(--background);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 25%, transparent);
+  }
+  .range:focus-visible {
+    outline: none;
+  }
+  .range:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 40%, transparent);
+  }
+  .range:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 40%, transparent);
+  }
+}
+
 /* Article text rendered from Markdown (src/content/articles). */
 @layer components {
   .article-body h2 {
