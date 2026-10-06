@@ -299,21 +299,6 @@ export default function LonevaxlingCalculator() {
                   <span>{result.text}</span>
                 </div>
               </div>
-
-              <div className="panel">
-                <b>Vill du börja löneväxla?</b>
-                <p>Prata med din arbetsgivare för att ta reda på om de erbjuder löneväxling och hur upplägget ser ut.</p>
-              </div>
-
-              <div className="tip">
-                <span className="bulb" aria-hidden="true">
-                  💡
-                </span>
-                <span>
-                  Erbjuder inte din arbetsgivare löneväxling? Då kan ett eget månadssparande i kapitalförsäkring eller
-                  ISK vara ett alternativ.
-                </span>
-              </div>
             </div>
           </div>
 

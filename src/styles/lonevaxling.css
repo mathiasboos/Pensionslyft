@@ -10,14 +10,11 @@
 .lv{
   --lv-green:var(--primary);                 /* hero, result box and accents: the deep navy */
   --lv-green2:var(--primary);                /* filled part of a slider, edge of its knob */
-  --lv-yellow:var(--chart-2);                /* gold, the edge of the tip */
   --lv-ink:var(--foreground);
   --lv-ink2:var(--muted-foreground);
   --lv-card:var(--card);
   --lv-line:var(--border);
   --lv-track:color-mix(in srgb,var(--primary) 20%,var(--card));
-  --lv-panel:color-mix(in srgb,var(--secondary) 50%,transparent);
-  --lv-tip-bg:color-mix(in srgb,var(--accent) 35%,var(--card));
   --lv-good:#1f5f55; --lv-good-bg:#e8f3f0;   /* the chart's teal, darkened */
   --lv-amber:#6b5320; --lv-amber-bg:#f6eedb; /* the gold, darkened */
   --lv-warn:#a82020; --lv-warn-bg:#fbe9e6;   /* the red of the site, darkened */
@@ -129,16 +126,6 @@
 .lv .status.good{background:var(--lv-good-bg);color:var(--lv-good)}
 .lv .status.amber{background:var(--lv-amber-bg);color:var(--lv-amber)}
 .lv .status.warn{background:var(--lv-warn-bg);color:var(--lv-warn)}
-
-/* Info-panel + tip */
-.lv .panel{background:var(--lv-panel);border-radius:var(--lv-r);padding:18px 16px}
-@media(min-width:520px){.lv .panel{padding:22px 26px}}
-.lv .panel b{display:block;margin-bottom:6px;font-size:.93rem}
-.lv .panel p{font-size:.85rem;color:var(--lv-ink)}
-.lv .tip{background:var(--lv-tip-bg);border-radius:var(--lv-r);padding:12px 14px;display:flex;gap:10px;
-  align-items:flex-start;font-size:.83rem;border-left:4px solid var(--lv-yellow)}
-@media(min-width:520px){.lv .tip{padding:14px 18px;font-size:.85rem}}
-.lv .tip .bulb{font-size:1rem;line-height:1.5}
 
 /* Gränsvärden */
 .lv .rules{background:var(--lv-card);border-radius:var(--lv-r);border:1px solid var(--lv-line);padding:20px 16px;margin-top:20px}
