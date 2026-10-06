@@ -12,6 +12,10 @@
  *   accent #e6d5b7   muted #f2eee6   muted-foreground #545f6c   border #dfdad0   destructive #cc2827
  *   chart-1 #0c2a49 navy   chart-2 #a18142 gold   chart-3 #4675a4 steel blue   chart-4 #72b3a6 teal   chart-5 #9c4438 brick
  *
+ * The fonts are the site's too: Inter for the text, Source Serif 4 for the headings and the key figures, as
+ * font-serif is used on the other calculators. The sync script adds the same Google Fonts link as the site's pages
+ * (src/layouts/BaseLayout.astro); without it the app falls back to the system fonts.
+ *
  * The figures take the site's chart colours in the site's order. Run through the dataviz validator, the sets the app
  * draws next to each other (Figur 2's stack, the seven bands of mikrosim, the scenarios, the tax pair) pass the colour
  * vision (ΔE >= 12) and normal-vision (ΔE >= 15) checks between neighbours. As with the muted palette of the site
@@ -35,6 +39,8 @@
   --banner: #ece0ca;
   --banner-ink: #0c2a49;
   --retired: #ece7dc;
+  --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
 
   --fig-salary: #4675a4;
   --fig-income-pension: #0c2a49;
@@ -62,6 +68,20 @@
 
 body {
   background: #fbf8f3;
+}
+
+.masthead h1,
+.panel > h2,
+.figure figcaption,
+.kpi-value {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
+/* The buttons in the title bars stay in the text font. */
+.panel > h2 button,
+.panel > h2 a {
+  font-family: var(--font);
 }
 
 /* The note box and the table banners of the app, in the site's gold and sand. */

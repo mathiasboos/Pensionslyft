@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Builds the Typfallsmodellen web app from github.com/mathiasboos/Typfallsmodellen and puts the one self-contained
-// HTML file it makes in public/, where /typfallsmodellen shows it. The site's colours (scripts/typfallsmodellen-theme.css)
+// HTML file it makes in public/, where /typfallsmodellen shows it. The site's colours and fonts (scripts/typfallsmodellen-theme.css)
 // are put into the file on the way, and the dark mode of the app is turned off. It also writes which version of the
 // project the file was built from to src/data/typfallsmodellen-source.json, which the page shows.
 //
@@ -20,7 +20,14 @@ const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: "1" };
 const run = (command, args, cwd) => execFileSync(command, args, { cwd, env, stdio: "inherit" });
 const read = (command, args, cwd) => execFileSync(command, args, { cwd, env, encoding: "utf8" }).trim();
 
-/** The app with the site's colours: the theme after the app's own style, and the app's dark mode off. */
+// The fonts of the site, the same link as in src/layouts/BaseLayout.astro (the app uses 700 for its bold text).
+const FONTS = [
+  '<link rel="preconnect" href="https://fonts.googleapis.com" />',
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
+  '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" />',
+].join("\n");
+
+/** The app with the site's colours and fonts: the theme after the app's own style, and the app's dark mode off. */
 function withSiteTheme(html) {
   const theme = readFileSync(join(site, "scripts/typfallsmodellen-theme.css"), "utf8");
   if (!html.includes("</head>") || !html.includes('<html lang="sv">')) {
@@ -28,7 +35,7 @@ function withSiteTheme(html) {
   }
   return html
     .replace('<html lang="sv">', '<html lang="sv" data-theme="light">')
-    .replace("</head>", () => `<style id="pensionslyft-theme">\n${theme}</style>\n</head>`);
+    .replace("</head>", () => `${FONTS}\n<style id="pensionslyft-theme">\n${theme}</style>\n</head>`);
 }
 
 let clone = process.argv[2] ? resolve(process.argv[2]) : undefined;

@@ -1,7 +1,7 @@
 // "Så växer ditt sparande": the chart of the löneväxlingskalkylator, drawn on a canvas as in the supplied
 // Salary_Exchange_Consumer.html (github.com/mathiasboos/Calculators). The geometry and the tooltip are the
 // original's; the colours are the site's (src/styles/global.css), as in the Pensionskalkylatorn.
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { clamp, fmtKr, fmtOneDecimal, simSeries } from "@/lib/lonevaxling";
 
 const C_H = 360; // the white fill of the original is 360 px high, also on a phone
@@ -62,7 +62,7 @@ function draw(cv: HTMLCanvasElement, { W, premie, years, selPct, hoverIdx }: Dra
   ctx.strokeStyle = GRID;
   ctx.lineWidth = 1;
   ctx.fillStyle = INK;
-  ctx.font = `${fontSize}px system-ui,sans-serif`;
+  ctx.font = `${fontSize}px Inter,system-ui,sans-serif`;
   ctx.textAlign = "right";
   for (let g = 1; g <= 4; g++) {
     const v = (maxV * g) / 4;
@@ -105,7 +105,7 @@ function draw(cv: HTMLCanvasElement, { W, premie, years, selPct, hoverIdx }: Dra
 
   // The labels of the x axis
   ctx.fillStyle = INK;
-  ctx.font = `${fontSize}px system-ui,sans-serif`;
+  ctx.font = `${fontSize}px Inter,system-ui,sans-serif`;
   const stepX = years > 30 ? 10 : years > 12 ? 5 : years > 6 ? 2 : 1;
   for (let y = 0; y <= years; y += stepX) {
     ctx.textAlign = y === 0 ? "left" : "center";
@@ -154,6 +154,16 @@ export default function LonevaxlingChart({ premie, years, avkastning }: Props) {
   const tipRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  // The labels of the canvas are drawn again when the web fonts of the site have loaded.
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    document.fonts?.ready.then(() => active && setFontsLoaded(true));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // The width of the canvas, also when the window changes (which hides the tooltip, as in the original)
   useLayoutEffect(() => {
@@ -172,7 +182,7 @@ export default function LonevaxlingChart({ premie, years, avkastning }: Props) {
   useLayoutEffect(() => {
     const cv = canvasRef.current;
     if (cv && width > 0) draw(cv, { W: width, premie, years, selPct: avkastning, hoverIdx });
-  }, [width, premie, years, avkastning, hoverIdx]);
+  }, [width, premie, years, avkastning, hoverIdx, fontsLoaded]);
 
   const selFmt = fmtOneDecimal(avkastning);
   const main = simSeries(premie, avkastning, years);
