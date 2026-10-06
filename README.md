@@ -30,6 +30,7 @@ visual editor (Framer, Lovable) is needed.
 | FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
 | Typfallsmodellen | `/typfallsmodellen` | `src/pages/typfallsmodellen.astro` (shows `public/typfallsmodellen-app.html`, built from GitHub by `scripts/sync-typfallsmodellen.mjs`) |
 | Löneväxling | `/lonevaxlingskalkylator` | `src/pages/lonevaxlingskalkylator.astro` + `src/components/calculators/LonevaxlingCalculator.tsx` + `src/lib/lonevaxling.ts` + `src/styles/lonevaxling.css` |
+| Nettolön | `/nettolonkalkylator` | `src/pages/nettolonkalkylator.astro` + `src/components/calculators/NettolonCalculator.tsx` + `src/lib/nettolon.ts` + `src/data/kommunalskatt-2026.json` |
 | Not found | any other URL | `src/pages/404.astro` |
 
 - **Articles** are Markdown files in `src/content/articles/`. Add a new file there and the

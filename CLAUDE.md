@@ -50,7 +50,7 @@ look at on the preview.
   them to the site's, and check diagram colours with the dataviz validator.
 - **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
   public repositories: `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
-  `Salary_Exchange_Consumer.html`, and others, with the tax constants to check every December in its
+  `Salary_Exchange_Consumer.html`, `Net_Salary_2026.html`, and others, with the tax constants to check every December in its
   CLAUDE.md) and `github.com/mathiasboos/Typfallsmodellen` (the TypeScript engine and the web app that is
   built into `typfallsmodellen.html`). When a calculator on this site is added, changed or checked, read the
   current file in those repositories first (a read-only shallow clone is enough) and port from it, instead of
@@ -60,6 +60,12 @@ look at on the preview.
   but every colour is a site token (`--lv-*` in the CSS are `var(--primary)` and so on; the canvas chart has
   the same values as hex), and `tests/lonevaxling.test.ts` compares the calculation with what the
   original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
+- `src/lib/nettolon.ts`, `src/components/calculators/NettolonCalculator.tsx` and `src/data/kommunalskatt-2026.json`
+  are a port of `Net_Salary_2026.html`. The calculation and its rounding are the original's, and
+  `tests/nettolon.test.ts` compares it with what the original shows for 190 sets of inputs
+  (`tests/fixtures/nettolon-web.json`). The page itself is built in the site's own components, colours and
+  fonts (`AmountField`, `SelectField` and `SwitchRow` are in `fields.tsx`), not in the original's look. The rules
+  are for income year 2026 and the list of municipalities is SCB's of 2025-12-15: check both every December.
 - Never commit `.env` files or secrets. The repository is public.
 
 ## Before opening a PR
