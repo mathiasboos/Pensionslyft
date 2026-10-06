@@ -39,13 +39,15 @@ look at on the preview.
   (clones the project, builds `apps/web`, copies the file and writes `src/data/typfallsmodellen-source.json`,
   which the page shows as the version). Never edit the HTML by hand; to update the calculator, run the script
   and commit the new file. The script also puts the site's colours into the app
-  (`scripts/typfallsmodellen-theme.css`, which sets the app's colour variables and turns off its dark mode),
-  so that the page looks like the other calculators; change colours there, never in the HTML. The old React
+  (`scripts/typfallsmodellen-theme.css`, which sets the app's colour and font variables and turns off its dark
+  mode, plus the Google Fonts link of the site), so that the page looks like the other calculators; change
+  colours and fonts there, never in the HTML. The old React
   port (`src/lib/typfall/`) is in git history up to commit a4c6971.
-- **One palette for all calculators.** The owner wants every calculator in the colours of the
-  Pensionskalkylatorn, the tokens in `src/styles/global.css` (navy, sand, gold, off-white; the `chart-*` colours
-  in diagrams). A calculator taken from GitHub keeps its calculation, texts and layout, but not its own palette:
-  map its colours to the tokens, and check diagram colours with the dataviz validator.
+- **One palette and one typeface for all calculators.** The owner wants every calculator in the colours and fonts
+  of the Pensionskalkylatorn: the tokens in `src/styles/global.css` (navy, sand, gold, off-white; the `chart-*`
+  colours in diagrams), Inter for text and Source Serif 4 (`font-serif`) for headings and big numbers. A
+  calculator taken from GitHub keeps its calculation, texts and layout, but not its own palette or fonts: map
+  them to the site's, and check diagram colours with the dataviz validator.
 - **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
   public repositories: `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
   `Salary_Exchange_Consumer.html`, and others, with the tax constants to check every December in its
