@@ -1,6 +1,12 @@
 ---
-import TypfallCalculator from "@/components/calculators/TypfallCalculator";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import source from "@/data/typfallsmodellen-source.json";
+import { formatDate } from "@/lib/format";
+
+// The calculator is the web app of github.com/mathiasboos/Typfallsmodellen, built into one file by
+// scripts/sync-typfallsmodellen.mjs. It is shown as it is, in a frame the height of the window, so that it
+// behaves as it does on its own page (its input column sticks and its PGB table floats).
+const app = "/typfallsmodellen-app.html";
 ---
 
 <BaseLayout
@@ -9,71 +15,44 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   ogTitle="Typfallsmodellen – Pensionslyft"
   ogDescription="Allmän pension och tjänstepension år för år, före och efter skatt."
 >
-  <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="font-serif text-4xl font-semibold">Typfallsmodellen</h1>
-    <p class="mt-3 max-w-2xl text-muted-foreground">
-      Kalkylatorn bygger på Pensionsmyndighetens typfallsmodell. Den räknar igenom hela arbetslivet år
-      för år: lön, pensionsrätter, avkastning, arvsvinster och delningstal. Resultatet är din allmänna
-      pension och tjänstepension före och efter skatt.
-    </p>
-    <details class="group mt-6 max-w-3xl rounded-lg border-l-4 border-[var(--color-chart-2)] bg-secondary/50 text-sm leading-6">
-      <summary
-        class="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-medium [&::-webkit-details-marker]:hidden"
-      >
-        <svg
-          class="size-4 transition-transform group-open:rotate-90"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg
-        >
-        Om modellen
-      </summary>
-      <div class="px-4 pb-4">
-        <ul class="list-disc space-y-1.5 pl-5">
-          <li>
-            Lönen följer den allmänna löneutvecklingen från det år du börjar arbeta till året innan du går i
-            pension. Under Avancerat kan du välja en löneprofil, ändra lönen från ett visst år eller skriva in
-            din egen lönebana, och lägga till pensionsgrundande belopp för barnår, värnplikt, studier och sjuk-
-            eller aktivitetsersättning.
-          </li>
-          <li>
-            Åren fram till och med 2025 räknas med de faktiska indexen, avgifterna och fondavkastningen.
-            Framtiden räknas med dina antaganden om inflation, löneutveckling och avkastning. Tabellen
-            Pensionsinkomst visar både löpande och fasta priser. Övriga belopp är i 2025 års priser.
-          </li>
-          <li>
-            Allmän pension består av inkomstpension, premiepension, garantipension och
-            inkomstpensionstillägg enligt dagens regler och riktåldrar. Den kan tas ut delvis först och helt
-            senare. Tjänstepensionen räknas enligt det avtal du väljer och betalas ut från den ålder du väljer,
-            livet ut eller under ett antal år.
-          </li>
-          <li>
-            Pensionen det första året räknas med den sista pensionsrätten, som i verkligheten läggs till först
-            året efter.
-          </li>
-          <li>
-            Skatten räknas med den genomsnittliga kommunalskatten, eller den du anger, och dagens
-            skatteregler från 2020. Privat sparande i IPS beskattas som inkomst. Uttag från ISK och
-            kapitalförsäkring är redan beskattade genom schablonskatten.
-          </li>
-          <li>
-            Den disponibla inkomsten räknar med bostadstillägg och äldreförsörjningsstöd, med en boendekostnad
-            på 6 300 kronor i månaden om du inte anger något annat, och med barnbidrag, bostadsbidrag och
-            ekonomiskt bistånd för hushåll med barn.
-          </li>
-        </ul>
-        <p class="mt-3 text-muted-foreground">
-          Beräkningarna följer Pensionsmyndighetens typfallsmodell, version 4.8. Resultatet är en
-          uppskattning för ett typfall och inget besked om din egen pension. Din personliga prognos finns
-          på minPension.
-        </p>
-      </div>
-    </details>
+  <h1 class="sr-only">Typfallsmodellen</h1>
 
-    <div class="mt-8">
-      <TypfallCalculator client:load />
-    </div>
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-2 text-xs text-muted-foreground">
+    <p>Allmän pension och tjänstepension år för år. Allt räknas i din webbläsare.</p>
+    <a href={app} target="_blank" rel="noopener" class="font-medium text-primary hover:underline">
+      Öppna i eget fönster ↗
+    </a>
   </div>
+
+  <iframe
+    src={app}
+    title="Typfallsmodellen – kalkylator"
+    class="block h-[calc(100dvh-6.25rem)] min-h-[34rem] w-full border-y border-border bg-card"></iframe>
+  <noscript>
+    <p class="mx-auto max-w-6xl px-4 py-8 text-sm text-muted-foreground">
+      Kalkylatorn behöver JavaScript. Slå på det i webbläsaren, eller öppna <a href={app} class="underline">kalkylatorn i eget fönster</a>.
+    </p>
+  </noscript>
+
+  <section class="mx-auto max-w-6xl px-4 pt-12">
+    <h2 class="font-serif text-2xl font-semibold">Om kalkylatorn</h2>
+    <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
+      <p>
+        Typfallsmodellen är Pensionsmyndighetens modell för hela pensionsutfallet för en tänkt person, ett typfall:
+        inkomstpension, premiepension, tilläggspension, garantipension, inkomstpensionstillägg, tjänstepension enligt
+        kollektivavtal, privat sparande, inkomstskatt och bostadstillägg. Kalkylatorn här är en webbversion av
+        modellen (version 4.8) och räknar enbart i din webbläsare. Ingenting skickas någonstans.
+      </p>
+      <p>
+        Resultatet är en uppskattning för ett typfall och inget besked om din egen pension. Din personliga prognos finns
+        på minPension. Webbversionen är inofficiell och inte kopplad till Pensionsmyndigheten.
+      </p>
+      <p>
+        Kalkylatorn är projektet
+        <a href={source.repository} target="_blank" rel="noopener" class="text-primary underline underline-offset-2"
+          >Typfallsmodellen på GitHub</a
+        >, byggt till en fil. Den här sidan visar version <code>{source.commit.slice(0, 7)}</code> från {formatDate(source.committedAt)}.
+      </p>
+    </div>
+  </section>
 </BaseLayout>

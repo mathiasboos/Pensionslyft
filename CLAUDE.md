@@ -32,11 +32,14 @@ look at on the preview.
   `tests/pension.test.ts` are the reference: only change them when a change to the
   math is intended.
 - The site must work at phone width (375 px) with no horizontal scrolling.
-- `src/lib/typfall/` is a line-by-line port of the VBA in Pensionsmyndighetens typfallsmodell
-  (ver. 4.8), with data in `src/data/typfall.json`. `tests/typfall.test.ts` compares it with the
-  model's own output, so keep the VBA's rounding and quirks when changing it. The settings from the
-  sheet Adv_settings are `TypfallAdvanced` in `model.ts`; at their defaults the result must stay
-  identical to the model's run. See `scripts/typfall/README.md` for how to refresh the data.
+- **Typfallsmodellen is not ported to this site.** `/typfallsmodellen` shows the real web app of
+  `github.com/mathiasboos/Typfallsmodellen` in a same-origin iframe the height of the window (the app
+  uses `position: fixed`, a sticky input column and `100vh`, so it must not be auto-height). The app is one
+  self-contained file, `public/typfallsmodellen-app.html`, built by `node scripts/sync-typfallsmodellen.mjs`
+  (clones the project, builds `apps/web`, copies the file and writes `src/data/typfallsmodellen-source.json`,
+  which the page shows as the version). Never edit the HTML by hand; to update the calculator, run the script
+  and commit the new file. The app keeps its own look and follows the OS dark mode. The old React port
+  (`src/lib/typfall/`) is in git history up to commit a4c6971.
 - **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
   public repositories: `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
   `Salary_Exchange_Consumer.html`, and others, with the tax constants to check every December in its

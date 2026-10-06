@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /typfallsmodellen-app.html
 
 Sitemap: https://pensionslyft.se/sitemap-index.xml
