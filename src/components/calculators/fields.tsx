@@ -1,7 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
 export function Stat({
@@ -78,20 +77,27 @@ export function SliderField({
   step: number;
   display: string;
 }) {
+  const id = useId();
+  const fill = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
   return (
     <div>
       <div className="flex items-center justify-between">
-        <Label className="text-sm">{label}</Label>
+        <Label htmlFor={id} className="text-sm">
+          {label}
+        </Label>
         <span className="text-sm font-medium">{display}</span>
       </div>
-      <Slider
-        className="mt-3"
-        value={[value]}
+      <input
+        id={id}
+        type="range"
+        className="range mt-1"
+        value={value}
         min={min}
         max={max}
         step={step}
-        aria-label={label}
-        onValueChange={(v) => onChange(v[0]!)}
+        aria-valuetext={display}
+        style={{ "--fill": `${fill}%` } as CSSProperties}
+        onChange={(e) => onChange(Number(e.target.value))}
       />
     </div>
   );
