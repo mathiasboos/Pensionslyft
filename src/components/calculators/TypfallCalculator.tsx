@@ -129,7 +129,7 @@ export default function TypfallCalculator() {
   const [saved, setSaved] = useState<SavedScenario[]>([]);
   const [tableOpen, setTableOpen] = useState(false);
   const [afterTax, setAfterTax] = useState(true);
-  const { mode, born, par, useRikt, wStart, monthlyWage, avtal, gift, inflation, realGrowth, realReturn, adv } = form;
+  const { mode, born, useRikt, monthlyWage, avtal, gift, inflation, realGrowth, realReturn, adv } = form;
   const patch = (p: Partial<ScenarioForm>) => setForm((f) => ({ ...f, ...p }));
   const setMode = (v: Mode) => patch({ mode: v });
   const setBorn = (v: number) => patch({ born: v });

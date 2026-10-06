@@ -13,8 +13,7 @@ import {
   type TypfallResult,
   W_REF,
 } from "@/lib/typfall/model";
-import { formatPercent, num } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatPercent } from "@/lib/format";
 import { CheckRow, ExternalLink, NumberRow, Section, Segmented, SelectRow } from "./TypfallFields";
 import { PgbSection } from "./TypfallPgb";
 

@@ -494,7 +494,6 @@ export function runTypfall(input: TypfallInput): TypfallResult {
   let grundavdragLast = 0;
   let kapskatt = 0;
   let makaInk = makensInkomst; // MakaInk starts as the input and is updated for married pensioners
-  let tjpm = 0;
   let hyraT = hyra;
   let barnbidragLast = 0;
   let bostadsbidragLast = 0;
@@ -820,11 +819,9 @@ export function runTypfall(input: TypfallInput): TypfallResult {
       }
       if ((age >= int(PAR) && age >= riktalder && uttagIP > 0) || pgbSA[Math.max(age, 15)]! > 0) {
         if (age >= int(PAR)) ap = 1;
-        tjpm = 0;
         if (civ === 1) {
           if (makensInkomst > 0) {
             makaInk = (brutto[age]! - kapskatt - ptillagg[age]!) * makaRatio;
-            tjpm = TJP[age]! * makaRatio;
           } else makaInk = 0;
         }
         const finalYear = int(defAr) === age;
