@@ -37,6 +37,17 @@ look at on the preview.
   model's own output, so keep the VBA's rounding and quirks when changing it. The settings from the
   sheet Adv_settings are `TypfallAdvanced` in `model.ts`; at their defaults the result must stay
   identical to the model's run. See `scripts/typfall/README.md` for how to refresh the data.
+- **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
+  public repositories: `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
+  `Salary_Exchange_Consumer.html`, and others, with the tax constants to check every December in its
+  CLAUDE.md) and `github.com/mathiasboos/Typfallsmodellen` (the TypeScript engine and the web app that is
+  built into `typfallsmodellen.html`). When a calculator on this site is added, changed or checked, read the
+  current file in those repositories first (a read-only shallow clone is enough) and port from it, instead of
+  working from an older copy. They are newer than anything uploaded to a chat.
+- `src/lib/lonevaxling.ts`, `src/components/calculators/Lonevaxling*.tsx` and `src/styles/lonevaxling.css`
+  are a port of `Salary_Exchange_Consumer.html`. The page keeps that file's own green look, scoped under
+  `.lv`, instead of the site's tokens, and `tests/lonevaxling.test.ts` compares the calculation with what the
+  original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
 - Never commit `.env` files or secrets. The repository is public.
 
 ## Before opening a PR

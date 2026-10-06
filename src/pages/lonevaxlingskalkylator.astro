@@ -1,0 +1,14 @@
+---
+import LonevaxlingCalculator from "@/components/calculators/LonevaxlingCalculator";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import "@/styles/lonevaxling.css";
+---
+
+<BaseLayout
+  title="Löneväxlingskalkylator 2026 – se hur ditt pensionssparande växer"
+  description="Räkna ut vad löneväxling till pension ger: månadssparande inklusive arbetsgivarens skatteskillnad, förväntat pensionskapital och när löneväxling är lämpligt."
+  ogTitle="Löneväxlingskalkylator – Pensionslyft"
+  ogDescription="Se hur mycket extra pensionskapital löneväxling kan ge och om det passar din lönenivå."
+>
+  <LonevaxlingCalculator client:load />
+</BaseLayout>
