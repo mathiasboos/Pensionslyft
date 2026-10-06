@@ -1,6 +1,8 @@
+import { useEffect, useState, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
 
 export function Stat({
   label,
@@ -91,6 +93,157 @@ export function SliderField({
         aria-label={label}
         onValueChange={(v) => onChange(v[0]!)}
       />
+    </div>
+  );
+}
+
+/** A number as it is written in a field: 32.4 -> "32,4" */
+const toText = (v: number) => String(v).replace(".", ",");
+
+/** A number typed by the user: spaces are ignored and a comma is a decimal point. NaN when it is not a number. */
+const fromText = (t: string) => parseFloat(t.replace(/\s/g, "").replace(",", "."));
+
+/**
+ * A number field that can be empty while the user types and takes a decimal comma. Empty counts as 0 for the
+ * calculation, and the text is written out again when the value is changed from outside (a list, a reset).
+ */
+export function AmountField({
+  id,
+  label,
+  hint,
+  value,
+  onChange,
+  suffix,
+  action,
+  compact,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  value: number;
+  onChange: (v: number) => void;
+  suffix: string;
+  /** a link beside the label */
+  action?: ReactNode;
+  compact?: boolean;
+}) {
+  const [text, setText] = useState(toText(value));
+  useEffect(() => {
+    // Only when the value is not what the text says, so that "32," stays as it is typed.
+    if ((fromText(text) || 0) !== value) setText(toText(value));
+  }, [value]);
+
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-2">
+        <Label htmlFor={id} className={compact ? "text-xs" : "text-sm"}>
+          {label}
+        </Label>
+        {action}
+      </div>
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+      <div className={cn("flex items-center gap-2", compact ? "mt-1" : "mt-2")}>
+        <Input
+          id={id}
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            const v = fromText(e.target.value);
+            onChange(Number.isFinite(v) ? Math.max(0, v) : 0);
+          }}
+          onBlur={() => setText(toText(value))}
+          className={cn("tabular-nums", compact && "h-8")}
+        />
+        <span className="w-14 shrink-0 text-sm text-muted-foreground">{suffix}</span>
+      </div>
+    </div>
+  );
+}
+
+/** A native list, in the look of the other fields. */
+export function SelectField({
+  id,
+  label,
+  value,
+  onChange,
+  children,
+  action,
+  hideLabel,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: ReactNode;
+  action?: ReactNode;
+  hideLabel?: boolean;
+}) {
+  return (
+    <div>
+      <div className={cn("flex items-baseline justify-between gap-2", hideLabel && "sr-only")}>
+        <Label htmlFor={id} className="text-sm">
+          {label}
+        </Label>
+        {action}
+      </div>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(
+          "flex h-9 w-full cursor-pointer rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none md:text-sm",
+          !hideLabel && "mt-2",
+        )}
+      >
+        {children}
+      </select>
+    </div>
+  );
+}
+
+/** An on-off switch with a label and a line of explanation. */
+export function SwitchRow({
+  id,
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  hint: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <Label htmlFor={id} className="text-sm">
+          {label}
+        </Label>
+        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+      </div>
+      <button
+        id={id}
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={cn(
+          "relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none",
+          checked ? "bg-primary" : "bg-primary/20",
+        )}
+      >
+        <span
+          className={cn(
+            "absolute top-0.5 left-0.5 size-5 rounded-full bg-background shadow transition-transform",
+            checked && "translate-x-5",
+          )}
+        />
+      </button>
     </div>
   );
 }
