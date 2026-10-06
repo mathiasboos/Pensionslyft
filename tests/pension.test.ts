@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatPercent, formatSek, formatSekShort } from "../src/lib/format";
+import fireWeb from "./fixtures/fire-web.json";
 import { calculateCompound, calculateFire, calculatePension } from "../src/lib/pension";
 
 // Regression values: the calculators must keep giving the same numbers as the
@@ -83,6 +84,46 @@ describe("calculateFire", () => {
     startCapital: 0,
   };
 
+  // The FIRE calculator in github.com/mathiasboos/Calculators (FIRE_Calculator .html), run in a browser for 70 parameter
+  // sets: the first years, the year the target is reached, and the last. Without a tax-free amount the calculations are the same.
+  it("gives the figures of the FIRE calculator on GitHub", () => {
+    const diffs: string[] = [];
+    for (const s of fireWeb) {
+      const p = s.params;
+      const result = calculateFire({
+        currentAge: p.currentAge,
+        monthlySalary: p.monthlySalary,
+        savingsRate: p.savingsRatio * 100,
+        fireMultiple: p.savingsGoalMultiple,
+        annualReturn: p.portfolioReturn * 100,
+        annualFee: p.portfolioFees * 100,
+        yieldTax: p.yieldTaxK * 100,
+        taxFreeAmount: 0,
+        startCapital: p.initialPortfolio,
+      });
+      if (result.fireYear !== s.fireYear) diffs.push(`fireYear ${result.fireYear}/${s.fireYear} ${JSON.stringify(p)}`);
+      for (const o of s.rows) {
+        const m = result.rows[o.yr - 1]!;
+        const pairs: [string, number, number][] = [
+          ["salary", m.monthlySalary, o.salary],
+          ["savings", m.monthlySavings, o.ms],
+          ["yearly", m.yearlySavings, o.ys],
+          ["target", m.target, o.nt],
+          ["opening", m.opening, o.opening],
+          ["growth", m.growth, o.roi],
+          ["tax", m.tax, o.taxes],
+          ["fees", m.fees, o.fees],
+          ["closing", m.closing, o.closing],
+          ["gap", m.gap, o.gap],
+        ];
+        for (const [k, mine, theirs] of pairs) {
+          if (Math.abs(Math.round(mine) - theirs) > 1) diffs.push(`${JSON.stringify(p)} year ${o.yr} ${k}: ${Math.round(mine)}/${theirs}`);
+        }
+      }
+    }
+    expect(diffs).toEqual([]);
+  });
+
   it("matches the original calculator for its default inputs", () => {
     const result = calculateFire(defaults);
     expect(result.fireAge).toBe(37);
@@ -99,6 +140,7 @@ describe("calculateFire", () => {
     expect(Math.round(first.fees)).toBe(617);
     expect(Math.round(first.closing)).toBe(243432);
 
+    expect(first.monthlySalary).toBe(40000);
     const fire = result.rows[16]!;
     expect(fire.age).toBe(37);
     expect(Math.round(fire.opening)).toBe(5630087);
