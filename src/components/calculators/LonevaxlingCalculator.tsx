@@ -330,9 +330,7 @@ export default function LonevaxlingCalculator() {
                 </div>
               </div>
             </div>
-            <p>
-              <b>Arbetsgivarens ITP1-avsättning på din lön</b>
-            </p>
+            <h3>Arbetsgivarens ITP1-avsättning på din lön</h3>
             <div className="limits">
               <div className="limit">
                 <div className="ln">4,5 % upp till 7,5 IBB</div>
