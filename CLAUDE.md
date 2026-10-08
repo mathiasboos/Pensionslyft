@@ -59,11 +59,11 @@ look at on the preview.
   built into `typfallsmodellen.html`). When a calculator on this site is added, changed or checked, read the
   current file in those repositories first (a read-only shallow clone is enough) and port from it, instead of
   working from an older copy. They are newer than anything uploaded to a chat.
-- `src/lib/lonevaxling.ts`, `src/components/calculators/Lonevaxling*.tsx` and `src/styles/lonevaxling.css`
-  are a port of `Salary_Exchange_Consumer.html`. The layout and texts are that file's, scoped under `.lv`,
-  but every colour is a site token (`--lv-*` in the CSS are `var(--primary)` and so on; the canvas chart has
-  the same values as hex), and `tests/lonevaxling.test.ts` compares the calculation with what the
-  original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
+- `src/lib/lonevaxling.ts` is a port of `Salary_Exchange_Consumer.html`, and `tests/lonevaxling.test.ts` compares
+  the calculation with what the original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
+  The page (`LonevaxlingCalculator.tsx`) keeps the original's texts and behaviour but is built like the
+  Pensionskalkylatorn, in the site's own components: inputs in a frame to the left, results and a Recharts chart to
+  the right (`AmountSliderField` is in `fields.tsx`). There is no separate stylesheet or canvas chart any more.
 - `src/lib/nettolon.ts`, `src/components/calculators/NettolonCalculator.tsx` and `src/data/kommunalskatt-2026.json`
   are a port of `Net_Salary_2026.html`. The calculation and its rounding are the original's, and
   `tests/nettolon.test.ts` compares it with what the original shows for 190 sets of inputs
