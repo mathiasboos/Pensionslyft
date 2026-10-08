@@ -1,6 +1,8 @@
 ---
 import { render } from "astro:content";
 import { Clock } from "lucide-react";
+import ArticleCard from "@/components/ArticleCard.astro";
+import ArticleCover from "@/components/ArticleCover.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getArticles, type Article } from "@/lib/articles";
 import { formatDate } from "@/lib/format";
@@ -17,6 +19,13 @@ interface Props {
 const { article } = Astro.props;
 const { title, excerpt, lead, category, author, published_at, reading_minutes } = article.data;
 const { Content } = await render(article);
+
+// "Fler artiklar": the same topic first, then the newest.
+const others = (await getArticles()).filter((a) => a.id !== article.id);
+const more = [
+  ...others.filter((a) => a.data.category === category),
+  ...others.filter((a) => a.data.category !== category),
+].slice(0, 3);
 ---
 
 <BaseLayout
@@ -36,14 +45,22 @@ const { Content } = await render(article);
     isAccessibleForFree: true,
   }}
 >
-  <article class="mx-auto max-w-3xl px-4 py-14">
-    <div class="flex items-center gap-2 text-xs tracking-wider text-muted-foreground uppercase">
-      <span>{category}</span>
-    </div>
-    <h1 class="mt-4 font-serif text-4xl leading-tight font-semibold">{title}</h1>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    <p class="eyebrow">
+      <a href={`/artiklar?kategori=${encodeURIComponent(category)}`} class="hover:text-primary">{category}</a>{
+        " "
+      }· {reading_minutes} min läsning
+    </p>
+    <h1 class="mt-3 font-display text-4xl leading-tight font-semibold sm:text-5xl">{title}</h1>
     <p class="mt-4 text-lg text-muted-foreground">{excerpt}</p>
-    <div class="mt-4 flex flex-wrap items-center gap-4 border-b border-border pb-6 text-sm text-muted-foreground">
-      <span>{author}</span>
+    <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+      <span class="inline-flex items-center gap-2 text-foreground">
+        <span
+          class="grid size-7 place-items-center rounded-full bg-highlight font-mono text-[0.625rem] font-medium text-highlight-foreground"
+          aria-hidden="true">PL</span
+        >
+        {author}
+      </span>
       <time datetime={published_at.toISOString().slice(0, 10)}>{formatDate(published_at)}</time>
       <span class="inline-flex items-center gap-1">
         <Clock className="size-3" aria-hidden="true" />
@@ -51,10 +68,30 @@ const { Content } = await render(article);
       </span>
     </div>
 
-    <p class="mt-8 font-serif text-xl leading-9 text-foreground">{lead}</p>
+    <ArticleCover seed={article.id} category={category} large class="mt-8 aspect-[16/9] rounded-xl" />
+
+    <p class="mt-10 font-display text-xl leading-9 text-foreground">{lead}</p>
 
     <div class="article-body mt-6">
       <Content />
     </div>
   </article>
+
+  {
+    more.length > 0 && (
+      <section class="mx-auto mt-8 max-w-7xl border-t border-border px-4 pt-12">
+        <div class="flex items-end justify-between gap-4">
+          <h2 class="font-display text-2xl font-semibold">Fler artiklar</h2>
+          <a href="/artiklar" class="text-sm font-medium text-primary hover:underline">
+            Alla artiklar
+          </a>
+        </div>
+        <div class="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          {more.map((a) => (
+            <ArticleCard article={a} />
+          ))}
+        </div>
+      </section>
+    )
+  }
 </BaseLayout>

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Pensionslyft design system ("Trustworthy Nordic").
+ * Pensionslyft design system: navy ink on white, with a gold highlight, in the airy style of ramp.com.
  *
  * The @theme inline block maps CSS custom properties to Tailwind utility
  * classes (e.g. --color-primary -> bg-primary, text-primary).
@@ -25,8 +25,13 @@
   --color-primary: var(--primary);
   --color-primary-soft: var(--primary-soft);
   --color-primary-foreground: var(--primary-foreground);
-  --font-serif: "Source Serif 4", Georgia, serif;
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  /* Inter for everything; at heading sizes its optical-size axis gives the tighter display cut. */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Small uppercase labels and figure chips. */
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -48,23 +53,25 @@
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.98 0.008 85); /* #FBF8F2 off-white */
-  --foreground: oklch(0.24 0.045 253); /* #0F2034 */
-  --card: oklch(1 0 0);
+  --background: #ffffff;
+  --foreground: oklch(0.24 0.045 253); /* #0F2034 navy ink */
+  --card: #ffffff;
   --card-foreground: oklch(0.24 0.045 253);
   --primary: oklch(0.28 0.068 253); /* #0C2A49 deep navy */
   --primary-foreground: oklch(0.98 0.008 85);
   --primary-soft: oklch(0.42 0.088 250); /* #22507B */
   --secondary: oklch(0.91 0.032 82); /* #ECE0CA warm sand */
   --secondary-foreground: oklch(0.28 0.068 253);
-  --muted: oklch(0.95 0.012 85);
+  --muted: #f5f4f1; /* the warm light grey of panels */
   --muted-foreground: oklch(0.48 0.025 253); /* #545F6C */
   --accent: oklch(0.88 0.045 82); /* #E7D5B7 */
   --accent-foreground: oklch(0.28 0.068 253);
+  --highlight: #f0c75e; /* gold, for the main call to action and figure chips; navy on it is 9:1 */
+  --highlight-foreground: oklch(0.28 0.068 253);
   --destructive: oklch(0.55 0.2 27);
   --destructive-foreground: oklch(0.98 0.008 85);
-  --border: oklch(0.89 0.015 85); /* #DFDAD0 */
-  --input: oklch(0.89 0.015 85);
+  --border: #e7e5e0;
+  --input: #d9d6cf;
   --ring: oklch(0.42 0.088 250);
   --chart-1: oklch(0.28 0.068 253);
   --chart-2: oklch(0.62 0.09 82); /* #A18142 gold */
@@ -73,6 +80,7 @@
   --chart-5: oklch(0.5 0.12 30);
   --gradient-deep: linear-gradient(160deg, oklch(0.24 0.062 253), oklch(0.36 0.082 250));
   --shadow-soft: 0 18px 40px -24px oklch(0.28 0.068 253 / 0.45);
+  --shadow-panel: 0 24px 48px -24px oklch(0.24 0.045 253 / 0.28);
 }
 
 @layer base {
@@ -87,6 +95,59 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+  }
+
+  /* Headings and big figures: Inter, a little tighter, as large sans-serif type is set on ramp.com. */
+  :where(.font-display) {
+    letter-spacing: -0.022em;
+  }
+}
+
+@layer components {
+  /* A small uppercase label in the mono font, e.g. "PENSIONSLYFT · KALKYLATORER". */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* A figure in a small grey box, as in the key-figure strip. */
+  .figure-chip {
+    display: inline-block;
+    border-radius: 0.25rem;
+    background: var(--muted);
+    padding: 0.0625rem 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    color: var(--foreground);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  /*
+   * The dotted background of the hero. The dots are on a layer behind the content and fade out towards the
+   * edges, so text over them stays easy to read.
+   */
+  .dot-grid {
+    position: relative;
+    isolation: isolate;
+  }
+  .dot-grid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(color-mix(in srgb, var(--primary) 22%, transparent) 1px, transparent 1.4px);
+    background-size: 14px 14px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 25%, transparent 80%);
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 25%, transparent 80%);
   }
 }
 
@@ -159,10 +220,10 @@
 /* Article text rendered from Markdown (src/content/articles). */
 @layer components {
   .article-body h2 {
-    @apply mt-10 font-serif text-2xl font-semibold text-foreground;
+    @apply mt-10 font-display text-2xl font-semibold text-foreground;
   }
   .article-body h3 {
-    @apply mt-8 font-serif text-xl font-semibold text-foreground;
+    @apply mt-8 font-display text-xl font-semibold text-foreground;
   }
   .article-body p {
     @apply mt-4 text-base leading-8 text-foreground/90;
@@ -194,5 +255,49 @@
   }
   .article-body td {
     @apply border-t border-border px-4 py-2;
+  }
+}
+
+/* The panels of the header menus fade in, unless the reader has asked for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-mega-panel]:not([hidden]) > * {
+    animation: mega-in 140ms ease-out;
+  }
+}
+@keyframes mega-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/*
+ * The key figures on the home page move slowly sideways, as the ticker on ramp.com does. The list is there twice,
+ * the second time hidden from screen readers, so that it can run without a gap. With less motion asked for, it
+ * stands still and can be scrolled by hand.
+ */
+.ticker-copy {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ticker {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+  }
+  .ticker-copy {
+    display: flex;
+  }
+  .ticker-track {
+    animation: ticker 60s linear infinite;
+  }
+  .ticker:hover .ticker-track,
+  .ticker:focus-within .ticker-track {
+    animation-play-state: paused;
+  }
+}
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
   }
 }

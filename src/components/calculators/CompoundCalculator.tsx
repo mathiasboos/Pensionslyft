@@ -78,7 +78,7 @@ export default function CompoundCalculator() {
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="font-serif text-xl font-semibold">Insättningar och avkastning</h2>
+          <h2 className="font-display text-xl font-semibold">Insättningar och avkastning</h2>
           <div className="mt-4 h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>

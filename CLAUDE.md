@@ -9,10 +9,14 @@ look at on the preview.
 ## Stack
 - Astro (static output, `build.format: "file"`, `trailingSlash: "never"`). URLs have
   no trailing slash: `/artiklar`, `/pensionskalkylator`.
-- Tailwind CSS v4. The design tokens are in `src/styles/global.css` (navy primary,
-  sand secondary, off-white background, Source Serif 4 for headings, Inter for body).
-  Use the token classes (`bg-primary`, `text-muted-foreground`, `font-serif`, …), not
-  raw hex values.
+- Tailwind CSS v4. The design tokens are in `src/styles/global.css`. The look is that of
+  ramp.com in Pensionslyft's colours, as the owner chose in October 2026: a white background,
+  navy ink and buttons (`primary`), a bright gold highlight for the main call to action and
+  figure chips (`highlight`), warm light grey panels (`muted`), sand (`secondary`) for notes,
+  large Inter headings set a little tight (`font-display`), IBM Plex Mono for small uppercase
+  labels (the `.eyebrow` and `.figure-chip` classes), and a dotted hero (`.dot-grid`). Use the
+  token classes (`bg-primary`, `text-muted-foreground`, `font-display`, …), not raw hex values.
+  There is no serif font any more.
 - React only for interactive parts (the calculators in `src/components/calculators/`,
   mounted with `client:load`). Everything else is `.astro`. Icons come from
   `lucide-react` and are rendered statically.
@@ -44,8 +48,8 @@ look at on the preview.
   colours and fonts there, never in the HTML. The old React
   port (`src/lib/typfall/`) is in git history up to commit a4c6971.
 - **One palette and one typeface for all calculators.** The owner wants every calculator in the colours and fonts
-  of the Pensionskalkylatorn: the tokens in `src/styles/global.css` (navy, sand, gold, off-white; the `chart-*`
-  colours in diagrams), Inter for text and Source Serif 4 (`font-serif`) for headings and big numbers. A
+  of the Pensionskalkylatorn: the tokens in `src/styles/global.css` (navy, gold, sand, white; the `chart-*`
+  colours in diagrams), Inter for text and Inter `font-display` for headings and big numbers. A
   calculator taken from GitHub keeps its calculation, texts and layout, but not its own palette or fonts: map
   them to the site's, and check diagram colours with the dataviz validator.
 - **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
@@ -66,6 +70,18 @@ look at on the preview.
   (`tests/fixtures/nettolon-web.json`). The page itself is built in the site's own components, colours and
   fonts (`AmountField`, `SelectField` and `SwitchRow` are in `fields.tsx`), not in the original's look. The rules
   are for income year 2026 and the list of municipalities is SCB's of 2025-12-15: check both every December.
+- **Navigation.** `src/lib/site-nav.ts` is the one list of the site's pages (the calculators in their groups, and
+  Insikter: Artiklar, Rapporter). The header, its menus, the footer, the home page and `/kalkylatorer` are built from
+  it, so a new page is added there once. The header (`SiteHeader.astro`) has Ramp-style menus: on a computer a panel
+  opens when the pointer rests on its title and stays open while the pointer travels into it; a click, a tap, Enter or
+  Space toggles it, and Escape closes it. On a phone a hamburger opens a sheet with the same links. Test a change to
+  the header with hover, keyboard and touch (Playwright, with an iPhone profile for touch).
+- `/rapporter` lists links to the authorities' reports from `src/data/rapporter.ts`. Link to a page that lists every
+  edition rather than to one year's PDF, and only add a link that has been checked to work.
+- The articles have no images: `ArticleCover.astro` draws a cover from the category (colour) and the article (the
+  shape of the rising line). The home page's example figures and key figures are computed at build time from
+  `src/lib/pension.ts`, `src/lib/nettolon.ts` and `src/data/kommunalskatt-2026.json`, so they follow those files.
+  The home page's salary field opens `/nettolonkalkylator?lon=…`, which the Nettolön calculator reads.
 - Sliders are native range inputs (`SliderField` in `fields.tsx`, the `.range` class in `global.css`). The
   Radix slider that was used before did not follow a finger on a phone, so do not bring it back; test any
   new slider with touch events (Playwright with an iPhone profile and CDP `Input.dispatchTouchEvent`).

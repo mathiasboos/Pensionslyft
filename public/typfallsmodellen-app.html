@@ -9,7 +9,7 @@
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
 <style id="pensionslyft-theme">
 /*
  * The colours of the Typfallsmodellen app on pensionslyft.se.
@@ -21,13 +21,13 @@
  * are set, so the app's layout and behaviour are untouched.
  *
  * Site tokens used, with their values:
- *   background #fbf8f3   foreground #0f2034   primary #0c2a49   primary-soft #22507b   secondary #ece0ca
- *   accent #e6d5b7   muted #f2eee6   muted-foreground #545f6c   border #dfdad0   destructive #cc2827
+ *   background #ffffff   foreground #0f2034   primary #0c2a49   primary-soft #22507b   secondary #ece0ca
+ *   accent #e6d5b7   muted #f5f4f1   muted-foreground #545f6c   border #e7e5e0   destructive #cc2827
  *   chart-1 #0c2a49 navy   chart-2 #a18142 gold   chart-3 #4675a4 steel blue   chart-4 #72b3a6 teal   chart-5 #9c4438 brick
  *
- * The fonts are the site's too: Inter for the text, Source Serif 4 for the headings and the key figures, as
- * font-serif is used on the other calculators. The sync script adds the same Google Fonts link as the site's pages
- * (src/layouts/BaseLayout.astro); without it the app falls back to the system fonts.
+ * The fonts are the site's too: Inter for the text, and Inter a little tighter for the headings and the key
+ * figures, as font-display is used on the other calculators. The sync script adds the same Google Fonts link as
+ * the site's pages (src/layouts/BaseLayout.astro); without it the app falls back to the system fonts.
  *
  * The figures take the site's chart colours in the site's order. Run through the dataviz validator, the sets the app
  * draws next to each other (Figur 2's stack, the seven bands of mikrosim, the scenarios, the tax pair) pass the colour
@@ -37,13 +37,13 @@
  */
 :root {
   color-scheme: light;
-  --surface-sunken: #f2eee6;
-  --border: #dfdad0;
+  --surface-sunken: #f5f4f1;
+  --border: #e7e5e0;
   --rule: #bdb6a6;
   --text-primary: #0f2034;
   --text-secondary: #0c2a49;
   --text-muted: #545f6c;
-  --grid: #ebe6da;
+  --grid: #eceae5;
   --axis: #a3a9b1;
   --accent: #0c2a49;
   --danger: #cc2827;
@@ -53,7 +53,7 @@
   --banner-ink: #0c2a49;
   --retired: #ece7dc;
   --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   --fig-salary: #4675a4;
   --fig-income-pension: #0c2a49;
@@ -80,15 +80,16 @@
 }
 
 body {
-  background: #fbf8f3;
+  background: #ffffff;
 }
 
 .masthead h1,
 .panel > h2,
 .figure figcaption,
 .kpi-value {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-weight: 600;
+  letter-spacing: -0.022em;
 }
 
 /* The buttons in the title bars stay in the text font. */

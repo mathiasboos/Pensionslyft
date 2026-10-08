@@ -1,81 +1,437 @@
 ---
-import { Menu, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
+import ArticleCover from "@/components/ArticleCover.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { getArticles } from "@/lib/articles";
+import { calculatorGroups, featuredCalculator, insights } from "@/lib/site-nav";
+import { cn } from "@/lib/utils";
 
-const links = [
-  { href: "/artiklar", label: "Artiklar" },
-  { href: "/pensionskalkylator", label: "Pensionskalkylator" },
-  { href: "/ranta-pa-ranta", label: "Ränta på ränta" },
-  { href: "/fire-kalkylator", label: "FIRE-kalkylator" },
-  { href: "/typfallsmodellen", label: "Typfallsmodellen" },
-  { href: "/lonevaxlingskalkylator", label: "Löneväxling" },
-  { href: "/nettolonkalkylator", label: "Nettolön" },
-];
+const articles = await getArticles();
+const latest = articles[0];
+const categories = [...new Set(articles.map((a) => a.data.category))].sort((a, b) => a.localeCompare(b, "sv"));
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
 const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
+const calculatorsActive =
+  isActive("/kalkylatorer") || calculatorGroups.some((g) => g.items.some((item) => isActive(item.href)));
+const insightsActive = insights.some((item) => isActive(item.href));
+
+const trigger =
+  "group inline-flex cursor-pointer items-center gap-1 rounded-md px-3 py-2 text-sm transition-colors hover:text-primary aria-expanded:text-primary";
+const plainLink = "rounded-md px-3 py-2 text-sm transition-colors hover:text-primary";
+const FeaturedIcon = featuredCalculator.icon;
 ---
 
-<header class="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur">
-  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-    <a href="/" class="flex items-baseline gap-2">
-      <span class="font-serif text-xl font-semibold tracking-tight text-primary">Pensionslyft</span>
-      <span class="hidden text-xs tracking-[0.2em] text-muted-foreground uppercase sm:inline">.se</span>
+<header class="sticky top-0 z-50 border-b border-border bg-background" data-site-header>
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4">
+    <a href="/" class="flex shrink-0 items-center gap-1.5 text-primary" aria-label="Pensionslyft, till startsidan">
+      <span class="font-display text-xl font-semibold">Pensionslyft</span>
+      <svg viewBox="0 0 20 20" class="size-5" aria-hidden="true">
+        <polyline
+          points="2,15 7,10 10.5,12.5 17,5"
+          fill="none"
+          stroke="var(--highlight)"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"></polyline>
+        <polyline
+          points="12.5,5 17,5 17,9.5"
+          fill="none"
+          stroke="var(--highlight)"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"></polyline>
+      </svg>
     </a>
 
-    <nav class="hidden items-center gap-6 lg:flex" aria-label="Huvudmeny">
-      {
-        links.map((l) => (
-          <a
-            href={l.href}
-            aria-current={isActive(l.href) ? "page" : undefined}
-            class:list={[
-              "text-sm transition-colors hover:text-primary",
-              isActive(l.href) ? "font-medium text-primary" : "text-foreground/80",
-            ]}
+    <nav class="hidden h-full items-center lg:flex" aria-label="Huvudmeny">
+      <div class="flex h-full items-center" data-mega>
+        <button
+          type="button"
+          class:list={[trigger, calculatorsActive ? "font-medium text-primary" : "text-foreground/80"]}
+          aria-expanded="false"
+          aria-controls="mega-kalkylatorer"
+          data-mega-trigger
+        >
+          Kalkylatorer
+          <ChevronDown className="size-4 transition-transform group-aria-expanded:rotate-180" aria-hidden="true" />
+        </button>
+        <div id="mega-kalkylatorer" class="absolute inset-x-0 top-full z-10 px-4 pt-2" hidden data-mega-panel>
+          <div
+            class="mx-auto grid max-w-7xl grid-cols-[1fr_1fr_20rem] overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]"
           >
-            {l.label}
-          </a>
-        ))
-      }
+            {
+              calculatorGroups.map((group) => (
+                <div class="border-r border-border p-6">
+                  <p class="eyebrow px-2">{group.title}</p>
+                  <ul class="mt-3 space-y-1">
+                    {group.items.map((item) => (
+                      <li>
+                        <a
+                          href={item.href}
+                          aria-current={isActive(item.href) ? "page" : undefined}
+                          class="group/item flex gap-3 rounded-lg p-2 transition-colors hover:bg-muted"
+                        >
+                          <span class="grid size-10 shrink-0 place-items-center rounded-md bg-muted text-primary transition-colors group-hover/item:bg-primary group-hover/item:text-primary-foreground">
+                            <item.icon className="size-5" aria-hidden="true" />
+                          </span>
+                          <span>
+                            <span class="block text-sm font-medium text-foreground">{item.title}</span>
+                            <span class="mt-0.5 block text-sm leading-5 text-muted-foreground">
+                              {item.description}
+                            </span>
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+            <div class="bg-muted p-6">
+              <p class="eyebrow">Utvalt</p>
+              <a href={featuredCalculator.href} class="group/feat mt-3 block">
+                <span
+                  class="grid aspect-[16/9] place-items-center rounded-lg text-primary-foreground"
+                  style="background: var(--gradient-deep)"
+                >
+                  <FeaturedIcon className="size-10 text-highlight" aria-hidden="true" />
+                </span>
+                <span class="mt-3 block text-sm font-medium text-foreground group-hover/feat:text-primary">
+                  Nytt: {featuredCalculator.title}
+                </span>
+                <span class="mt-0.5 block text-sm leading-5 text-muted-foreground">
+                  {featuredCalculator.description}
+                </span>
+              </a>
+              <a
+                href="/kalkylatorer"
+                class="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                Alla kalkylatorer <ArrowRight className="size-4" aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex h-full items-center" data-mega>
+        <button
+          type="button"
+          class:list={[trigger, insightsActive ? "font-medium text-primary" : "text-foreground/80"]}
+          aria-expanded="false"
+          aria-controls="mega-insikter"
+          data-mega-trigger
+        >
+          Insikter
+          <ChevronDown className="size-4 transition-transform group-aria-expanded:rotate-180" aria-hidden="true" />
+        </button>
+        <div id="mega-insikter" class="absolute inset-x-0 top-full z-10 px-4 pt-2" hidden data-mega-panel>
+          <div
+            class="mx-auto grid max-w-7xl grid-cols-[1fr_1fr_20rem] overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]"
+          >
+            <div class="border-r border-border p-6">
+              <p class="eyebrow px-2">Läs och fördjupa</p>
+              <ul class="mt-3 space-y-1">
+                {
+                  insights.map((item) => (
+                    <li>
+                      <a
+                        href={item.href}
+                        aria-current={isActive(item.href) ? "page" : undefined}
+                        class="group/item flex gap-3 rounded-lg p-2 transition-colors hover:bg-muted"
+                      >
+                        <span class="grid size-10 shrink-0 place-items-center rounded-md bg-muted text-primary transition-colors group-hover/item:bg-primary group-hover/item:text-primary-foreground">
+                          <item.icon className="size-5" aria-hidden="true" />
+                        </span>
+                        <span>
+                          <span class="block text-sm font-medium text-foreground">{item.title}</span>
+                          <span class="mt-0.5 block text-sm leading-5 text-muted-foreground">
+                            {item.description}
+                          </span>
+                        </span>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+            <div class="border-r border-border p-6">
+              <p class="eyebrow">Ämnen</p>
+              <ul class="mt-3 space-y-3">
+                {
+                  categories.map((category) => (
+                    <li>
+                      <a
+                        href={`/artiklar?kategori=${encodeURIComponent(category)}`}
+                        class="text-sm text-foreground hover:text-primary hover:underline"
+                      >
+                        {category}
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+            <div class="bg-muted p-6">
+              <p class="eyebrow">Senaste artikeln</p>
+              {
+                latest && (
+                  <a href={`/artiklar/${latest.id}`} class="group/feat mt-3 block">
+                    <ArticleCover
+                      seed={latest.id}
+                      category={latest.data.category}
+                      class="aspect-[16/9] rounded-lg"
+                    />
+                    <span class="mt-3 block text-sm font-medium text-foreground group-hover/feat:text-primary">
+                      {latest.data.title}
+                    </span>
+                    <span class="mt-0.5 line-clamp-2 block text-sm leading-5 text-muted-foreground">
+                      {latest.data.excerpt}
+                    </span>
+                  </a>
+                )
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <a
+        href="/artiklar"
+        aria-current={isActive("/artiklar") ? "page" : undefined}
+        class:list={[plainLink, isActive("/artiklar") ? "font-medium text-primary" : "text-foreground/80"]}
+      >
+        Artiklar
+      </a>
+      <a
+        href="/rapporter"
+        aria-current={isActive("/rapporter") ? "page" : undefined}
+        class:list={[plainLink, isActive("/rapporter") ? "font-medium text-primary" : "text-foreground/80"]}
+      >
+        Rapporter
+      </a>
     </nav>
 
-    <button
-      type="button"
-      class="cursor-pointer lg:hidden"
-      aria-label="Meny"
-      aria-expanded="false"
-      aria-controls="mobile-menu"
-      data-menu-toggle
-    >
-      <Menu className="size-5" data-icon-open />
-      <X className="hidden size-5" data-icon-close />
-    </button>
+    <div class="ml-auto flex items-center gap-2">
+      <a href="/pensionskalkylator" class={cn(buttonVariants({ variant: "highlight" }), "hidden sm:inline-flex")}>
+        Räkna ut din pension
+      </a>
+      <a href="/kalkylatorer" class={cn(buttonVariants(), "hidden shadow-none lg:inline-flex")}>
+        Alla kalkylatorer
+      </a>
+      <button
+        type="button"
+        class="-mr-2 grid size-10 cursor-pointer place-items-center rounded-md lg:hidden"
+        aria-label="Meny"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-menu-toggle
+      >
+        <Menu className="size-5" data-icon-open />
+        <X className="hidden size-5" data-icon-close />
+      </button>
+    </div>
   </div>
 
-  <div id="mobile-menu" class="hidden border-t border-border bg-background px-4 py-3 lg:hidden">
-    <nav class="flex flex-col gap-3" aria-label="Huvudmeny">
-      {
-        links.map((l) => (
-          <a
-            href={l.href}
-            aria-current={isActive(l.href) ? "page" : undefined}
-            class:list={["text-sm", isActive(l.href) && "font-medium text-primary"]}
-          >
-            {l.label}
-          </a>
-        ))
-      }
+  <div class="fixed inset-x-0 top-16 bottom-0 z-0 bg-foreground/20" hidden data-mega-overlay></div>
+
+  <div
+    id="mobile-menu"
+    class="fixed inset-x-0 top-16 bottom-0 overflow-y-auto overscroll-contain bg-background lg:hidden"
+    hidden
+  >
+    <nav class="mx-auto max-w-7xl px-4 pb-10" aria-label="Huvudmeny">
+      <details class="group border-b border-border" open={calculatorsActive}>
+        <summary
+          class="flex cursor-pointer list-none items-center justify-between py-4 text-base font-medium [&::-webkit-details-marker]:hidden"
+        >
+          Kalkylatorer
+          <ChevronDown className="size-5 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        {
+          calculatorGroups.map((group) => (
+            <div class="pb-4">
+              <p class="eyebrow">{group.title}</p>
+              <ul class="mt-2 space-y-1">
+                {group.items.map((item) => (
+                  <li>
+                    <a
+                      href={item.href}
+                      aria-current={isActive(item.href) ? "page" : undefined}
+                      class:list={[
+                        "flex items-center gap-3 rounded-lg py-2",
+                        isActive(item.href) && "font-medium text-primary",
+                      ]}
+                    >
+                      <span class="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-primary">
+                        <item.icon className="size-4" aria-hidden="true" />
+                      </span>
+                      <span class="text-sm">{item.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+        <a href="/kalkylatorer" class="mb-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+          Alla kalkylatorer <ArrowRight className="size-4" aria-hidden="true" />
+        </a>
+      </details>
+      <details class="group border-b border-border" open={insightsActive}>
+        <summary
+          class="flex cursor-pointer list-none items-center justify-between py-4 text-base font-medium [&::-webkit-details-marker]:hidden"
+        >
+          Insikter
+          <ChevronDown className="size-5 transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <ul class="space-y-1 pb-4">
+          {
+            insights.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  class:list={[
+                    "flex items-center gap-3 rounded-lg py-2",
+                    isActive(item.href) && "font-medium text-primary",
+                  ]}
+                >
+                  <span class="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-primary">
+                    <item.icon className="size-4" aria-hidden="true" />
+                  </span>
+                  <span class="text-sm">{item.title}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="eyebrow">Ämnen</p>
+        <ul class="mt-2 flex flex-wrap gap-2 pb-5">
+          {
+            categories.map((category) => (
+              <li>
+                <a
+                  href={`/artiklar?kategori=${encodeURIComponent(category)}`}
+                  class="inline-block rounded-full border border-border px-3 py-1 text-sm"
+                >
+                  {category}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+      <a href="/artiklar" class="block border-b border-border py-4 text-base font-medium">Artiklar</a>
+      <a href="/rapporter" class="block border-b border-border py-4 text-base font-medium">Rapporter</a>
+      <div class="mt-8 grid gap-3">
+        <a href="/pensionskalkylator" class={cn(buttonVariants({ variant: "highlight", size: "lg" }))}>
+          Räkna ut din pension
+        </a>
+        <a href="/kalkylatorer" class={cn(buttonVariants({ size: "lg" }), "shadow-none")}>Alla kalkylatorer</a>
+      </div>
     </nav>
   </div>
 </header>
 
 <script>
+  /*
+   * The menus of the header.
+   *
+   * On a computer a panel opens when the pointer rests on its title (after 80 ms, so that passing over it does
+   * not open it) and closes 200 ms after the pointer has left both the title and the panel, so the pointer can
+   * travel down into it. A click, a tap, Enter or Space opens and closes it too, and Escape closes it and puts
+   * the focus back on the title. On a phone the hamburger opens a sheet with the same links.
+   */
+  const OPEN_DELAY = 80;
+  const CLOSE_DELAY = 200;
+
+  type Mega = { root: HTMLElement; trigger: HTMLButtonElement; panel: HTMLElement };
+
+  const overlay = document.querySelector<HTMLElement>("[data-mega-overlay]");
+  const megas: Mega[] = [...document.querySelectorAll<HTMLElement>("[data-mega]")].map((root) => ({
+    root,
+    trigger: root.querySelector<HTMLButtonElement>("[data-mega-trigger]")!,
+    panel: root.querySelector<HTMLElement>("[data-mega-panel]")!,
+  }));
+
+  let current: Mega | null = null;
+  let openedAt = 0;
+  let timer = 0;
+
+  function show(mega: Mega | null) {
+    window.clearTimeout(timer);
+    if (current === mega) return;
+    if (current) {
+      current.panel.hidden = true;
+      current.trigger.setAttribute("aria-expanded", "false");
+    }
+    current = mega;
+    if (mega) {
+      mega.panel.hidden = false;
+      mega.trigger.setAttribute("aria-expanded", "true");
+      openedAt = Date.now();
+    }
+    if (overlay) overlay.hidden = !mega;
+  }
+
+  for (const mega of megas) {
+    mega.root.addEventListener("pointerenter", (event) => {
+      if (event.pointerType !== "mouse") return;
+      window.clearTimeout(timer);
+      if (current && current !== mega) show(mega);
+      else if (!current) timer = window.setTimeout(() => show(mega), OPEN_DELAY);
+    });
+    mega.root.addEventListener("pointerleave", (event) => {
+      if (event.pointerType !== "mouse") return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (current === mega) show(null);
+      }, CLOSE_DELAY);
+    });
+    mega.trigger.addEventListener("click", () => {
+      // A click just after the pointer opened the panel keeps it open instead of closing it again.
+      if (current === mega) {
+        if (Date.now() - openedAt > 400) show(null);
+      } else {
+        show(mega);
+      }
+    });
+    mega.root.addEventListener("focusout", (event) => {
+      const next = event.relatedTarget as Node | null;
+      if (current === mega && next && !mega.root.contains(next)) show(null);
+    });
+  }
+
+  overlay?.addEventListener("click", () => show(null));
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !current) return;
+    const trigger = current.trigger;
+    show(null);
+    trigger.focus();
+  });
+
+  // The sheet on phones.
   const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
-  const menu = document.getElementById("mobile-menu");
-  toggle?.addEventListener("click", () => {
-    const open = menu?.classList.toggle("hidden") === false;
+  const sheet = document.getElementById("mobile-menu");
+
+  function setSheet(open: boolean) {
+    if (!toggle || !sheet) return;
+    sheet.hidden = !open;
     toggle.setAttribute("aria-expanded", String(open));
     toggle.querySelector("[data-icon-open]")?.classList.toggle("hidden", open);
     toggle.querySelector("[data-icon-close]")?.classList.toggle("hidden", !open);
+    // The page behind the sheet does not scroll while it is open.
+    document.documentElement.classList.toggle("overflow-hidden", open);
+  }
+
+  toggle?.addEventListener("click", () => setSheet(Boolean(sheet?.hidden)));
+
+  // Wider than a phone, the sheet is not shown, so it must not keep the page from scrolling.
+  window.matchMedia("(min-width: 1024px)").addEventListener("change", (event) => {
+    if (event.matches) setSheet(false);
+    else show(null);
   });
 </script>

@@ -23,6 +23,8 @@ visual editor (Framer, Lovable) is needed.
 | Page | URL | File |
 | --- | --- | --- |
 | Start | `/` | `src/pages/index.astro` |
+| All calculators | `/kalkylatorer` | `src/pages/kalkylatorer.astro` |
+| Reports | `/rapporter` | `src/pages/rapporter.astro` + `src/data/rapporter.ts` (the list of links) |
 | Articles | `/artiklar` | `src/pages/artiklar/index.astro` |
 | One article | `/artiklar/<slug>` | `src/pages/artiklar/[slug].astro` + `src/content/articles/<slug>.md` |
 | Pension calculator | `/pensionskalkylator` | `src/pages/pensionskalkylator.astro` + `src/components/calculators/PensionCalculator.tsx` |
@@ -35,9 +37,12 @@ visual editor (Framer, Lovable) is needed.
 
 - **Articles** are Markdown files in `src/content/articles/`. Add a new file there and the
   article appears on the site, in the article list and in the sitemap.
-- **Colors and fonts** are in `src/styles/global.css`: navy, sand and off-white, with
-  Source Serif 4 and Inter.
-- **Header and footer** are `src/components/SiteHeader.astro` and `SiteFooter.astro`.
+- **Colors and fonts** are in `src/styles/global.css`: navy on white with a gold highlight, in
+  the airy style of ramp.com, with Inter for text and headings and IBM Plex Mono for the small
+  labels.
+- **Header and footer** are `src/components/SiteHeader.astro` and `SiteFooter.astro`. The menus
+  that unfold on hover, the footer, the home page and `/kalkylatorer` are all built from one list
+  of pages, `src/lib/site-nav.ts`: a new calculator is added there once.
 
 The design, texts and calculators come from the earlier Lovable version of the site
 ([`mathiasboos/pension-partner`](https://github.com/mathiasboos/pension-partner)).

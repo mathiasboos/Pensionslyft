@@ -19,7 +19,7 @@ export function Stat({
       <p className={`text-xs tracking-wider uppercase ${highlight ? "opacity-75" : "text-muted-foreground"}`}>
         {label}
       </p>
-      <p className="mt-2 font-serif text-2xl font-semibold">{value}</p>
+      <p className="mt-2 font-display text-2xl font-semibold">{value}</p>
     </div>
   );
 }
