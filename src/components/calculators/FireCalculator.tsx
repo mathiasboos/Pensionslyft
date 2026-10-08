@@ -267,7 +267,7 @@ export default function FireCalculator() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6 text-sm">
-            <h2 className="font-serif text-lg font-semibold">Avkastning efter kostnader</h2>
+            <h2 className="font-display text-lg font-semibold">Avkastning efter kostnader</h2>
             <dl className="mt-3 space-y-2">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Avkastning</dt>
@@ -300,24 +300,24 @@ export default function FireCalculator() {
             <div className="rounded-xl border border-border bg-primary p-5 text-primary-foreground">
               <p className="text-xs tracking-wider uppercase opacity-75">FIRE-ålder</p>
               {fireAge === null ? (
-                <p className="mt-2 font-serif text-xl font-semibold">Nås inte inom {FIRE_YEARS} år</p>
+                <p className="mt-2 font-display text-xl font-semibold">Nås inte inom {FIRE_YEARS} år</p>
               ) : (
                 <>
-                  <p className="mt-2 font-serif text-4xl font-semibold">{fireAge} år</p>
+                  <p className="mt-2 font-display text-4xl font-semibold">{fireAge} år</p>
                   <p className="mt-1 text-sm opacity-75">om {fireYear} år</p>
                 </>
               )}
             </div>
             <div className="rounded-xl border border-border bg-card p-5">
               <p className="text-xs tracking-wider text-muted-foreground uppercase">FIRE-mål</p>
-              <p className="mt-2 font-serif text-2xl font-semibold">{formatSek(result.target)}</p>
+              <p className="mt-2 font-display text-2xl font-semibold">{formatSek(result.target)}</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {formatSek(result.monthlySpending)}/mån × 12 × {fireMultiple}
               </p>
             </div>
             <div className="rounded-xl border border-border bg-card p-5">
               <p className="text-xs tracking-wider text-muted-foreground uppercase">Månadssparande</p>
-              <p className="mt-2 font-serif text-2xl font-semibold">{formatSek(result.monthlySavings)}</p>
+              <p className="mt-2 font-display text-2xl font-semibold">{formatSek(result.monthlySavings)}</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {formatSek(result.monthlySavings * 12)}/år
               </p>
@@ -325,7 +325,7 @@ export default function FireCalculator() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6">
-            <h2 className="font-serif text-xl font-semibold">Vägen till målet</h2>
+            <h2 className="font-display text-xl font-semibold">Vägen till målet</h2>
             <ol className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {result.milestones.map((m) => (
                 <li
@@ -335,7 +335,7 @@ export default function FireCalculator() {
                     m.age === null ? "border-border text-muted-foreground" : "border-primary/20 bg-secondary/60",
                   )}
                 >
-                  <p className="font-serif text-lg font-semibold">{m.percent}&nbsp;%</p>
+                  <p className="font-display text-lg font-semibold">{m.percent}&nbsp;%</p>
                   <p className="text-xs">{m.age === null ? "–" : `vid ${m.age} år`}</p>
                 </li>
               ))}
@@ -344,7 +344,7 @@ export default function FireCalculator() {
 
           <div className="rounded-xl border border-border bg-card p-6">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-serif text-xl font-semibold">Portföljens utveckling</h2>
+              <h2 className="font-display text-xl font-semibold">Portföljens utveckling</h2>
               <ul className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                 <li className="flex items-center gap-2">
                   <span className="h-2.5 w-4 rounded-sm bg-chart-1/70" aria-hidden="true" />
@@ -419,7 +419,7 @@ export default function FireCalculator() {
             <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:px-6">
               <button
                 type="button"
-                className="flex cursor-pointer items-center gap-2 font-serif text-lg font-semibold"
+                className="flex cursor-pointer items-center gap-2 font-display text-lg font-semibold"
                 aria-expanded={tableOpen}
                 aria-controls="fire-table"
                 onClick={() => setTableOpen(!tableOpen)}

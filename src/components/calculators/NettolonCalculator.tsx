@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import kommunalskatt from "@/data/kommunalskatt-2026.json";
@@ -55,7 +55,7 @@ function Collapsible({
         aria-controls={id}
         onClick={onToggle}
       >
-        <span className={small ? "text-sm font-medium" : "font-serif text-lg font-semibold"}>{title}</span>
+        <span className={small ? "text-sm font-medium" : "font-display text-lg font-semibold"}>{title}</span>
         <span className="flex items-center gap-2 text-xs text-muted-foreground">
           {aside}
           <ChevronDown className={cn("size-5 transition-transform", open && "rotate-180")} aria-hidden="true" />
@@ -67,7 +67,7 @@ function Collapsible({
 }
 
 const code = "rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-primary";
-const h3 = "mt-6 mb-2 font-serif text-base font-semibold text-foreground";
+const h3 = "mt-6 mb-2 font-display text-base font-semibold text-foreground";
 
 function Notes() {
   return (
@@ -251,6 +251,14 @@ export default function NettolonCalculator() {
   const set = <K extends keyof NettolonInput>(key: K, value: NettolonInput[K]) =>
     setInput((prev) => ({ ...prev, [key]: value }));
 
+  // The salary field of the home page links here as /nettolonkalkylator?lon=45000. "45 000" and "45.000" work
+  // too; öre after a comma are dropped.
+  useEffect(() => {
+    const typed = new URLSearchParams(window.location.search).get("lon") ?? "";
+    const lon = Number(typed.split(",")[0].replace(/\D/g, ""));
+    if (lon > 0) set("lon", lon);
+  }, []);
+
   const chooseKommun = (name: string) => {
     setKommunName(name);
     if (name && RATES[name] !== undefined) set("kommun", RATES[name]);
@@ -281,7 +289,7 @@ export default function NettolonCalculator() {
       {/* ── Inputs ── */}
       <div className="min-w-0 space-y-6 self-start rounded-xl border border-border bg-card p-6">
         <div>
-          <h2 className="font-serif text-lg font-semibold">Indata</h2>
+          <h2 className="font-display text-lg font-semibold">Indata</h2>
           <p className="mt-1 text-xs text-muted-foreground">Justera värdena — allt räknas om direkt.</p>
         </div>
 
@@ -456,7 +464,7 @@ export default function NettolonCalculator() {
       <div className="min-w-0 space-y-6">
         <div className="rounded-xl border border-border bg-primary p-6 text-primary-foreground sm:p-8">
           <p className="text-xs tracking-wider uppercase opacity-70">Netto i handen efter skatt</p>
-          <p className="mt-2 font-serif text-5xl leading-none font-semibold sm:text-6xl" aria-live="polite">
+          <p className="mt-2 font-display text-5xl leading-none font-semibold sm:text-6xl" aria-live="polite">
             {view.netMonth}
             <span className="ml-2 font-sans text-xl font-medium opacity-60">kr/mån</span>
           </p>
@@ -470,15 +478,15 @@ export default function NettolonCalculator() {
           </p>
           <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-primary-foreground/15 pt-5">
             <div>
-              <dd className="font-serif text-lg font-semibold sm:text-2xl">{view.effRate}</dd>
+              <dd className="font-display text-lg font-semibold sm:text-2xl">{view.effRate}</dd>
               <dt className="mt-1 text-[11px] tracking-wide uppercase opacity-60">Effektiv skatt</dt>
             </div>
             <div>
-              <dd className="font-serif text-lg font-semibold sm:text-2xl">{view.margRate}</dd>
+              <dd className="font-display text-lg font-semibold sm:text-2xl">{view.margRate}</dd>
               <dt className="mt-1 text-[11px] tracking-wide uppercase opacity-60">Marginalskatt</dt>
             </div>
             <div>
-              <dd className="font-serif text-lg font-semibold sm:text-2xl">{view.totTax}</dd>
+              <dd className="font-display text-lg font-semibold sm:text-2xl">{view.totTax}</dd>
               <dt className="mt-1 text-[11px] tracking-wide uppercase opacity-60">Skatt &amp; avgift / mån</dt>
             </div>
           </dl>
@@ -571,7 +579,7 @@ export default function NettolonCalculator() {
                         {x.n}
                       </td>
                       <td className="py-2.5 pr-2 pl-4 sm:pl-2">
-                        <span className={cn("block font-medium", (sum || net) && "font-serif")}>{x.name}</span>
+                        <span className={cn("block font-medium", (sum || net) && "font-display")}>{x.name}</span>
                         <span className={cn("block text-xs font-normal", net ? "text-primary-foreground/70" : "text-muted-foreground")}>
                           {x.sub}
                         </span>

@@ -17,7 +17,7 @@ const app = "/typfallsmodellen-app.html";
 >
   <h1 class="sr-only">Typfallsmodellen</h1>
 
-  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-2 text-xs text-muted-foreground">
+  <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-2 text-xs text-muted-foreground">
     <p>Allmän pension och tjänstepension år för år. Allt räknas i din webbläsare.</p>
     <a href={app} target="_blank" rel="noopener" class="font-medium text-primary hover:underline">
       Öppna i eget fönster ↗
@@ -29,13 +29,13 @@ const app = "/typfallsmodellen-app.html";
     title="Typfallsmodellen – kalkylator"
     class="block h-[calc(100dvh-6.25rem)] min-h-[34rem] w-full border-y border-border bg-card"></iframe>
   <noscript>
-    <p class="mx-auto max-w-6xl px-4 py-8 text-sm text-muted-foreground">
+    <p class="mx-auto max-w-7xl px-4 py-8 text-sm text-muted-foreground">
       Kalkylatorn behöver JavaScript. Slå på det i webbläsaren, eller öppna <a href={app} class="underline">kalkylatorn i eget fönster</a>.
     </p>
   </noscript>
 
-  <section class="mx-auto max-w-6xl px-4 pt-12">
-    <h2 class="font-serif text-2xl font-semibold">Om kalkylatorn</h2>
+  <section class="mx-auto max-w-7xl px-4 pt-12">
+    <h2 class="font-display text-2xl font-semibold">Om kalkylatorn</h2>
     <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
       <p>
         Typfallsmodellen är Pensionsmyndighetens modell för hela pensionsutfallet för en tänkt person, ett typfall:
@@ -48,7 +48,7 @@ const app = "/typfallsmodellen-app.html";
         på minPension. Webbversionen är inofficiell och inte kopplad till Pensionsmyndigheten.
       </p>
       <p>
-        Kalkylatorn är projektet
+        Kalkylatorn är projektet{" "}
         <a href={source.repository} target="_blank" rel="noopener" class="text-primary underline underline-offset-2"
           >Typfallsmodellen på GitHub</a
         >, byggt till en fil. Den här sidan visar version <code>{source.commit.slice(0, 7)}</code> från {formatDate(source.committedAt)}.

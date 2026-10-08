@@ -1,0 +1,62 @@
+---
+import { ArrowUpRight } from "lucide-react";
+import { publishers } from "@/data/rapporter";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { slugify } from "@/lib/format";
+---
+
+<BaseLayout
+  title="Rapporter och statistik om pension – Pensionslyft"
+  description="Rapporter och statistik från Pensionsmyndigheten, Skatteverket, Riksbanken, Finansinspektionen, Konjunkturinstitutet och SCB, samlade på ett ställe."
+  ogDescription="Myndigheternas rapporter om pension och ekonomi, samlade på ett ställe."
+>
+  <div class="dot-grid">
+    <div class="mx-auto max-w-7xl px-4 pt-12 pb-6">
+      <p class="eyebrow">Pensionslyft · Insikter</p>
+      <h1 class="mt-2 font-display text-4xl font-semibold sm:text-5xl">Rapporter</h1>
+      <p class="mt-3 max-w-2xl text-muted-foreground">
+        Statistik och rapporter från myndigheterna, samlade på ett ställe. Länkarna går till myndigheternas egna
+        webbplatser, där de senaste utgåvorna finns.
+      </p>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4">
+    {
+      publishers.map((publisher) => (
+        <section
+          class="grid gap-4 border-t border-border py-8 lg:grid-cols-[16rem_1fr] lg:gap-10"
+          aria-labelledby={`utgivare-${slugify(publisher.name)}`}
+        >
+          <h2 id={`utgivare-${slugify(publisher.name)}`} class="eyebrow pt-1">
+            {publisher.name}
+          </h2>
+          <ul class="-mt-4 divide-y divide-border lg:-mt-3">
+            {publisher.reports.map((report) => (
+              <li>
+                <a
+                  href={report.url}
+                  target="_blank"
+                  rel="noopener"
+                  class="group flex items-start justify-between gap-6 py-4"
+                >
+                  <span>
+                    <span class="block font-medium text-foreground group-hover:text-primary group-hover:underline">
+                      {report.title}
+                    </span>
+                    <span class="mt-1 block text-sm leading-6 text-muted-foreground">{report.description}</span>
+                    <span class="eyebrow mt-2 block">{report.frequency}</span>
+                  </span>
+                  <span class="grid size-9 shrink-0 place-items-center rounded-full border border-border transition-colors group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
+                    <ArrowUpRight className="size-4" aria-hidden="true" />
+                    <span class="sr-only">(öppnas i en ny flik)</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>

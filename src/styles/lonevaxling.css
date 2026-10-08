@@ -3,7 +3,7 @@
  *
  * The look of the calculator is that of the supplied Salary_Exchange_Consumer.html (github.com/mathiasboos/Calculators),
  * with the site's colours and fonts instead of its own: every --lv-* colour below is one of the site's tokens
- * (src/styles/global.css), and the text is Inter with Source Serif 4 headings, so the page matches the
+ * (src/styles/global.css), and the text and headings are Inter as font-display on the site, so the page matches the
  * Pensionskalkylatorn. Every rule is scoped to .lv, and the variables are --lv-*, so nothing here reaches the rest of the site.
  * The rules are the original's, in the same order, with the selectors prefixed.
  */
@@ -19,10 +19,12 @@
   --lv-amber:#6b5320; --lv-amber-bg:#f6eedb; /* the gold, darkened */
   --lv-warn:#a82020; --lv-warn-bg:#fbe9e6;   /* the red of the site, darkened */
   --lv-r:12px;
-  --lv-serif:"Source Serif 4",Georgia,serif;  /* headings and big numbers, as font-serif on the site */
+  --lv-display:"Inter",ui-sans-serif,system-ui,sans-serif;  /* headings and big numbers, as font-display on the site */
   --lv-sans:"Inter",ui-sans-serif,system-ui,sans-serif;
 }
 .lv *{box-sizing:border-box;margin:0;padding:0}
+/* Headings and big numbers a little tighter, as font-display is on the rest of the site. */
+.lv .hero h1,.lv .compound-title,.lv .r-hero .r-num,.lv .rules h2,.lv .rules h3,.lv .limit .ln{letter-spacing:-0.022em}
 
 /* The page of the original (its body), as the root of the calculator. */
 .lv{font-family:var(--lv-sans);color:var(--lv-ink);line-height:1.6;padding:24px 12px 60px}
@@ -35,7 +37,7 @@
 @media(min-width:600px){.lv .hero{padding:40px 28px 0}}
 .lv .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 110%,color-mix(in srgb,var(--primary-soft) 40%,transparent) 0%,transparent 65%);pointer-events:none;border-radius:var(--lv-r)}
 .lv .hero-eyebrow{font-size:.75rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;opacity:.75;margin-bottom:10px}
-.lv .hero h1{font-family:var(--lv-serif);font-size:clamp(1.75rem,6vw,2.25rem);font-weight:600;line-height:1.15;max-width:560px;margin:0 auto 12px}
+.lv .hero h1{font-family:var(--lv-display);font-size:clamp(1.75rem,6vw,2.25rem);font-weight:600;line-height:1.15;max-width:560px;margin:0 auto 12px}
 .lv .hero-sub{font-size:.9rem;opacity:.8;max-width:480px;margin:0 auto 24px}
 @media(min-width:600px){.lv .hero-sub{font-size:1rem;margin-bottom:28px}}
 
@@ -44,7 +46,7 @@
 @media(min-width:600px){.lv .compound-wrap{padding:22px 24px 18px;margin:0 -28px}}
 .lv .compound-wrap canvas{display:block;width:100%!important;height:360px}
 @media(max-width:535px){.lv .compound-wrap canvas{height:240px}}
-.lv .compound-title{font-family:var(--lv-serif);font-weight:600;font-size:1.25rem;color:var(--lv-ink);margin-bottom:2px}
+.lv .compound-title{font-family:var(--lv-display);font-weight:600;font-size:1.25rem;color:var(--lv-ink);margin-bottom:2px}
 @media(min-width:600px){.lv .compound-title{margin-bottom:3px}}
 .lv .compound-sub{font-size:.78rem;color:var(--lv-ink2);margin-bottom:10px}
 @media(min-width:600px){.lv .compound-sub{font-size:.83rem;margin-bottom:14px}}
@@ -111,7 +113,7 @@
 .lv .r-hero{background:var(--lv-green);border-radius:var(--lv-r);padding:22px 18px;color:var(--primary-foreground);text-align:center}
 @media(min-width:520px){.lv .r-hero{padding:28px}}
 .lv .r-hero .r-lbl{font-size:.75rem;font-weight:400;letter-spacing:.05em;text-transform:uppercase;opacity:.75;margin-bottom:5px}
-.lv .r-hero .r-num{font-family:var(--lv-serif);font-size:clamp(1.7rem,6vw,3rem);font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.lv .r-hero .r-num{font-family:var(--lv-display);font-size:clamp(1.7rem,6vw,3rem);font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
 .lv .r-hero .r-sub{font-size:.78rem;opacity:.75;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
 .lv .r-hero .r-sub b{opacity:1;font-size:.82rem}
 .lv .r-hero hr{border:0;border-top:1px solid color-mix(in srgb,var(--primary-foreground) 20%,transparent);margin:16px auto;width:60%}
@@ -130,15 +132,15 @@
 /* Gränsvärden */
 .lv .rules{background:var(--lv-card);border-radius:var(--lv-r);border:1px solid var(--lv-line);padding:20px 16px;margin-top:20px}
 @media(min-width:520px){.lv .rules{padding:28px;margin-top:32px}}
-.lv .rules h2{font-family:var(--lv-serif);font-weight:600;font-size:1.25rem;margin-bottom:8px}
+.lv .rules h2{font-family:var(--lv-display);font-weight:600;font-size:1.25rem;margin-bottom:8px}
 @media(min-width:520px){.lv .rules h2{margin-bottom:10px}}
-.lv .rules h3{font-family:var(--lv-serif);font-weight:600;font-size:1.125rem;line-height:1.3;margin:16px 0 0}
+.lv .rules h3{font-family:var(--lv-display);font-weight:600;font-size:1.125rem;line-height:1.3;margin:16px 0 0}
 .lv .rules p{font-size:.87rem;margin-bottom:10px;max-width:720px}
 .lv .limits{display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}
 @media(min-width:480px){.lv .limits{grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}}
 .lv .limit{border:1px solid var(--lv-line);border-radius:10px;padding:14px 16px}
 @media(min-width:520px){.lv .limit{padding:16px 18px}}
-.lv .limit .ln{font-family:var(--lv-serif);font-size:1.25rem;font-weight:600;color:var(--lv-green);font-variant-numeric:tabular-nums}
+.lv .limit .ln{font-family:var(--lv-display);font-size:1.25rem;font-weight:600;color:var(--lv-green);font-variant-numeric:tabular-nums}
 .lv .limit .lt{font-size:.8rem;color:var(--lv-ink2);margin-top:4px}
 .lv .rules a{color:var(--lv-green);font-weight:700;text-decoration:none}
 .lv .rules a:hover{text-decoration:underline}

@@ -1,12 +1,44 @@
 ---
-import { ArrowRight, Calculator, Flame, LineChart, PiggyBank, Receipt, UsersRound } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import ArticleCard from "@/components/ArticleCard.astro";
+import CalculatorCard from "@/components/CalculatorCard.astro";
 import { buttonVariants } from "@/components/ui/button";
+import kommunalskatt from "@/data/kommunalskatt-2026.json";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getArticles } from "@/lib/articles";
+import { formatPercent, formatSek } from "@/lib/format";
+import { BRYT_OVER, BRYT_UNDER, DEFAULTS, IBB, PBB, SKIKT, nettolonView } from "@/lib/nettolon";
+import { calculatePension } from "@/lib/pension";
+import { calculatorGroups } from "@/lib/site-nav";
 import { cn } from "@/lib/utils";
 
 const latest = (await getArticles()).slice(0, 3);
+
+// The example on the page is what the calculators show for their own starting values.
+const pensionInput = {
+  currentCapital: 350000,
+  monthlyDeposit: 2000,
+  yearsToRetirement: 25,
+  annualReturn: 6.5,
+  annualFee: 0.6,
+  payoutYears: 20,
+};
+const pension = calculatePension(pensionInput);
+const netto = nettolonView(DEFAULTS);
+
+const rates = Object.entries(kommunalskatt as Record<string, number>).sort((a, b) => a[1] - b[1]);
+const [lowestName, lowestRate] = rates[0];
+const [highestName, highestRate] = rates[rates.length - 1];
+
+const keyFigures = [
+  { label: "Prisbasbelopp", value: formatSek(PBB) },
+  { label: "Inkomstbasbelopp", value: formatSek(IBB) },
+  { label: "Skiktgräns statlig skatt", value: formatSek(SKIKT) },
+  { label: "Brytpunkt under 66 år", value: `${formatSek(BRYT_UNDER)}/år` },
+  { label: "Brytpunkt från 66 år", value: `${formatSek(BRYT_OVER)}/år` },
+  { label: "Lägst kommunalskatt", value: `${lowestName} ${formatPercent(lowestRate, 2)}` },
+  { label: "Högst kommunalskatt", value: `${highestName} ${formatPercent(highestRate, 2)}` },
+];
 ---
 
 <BaseLayout
@@ -14,122 +46,181 @@ const latest = (await getArticles()).slice(0, 3);
   description="Räkna ut ditt pensionskapital, se ränta-på-ränta-effekten och läs guider om allmän pension, tjänstepension och avgifter."
   ogDescription="Kalkylatorer och guider för din svenska pension."
 >
-  <section class="text-primary-foreground" style="background: var(--gradient-deep)">
-    <div class="mx-auto max-w-6xl px-4 py-20 sm:py-28">
-      <p class="text-xs tracking-[0.3em] text-primary-foreground/70 uppercase">Pension på riktigt</p>
-      <h1 class="mt-4 max-w-3xl font-serif text-4xl leading-tight font-semibold sm:text-5xl">
-        Få kontroll över din pension – innan den är någon annans beslut
-      </h1>
-      <p class="mt-6 max-w-2xl text-lg text-primary-foreground/85">
-        Pensionslyft samlar begripliga guider och kalkylatorer om allmän pension, tjänstepension och
-        eget sparande. Räkna först, läs sedan.
+  <section class="dot-grid">
+    <div class="mx-auto max-w-7xl px-4 pt-14 pb-10 sm:pt-20">
+      <p class="eyebrow flex flex-wrap items-center gap-2">
+        Prisbasbelopp 2026: <span class="figure-chip">{formatSek(PBB)}</span>
       </p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <a href="/pensionskalkylator" class={buttonVariants({ size: "lg", variant: "secondary" })}>
-          Räkna ut din pension
-        </a>
+      <h1 class="mt-5 max-w-4xl font-display text-[2.75rem] leading-[1.05] font-medium sm:text-6xl lg:text-7xl">
+        Få kontroll över din pension.
+      </h1>
+      <p class="mt-5 max-w-2xl text-lg text-muted-foreground sm:text-xl">
+        Begripliga guider och kalkylatorer om allmän pension, tjänstepension och eget sparande. Räkna först, läs
+        sedan.
+      </p>
+
+      <form
+        action="/nettolonkalkylator"
+        method="get"
+        class="mt-8 flex max-w-xl items-center gap-2 rounded-xl border border-border bg-card p-1.5 shadow-[var(--shadow-soft)] focus-within:border-primary"
+      >
+        <label for="hero-lon" class="sr-only">Din månadslön före skatt, i kronor</label>
+        <input
+          id="hero-lon"
+          name="lon"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="Månadslön före skatt"
+          class="h-11 min-w-0 flex-1 bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground"
+        />
+        <button type="submit" class={cn(buttonVariants({ variant: "highlight", size: "lg" }), "h-11 px-4 sm:px-6")}>
+          Se din nettolön
+        </button>
+      </form>
+      <p class="mt-3 text-sm text-muted-foreground">
+        Eller <a href="/pensionskalkylator" class="font-medium text-primary hover:underline">räkna ut din pension</a>{
+          " "
+        }med ditt sparande och dina avgifter.
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4">
+    <div class="relative overflow-hidden rounded-2xl border border-border bg-muted px-4 py-10 sm:px-10 sm:py-14">
+      <p class="eyebrow">Exempel · räknat med kalkylatorerna</p>
+      <div class="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
         <a
-          href="/artiklar"
-          class={cn(
-            buttonVariants({ size: "lg", variant: "outline" }),
-            "border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground",
-          )}
+          href="/pensionskalkylator"
+          class="group block rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] sm:p-8"
         >
-          Läs artiklarna
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border pb-4">
+            <p class="font-display text-lg font-semibold">Pensionsprognos</p>
+            <p class="eyebrow hidden sm:block">Pensionskalkylatorn</p>
+          </div>
+          <dl class="mt-4 grid grid-cols-[1fr_auto] gap-x-6 gap-y-2 text-sm">
+            <dt class="text-muted-foreground">Kapital i dag</dt>
+            <dd class="text-right tabular-nums">{formatSek(pensionInput.currentCapital)}</dd>
+            <dt class="text-muted-foreground">Sparande per månad</dt>
+            <dd class="text-right tabular-nums">{formatSek(pensionInput.monthlyDeposit)}</dd>
+            <dt class="text-muted-foreground">År till pension</dt>
+            <dd class="text-right tabular-nums">{pensionInput.yearsToRetirement} år</dd>
+            <dt class="text-muted-foreground">Avkastning före avgift</dt>
+            <dd class="text-right tabular-nums">{formatPercent(pensionInput.annualReturn, 1)}</dd>
+            <dt class="text-muted-foreground">Årlig avgift</dt>
+            <dd class="text-right tabular-nums">{formatPercent(pensionInput.annualFee, 2)}</dd>
+          </dl>
+          <dl class="mt-5 grid grid-cols-[1fr_auto] gap-x-6 gap-y-2 border-t border-border pt-4 text-sm">
+            <dt class="text-muted-foreground">Egna insättningar</dt>
+            <dd class="text-right tabular-nums">{formatSek(pension.totalDeposits)}</dd>
+            <dt class="text-muted-foreground">Varav avkastning</dt>
+            <dd class="text-right tabular-nums">{formatSek(pension.totalGrowth)}</dd>
+            <dt class="font-medium">Kapital vid pension</dt>
+            <dd class="text-right font-display text-lg font-semibold tabular-nums sm:text-xl">
+              {formatSek(pension.finalCapital)}
+            </dd>
+            <dt class="font-medium">Per månad i {pensionInput.payoutYears} år</dt>
+            <dd class="text-right font-display text-lg font-semibold tabular-nums sm:text-xl">
+              {formatSek(pension.monthlyPension)}
+            </dd>
+          </dl>
+          <span class="mt-6 inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+            Räkna med dina egna siffror <ArrowRight className="size-4" aria-hidden="true" />
+          </span>
+        </a>
+
+        <a
+          href="/nettolonkalkylator"
+          class="group relative block rounded-xl border border-primary/30 bg-card p-6 shadow-[var(--shadow-soft)] lg:mt-16"
+        >
+          <span class="absolute -top-1 -left-1 size-2 bg-primary" aria-hidden="true"></span>
+          <span class="absolute -top-1 -right-1 size-2 bg-primary" aria-hidden="true"></span>
+          <span class="absolute -bottom-1 -left-1 size-2 bg-primary" aria-hidden="true"></span>
+          <span class="absolute -right-1 -bottom-1 size-2 bg-primary" aria-hidden="true"></span>
+          <p class="eyebrow">Nettolön 2026</p>
+          <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div class="rounded-md border border-border px-3 py-2">
+              <dt class="text-xs text-muted-foreground">Månadslön</dt>
+              <dd class="mt-0.5 tabular-nums">{formatSek(DEFAULTS.lon)}</dd>
+            </div>
+            <div class="rounded-md border border-border px-3 py-2">
+              <dt class="text-xs text-muted-foreground">Kommunalskatt</dt>
+              <dd class="mt-0.5 tabular-nums">{formatPercent(DEFAULTS.kommun, 1)}</dd>
+            </div>
+            <div class="col-span-2 rounded-md bg-primary px-3 py-3 text-primary-foreground">
+              <dt class="text-xs text-primary-foreground/75">Kvar efter skatt per månad</dt>
+              <dd class="mt-0.5 font-display text-2xl font-semibold tabular-nums">{netto.netMonth} kr</dd>
+            </div>
+            <div class="col-span-2 flex items-baseline justify-between px-1">
+              <dt class="text-muted-foreground">Skatt och avgifter totalt</dt>
+              <dd class="tabular-nums">{netto.effRate}</dd>
+            </div>
+          </dl>
+          <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+            Se hela uträkningen <ArrowRight className="size-4" aria-hidden="true" />
+          </span>
         </a>
       </div>
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl px-4 py-16">
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <a
-        href="/pensionskalkylator"
-        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
-      >
-        <Calculator className="size-8 text-primary-soft" aria-hidden="true" />
-        <h2 class="mt-4 font-serif text-2xl font-semibold">Pensionskalkylatorn</h2>
-        <p class="mt-2 text-muted-foreground">
-          Se ditt framtida pensionskapital och vad det blir per månad efter avgifter.
-        </p>
-        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
-          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
-        </span>
-      </a>
-      <a
-        href="/ranta-pa-ranta"
-        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
-      >
-        <LineChart className="size-8 text-primary-soft" aria-hidden="true" />
-        <h2 class="mt-4 font-serif text-2xl font-semibold">Ränta på ränta</h2>
-        <p class="mt-2 text-muted-foreground">
-          Jämför hur mycket som är dina insättningar och hur mycket avkastningen gör.
-        </p>
-        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
-          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
-        </span>
-      </a>
-      <a
-        href="/fire-kalkylator"
-        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
-      >
-        <Flame className="size-8 text-primary-soft" aria-hidden="true" />
-        <h2 class="mt-4 font-serif text-2xl font-semibold">FIRE-kalkylatorn</h2>
-        <p class="mt-2 text-muted-foreground">
-          Se vid vilken ålder ditt sparande räcker för att leva på avkastningen.
-        </p>
-        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
-          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
-        </span>
-      </a>
-      <a
-        href="/typfallsmodellen"
-        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
-      >
-        <UsersRound className="size-8 text-primary-soft" aria-hidden="true" />
-        <h2 class="mt-4 font-serif text-2xl font-semibold">Typfallsmodellen</h2>
-        <p class="mt-2 text-muted-foreground">
-          Allmän pension och tjänstepension år för år, enligt Pensionsmyndighetens modell.
-        </p>
-        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
-          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
-        </span>
-      </a>
-      <a
-        href="/lonevaxlingskalkylator"
-        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
-      >
-        <PiggyBank className="size-8 text-primary-soft" aria-hidden="true" />
-        <h2 class="mt-4 font-serif text-2xl font-semibold">Löneväxlingskalkylatorn</h2>
-        <p class="mt-2 text-muted-foreground">
-          Se vad löneväxling ger i extra pensionskapital och när det passar din lönenivå.
-        </p>
-        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
-          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
-        </span>
-      </a>
-      <a
-        href="/nettolonkalkylator"
-        class="rounded-xl border border-border bg-card p-8 transition-shadow hover:shadow-[var(--shadow-soft)]"
-      >
-        <Receipt className="size-8 text-primary-soft" aria-hidden="true" />
-        <h2 class="mt-4 font-serif text-2xl font-semibold">Nettolönkalkylatorn</h2>
-        <p class="mt-2 text-muted-foreground">
-          Se vad som blir kvar efter skatt 2026, steg för steg, med kommunalskatt, avdrag och avgifter.
-        </p>
-        <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary">
-          Öppna kalkylatorn <ArrowRight className="size-4" aria-hidden="true" />
-        </span>
-      </a>
+  <section class="mt-10 border-y border-border" aria-label="Nyckeltal 2026">
+    <div class="mx-auto flex max-w-7xl items-center gap-5 px-4">
+      <p class="eyebrow shrink-0 py-4 text-foreground">Nyckeltal 2026:</p>
+      <div class="ticker min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div class="ticker-track flex w-max">
+          {
+            [false, true].map((copy) => (
+              <dl class:list={["items-center gap-5 py-4 pr-5", copy ? "ticker-copy" : "flex"]} aria-hidden={copy ? "true" : undefined}>
+                {keyFigures.map((figure) => (
+                  <div class="flex items-center gap-2 border-l border-border pl-5">
+                    <dt class="eyebrow">{figure.label}</dt>
+                    <dd class="figure-chip">{figure.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ))
+          }
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl px-4 pb-16">
-    <div class="flex items-end justify-between">
-      <h2 class="font-serif text-2xl font-semibold">Senaste artiklarna</h2>
-      <a href="/artiklar" class="text-sm text-primary hover:underline">Alla artiklar</a>
+  <section class="mx-auto max-w-7xl px-4 pt-20">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Kalkylatorer</p>
+        <h2 class="mt-2 font-display text-3xl font-semibold sm:text-4xl">Räkna på din ekonomi</h2>
+      </div>
+      <a href="/kalkylatorer" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+        Alla kalkylatorer <ArrowRight className="size-4" aria-hidden="true" />
+      </a>
     </div>
-    <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      calculatorGroups.map((group) => (
+        <div class="mt-10">
+          <p class="eyebrow">{group.title}</p>
+          <div class="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {group.items.map((item) => (
+              <CalculatorCard item={item} />
+            ))}
+          </div>
+        </div>
+      ))
+    }
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 pt-20">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Insikter</p>
+        <h2 class="mt-2 font-display text-3xl font-semibold sm:text-4xl">Senaste artiklarna</h2>
+      </div>
+      <a href="/artiklar" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+        Alla artiklar <ArrowRight className="size-4" aria-hidden="true" />
+      </a>
+    </div>
+    <div class="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
       {latest.map((article) => <ArticleCard article={article} />)}
     </div>
   </section>

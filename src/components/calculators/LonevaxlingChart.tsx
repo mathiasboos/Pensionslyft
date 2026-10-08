@@ -9,7 +9,7 @@ const C_H = 360; // the white fill of the original is 360 px high, also on a pho
 const NAVY = "#0c2a49"; // --chart-1, the capital
 const GOLD = "#a18142"; // --chart-2, the capital paid in
 const NAVY_RGB = "12,42,73";
-const GRID = "#dfdad0"; // --border
+const GRID = "#e7e5e0"; // --border
 const INK = "#545f6c"; // --muted-foreground
 
 /** The measures of the chart, which are smaller on a phone. */

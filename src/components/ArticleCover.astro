@@ -1,0 +1,81 @@
+---
+/**
+ * The cover of an article. The articles have no images, so each gets a typographic cover: the category on a
+ * field of navy, sand, steel blue or grey, with a dotted pattern and a rising line, the "lyft". The colour comes
+ * from the category and the shape of the line from the article, so covers differ but stay the same between
+ * builds.
+ */
+interface Props {
+  /** Shapes the line; the article's id. */
+  seed: string;
+  category: string;
+  /** Larger type, for the carousel. */
+  large?: boolean;
+  class?: string;
+}
+
+const { seed, category, large = false, class: className } = Astro.props;
+
+function hash(text: string): number {
+  let h = 2166136261;
+  for (const ch of text) {
+    h ^= ch.codePointAt(0) ?? 0;
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+const themes = [
+  { bg: "var(--gradient-deep)", ink: "var(--primary-foreground)", dot: "rgb(255 255 255 / 0.16)", line: "var(--highlight)" },
+  { bg: "var(--secondary)", ink: "var(--primary)", dot: "rgb(12 42 73 / 0.16)", line: "var(--primary)" },
+  { bg: "linear-gradient(160deg, #3d6a98, #4675a4)", ink: "#ffffff", dot: "rgb(255 255 255 / 0.2)", line: "var(--highlight)" },
+  { bg: "var(--muted)", ink: "var(--primary)", dot: "rgb(12 42 73 / 0.14)", line: "var(--chart-2)" },
+];
+const theme = themes[hash(category) % themes.length];
+
+// A line that rises from left to right with a few dips, in a 100 x 50 box.
+let state = hash(seed) || 1;
+const random = () => {
+  state = Math.imul(state ^ (state >>> 15), 2246822507) >>> 0;
+  state = Math.imul(state ^ (state >>> 13), 3266489909) >>> 0;
+  return ((state ^= state >>> 16) >>> 0) / 4294967296;
+};
+// It keeps to the lower right, below the category in the upper left.
+const steps = 8;
+const points = Array.from({ length: steps + 1 }, (_, i) => {
+  const x = 30 + (i / steps) * 66;
+  const trend = 45 - (i / steps) * 30;
+  const y = i === 0 ? 45 : Math.min(47, Math.max(12, trend + (random() - 0.55) * 10));
+  return `${x.toFixed(1)},${y.toFixed(1)}`;
+}).join(" ");
+---
+
+<div
+  class:list={["relative overflow-hidden", className]}
+  style={`background:${theme.bg};color:${theme.ink}`}
+  aria-hidden="true"
+>
+  <div
+    class="absolute inset-y-0 right-0 w-2/3"
+    style={`background-image:radial-gradient(${theme.dot} 1px, transparent 1.4px);background-size:12px 12px;-webkit-mask-image:linear-gradient(to left,#000 30%,transparent);mask-image:linear-gradient(to left,#000 30%,transparent)`}
+  >
+  </div>
+  <svg class="absolute inset-0 h-full w-full" viewBox="0 0 100 50" preserveAspectRatio="none">
+    <polyline
+      points={points}
+      fill="none"
+      stroke={theme.line}
+      stroke-width="2"
+      vector-effect="non-scaling-stroke"
+      stroke-linejoin="round"
+      stroke-linecap="round"></polyline>
+  </svg>
+  <span
+    class:list={[
+      "absolute top-4 left-4 font-display font-semibold tracking-tight",
+      large ? "text-4xl sm:text-5xl" : "text-2xl",
+    ]}
+  >
+    {category}
+  </span>
+</div>
