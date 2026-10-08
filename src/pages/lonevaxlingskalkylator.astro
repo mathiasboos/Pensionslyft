@@ -1,7 +1,6 @@
 ---
 import LonevaxlingCalculator from "@/components/calculators/LonevaxlingCalculator";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import "@/styles/lonevaxling.css";
 ---
 
 <BaseLayout
@@ -10,5 +9,14 @@ import "@/styles/lonevaxling.css";
   ogTitle="Löneväxlingskalkylator – Pensionslyft"
   ogDescription="Se hur mycket extra pensionskapital löneväxling kan ge och om det passar din lönenivå."
 >
-  <LonevaxlingCalculator client:load />
+  <div class="mx-auto max-w-7xl px-4 py-14">
+    <h1 class="font-display text-4xl font-semibold">Löneväxlingskalkylator 2026</h1>
+    <p class="mt-3 max-w-2xl text-muted-foreground">
+      Ränta på ränta gör att varje krona du löneväxlar idag är värd mer än en krona imorgon. Fyll i din lön och hur
+      mycket du vill växla, så ser du effekten direkt.
+    </p>
+    <div class="mt-10">
+      <LonevaxlingCalculator client:load />
+    </div>
+  </div>
 </BaseLayout>

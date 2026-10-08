@@ -1,4 +1,5 @@
 import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
+import { num } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -7,10 +8,13 @@ export function Stat({
   label,
   value,
   highlight,
+  note,
 }: {
   label: string;
   value: string;
   highlight?: boolean;
+  /** a line under the value */
+  note?: ReactNode;
 }) {
   return (
     <div
@@ -20,6 +24,7 @@ export function Stat({
         {label}
       </p>
       <p className="mt-2 font-display text-2xl font-semibold">{value}</p>
+      {note && <p className={`mt-1 text-xs ${highlight ? "opacity-75" : "text-muted-foreground"}`}>{note}</p>}
     </div>
   );
 }
@@ -250,6 +255,85 @@ export function SwitchRow({
           )}
         />
       </button>
+    </div>
+  );
+}
+
+const grouped = (v: number) => num.format(Math.round(v));
+
+/**
+ * An amount that is typed and dragged: a text field with a unit and a slider under it. What is typed counts when
+ * the field is left or Enter is pressed (not at every key, so that "6" on the way to "60 000" is not acted on), and
+ * is kept between 0 and typedMax. The slider only covers min to max; the parent decides what the value may be.
+ */
+export function AmountSliderField({
+  id,
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  typedMax,
+  suffix,
+  hint,
+}: {
+  id: string;
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min: number;
+  max: number;
+  step: number;
+  typedMax: number;
+  suffix: string;
+  hint?: ReactNode;
+}) {
+  const [text, setText] = useState(grouped(value));
+  // Counts the times the field was left, so that the text is written out again even if the value did not change.
+  const [commits, setCommits] = useState(0);
+  useEffect(() => setText(grouped(value)), [value, commits]);
+
+  const commit = () => {
+    const typed = parseFloat(text.replace(/\s/g, "").replace(",", "."));
+    if (Number.isFinite(typed)) onChange(Math.min(typedMax, Math.max(0, typed)));
+    setCommits((c) => c + 1);
+  };
+
+  const shown = Math.min(max, Math.max(min, value));
+  const fill = max > min ? ((shown - min) / (max - min)) * 100 : 0;
+  return (
+    <div>
+      <Label htmlFor={id} className="text-sm">
+        {label}
+      </Label>
+      <div className="mt-2 flex items-center gap-2">
+        <Input
+          id={id}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => e.key === "Enter" && commit()}
+          className="tabular-nums"
+        />
+        <span className="w-14 shrink-0 text-sm text-muted-foreground">{suffix}</span>
+      </div>
+      <input
+        type="range"
+        className="range mt-1"
+        value={shown}
+        min={min}
+        max={max}
+        step={step}
+        aria-label={label}
+        aria-valuetext={`${grouped(shown)} ${suffix}`}
+        style={{ "--fill": `${fill}%` } as CSSProperties}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }

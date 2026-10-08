@@ -1,16 +1,15 @@
-// Löneväxlingskalkylatorn (/lonevaxlingskalkylator): the page of the supplied Salary_Exchange_Consumer.html
-// (github.com/mathiasboos/Calculators), with the same texts, controls and results. The look is in
-// src/styles/lonevaxling.css and the calculation in src/lib/lonevaxling.ts.
-import { type CSSProperties, useRef, useState } from "react";
+// Löneväxlingskalkylatorn (/lonevaxlingskalkylator): the calculation and the texts of the supplied
+// Salary_Exchange_Consumer.html (github.com/mathiasboos/Calculators, see src/lib/lonevaxling.ts), in the site's own
+// components and in the layout of the Pensionskalkylatorn: the inputs in a frame to the left, the results and the chart to the right.
+import { useMemo, useState } from "react";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {
   AG_PCT,
   ALDER,
   AVKASTNING,
   BELOPP,
   calcLonevaxling,
-  clamp,
   disclaimer,
-  fillPercent,
   fmtInt,
   fmtKr,
   fmtOneDecimal,
@@ -27,29 +26,32 @@ import {
   MAX_SPARANDE_PBB,
   MAX_SPARANDE_PROCENT,
   maxVaxling,
-  parseNum,
   PBB,
   PENSIONSALDER,
+  simSeries,
   SLP_PCT,
   YEAR,
 } from "@/lib/lonevaxling";
-import LonevaxlingChart from "./LonevaxlingChart";
-
-const STATUS_ICON = { good: "✓", amber: "!", warn: "✕" } as const;
+import { formatSek, num } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { AmountSliderField, SliderField, Stat } from "./fields";
 
 const SOURCE_URL =
   "https://www.pensionsmyndigheten.se/forsta-din-pension/om-pensionssystemet/sa-beraknas-din-pension-basbelopp-berakningsfaktorer-och-varderegler";
 
-/** The green part of a slider, which the stylesheet reads. */
-const fill = (value: number, min: number, max: number) =>
-  ({ "--lv-fill": `${fillPercent(value, min, max)}%` }) as CSSProperties;
+// The three verdicts: the chart's teal, the gold and the red of the site, darkened to read as text.
+const STATUS = {
+  good: { icon: "✓", className: "bg-[#e8f3f0] text-[#1f5f55]" },
+  amber: { icon: "!", className: "bg-[#f6eedb] text-[#6b5320]" },
+  warn: { icon: "✕", className: "bg-[#fbe9e6] text-[#a82020]" },
+} as const;
 
-/** A small "i" that explains something when it is hovered or focused. */
-function Info({ tip, style }: { tip: string; style?: CSSProperties }) {
+function Limit({ title, children }: { title: string; children: string }) {
   return (
-    <span className="info" tabIndex={0} role="img" aria-label={tip} data-tip={tip} style={style}>
-      i
-    </span>
+    <div className="rounded-lg border border-border p-4">
+      <p className="font-display text-xl font-semibold text-primary tabular-nums">{title}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{children}</p>
+    </div>
   );
 }
 
@@ -60,40 +62,17 @@ export default function LonevaxlingCalculator() {
   const [pensionsalder, setPensionsalder] = useState<number>(PENSIONSALDER.start);
   const [avkastning, setAvkastning] = useState<number>(AVKASTNING.start);
 
-  // What is typed in the two number fields counts when the field is left or Enter is pressed
-  const [lonText, setLonText] = useState(fmtInt(LON.start));
-  const [beloppText, setBeloppText] = useState(fmtInt(BELOPP.start));
-  const lonEdited = useRef(false);
-  const beloppEdited = useRef(false);
-
   const tak = maxVaxling(lon);
   const result = calcLonevaxling({ lon, belopp, alder, pensionsalder, avkastning });
+  const status = STATUS[result.suitability];
+  const selected = fmtOneDecimal(avkastning);
 
   // The salary decides the cap, and the exchanged amount cannot be above it
   const applyLon = (value: number) => {
     setLon(value);
-    setLonText(fmtInt(value));
-    const limited = limitBelopp(value, belopp);
-    if (limited !== belopp) {
-      setBelopp(limited);
-      setBeloppText(fmtInt(limited));
-    }
+    setBelopp((b) => limitBelopp(value, b));
   };
-  const applyBelopp = (value: number) => {
-    const limited = limitBelopp(lon, value);
-    setBelopp(limited);
-    setBeloppText(fmtInt(limited));
-  };
-
-  const commitLon = () => {
-    const value = parseNum(lonText);
-    applyLon(Number.isNaN(value) ? lon : clamp(value, 0, LON.typedMax));
-  };
-  const commitBelopp = () => {
-    const value = parseNum(beloppText);
-    applyBelopp(Number.isNaN(value) ? belopp : clamp(value, 0, BELOPP.typedMax));
-  };
-
+  const applyBelopp = (value: number) => setBelopp(limitBelopp(lon, value));
   // The pension age is always after the age
   const applyAlder = (value: number) => {
     setAlder(value);
@@ -101,264 +80,201 @@ export default function LonevaxlingCalculator() {
   };
   const applyPensionsalder = (value: number) => setPensionsalder(value <= alder ? alder + 1 : value);
 
-  const beloppMax = Math.max(tak, BELOPP.min);
+  const series = useMemo(
+    () =>
+      simSeries(result.premie, avkastning, result.years).map((capital, year) => ({
+        year,
+        deposits: result.premie * year * 12,
+        capital,
+      })),
+    [result.premie, result.years, avkastning],
+  );
 
   return (
-    <div className="lv">
-      <div className="page">
-        {/* ===== HERO: Ränta på ränta ===== */}
-        <div className="hero">
-          <div className="hero-eyebrow">{`Löneväxlingskalkylator ${YEAR}`}</div>
-          <h1>Så växer pengarna – månaden du börjar</h1>
-          <p className="hero-sub">
-            Ränta på ränta gör att varje krona du löneväxlar idag är värd mer än en krona imorgon. Dra i reglagen
-            nedan och se effekten direkt.
-          </p>
-          <LonevaxlingChart premie={result.premie} years={result.years} avkastning={avkastning} />
+    <div className="space-y-8">
+      <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
+        <div className="space-y-6 self-start rounded-xl border border-border bg-card p-6">
+          <AmountSliderField
+            id="lon"
+            label="Månadslön före skatt"
+            value={lon}
+            onChange={applyLon}
+            min={LON.min}
+            max={LON.max}
+            step={LON.step}
+            typedMax={LON.typedMax}
+            suffix="kr"
+          />
+          <AmountSliderField
+            id="belopp"
+            label="Hur mycket vill du löneväxla?"
+            value={belopp}
+            onChange={applyBelopp}
+            min={BELOPP.min}
+            max={Math.max(tak, BELOPP.min)}
+            step={BELOPP.step}
+            typedMax={BELOPP.typedMax}
+            suffix="kr/mån"
+            hint={
+              <>
+                Tak för löneväxling: <strong>{fmtInt(tak)} kr/mån</strong>. Pensionssparande får uppgå till max{" "}
+                {MAX_SPARANDE_PROCENT} % av årslönen, dock högst 10 prisbasbelopp ({fmtText(MAX_SPARANDE_PBB)} kr/år). Det
+                lägsta av gränserna avgör ditt tak.
+              </>
+            }
+          />
+          <SliderField
+            label="Din ålder"
+            value={alder}
+            onChange={applyAlder}
+            min={ALDER.min}
+            max={ALDER.max}
+            step={1}
+            display={`${alder} år`}
+          />
+          <SliderField
+            label="Planerad pensionsålder"
+            value={pensionsalder}
+            onChange={applyPensionsalder}
+            min={PENSIONSALDER.min}
+            max={PENSIONSALDER.max}
+            step={1}
+            display={`${pensionsalder} år`}
+          />
+          <SliderField
+            label="Förväntad avkastning per år"
+            value={avkastning}
+            onChange={setAvkastning}
+            min={AVKASTNING.min}
+            max={AVKASTNING.max}
+            step={AVKASTNING.step}
+            display={`${selected} %`}
+          />
         </div>
 
-        {/* ===== KALKYLATOR ===== */}
-        <div className="wrap">
-          <div className="calc-grid">
-            {/* Vänster: inputs */}
-            <div className="card">
-              <div className="section-label">Dina uppgifter</div>
+        <div className="min-w-0 space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Stat
+              label="Ditt månadssparande"
+              value={fmtKr(result.premie)}
+              note={`Inklusive ${fmtUplift(result.uplift)} som arbetsgivaren skjuter till`}
+              highlight
+            />
+            <Stat label={`Extra pensionskapital om ${result.years} år`} value={fmtKr(result.kapital)} highlight />
+            <Stat label="Inbetalt kapital" value={fmtKr(result.inbetalt)} />
+            <Stat label="Varav avkastning" value={fmtKr(result.kapital - result.inbetalt)} />
+          </div>
 
-              <div className="field">
-                <div className="field-head">
-                  <label htmlFor="lonNum">Månadslön före skatt</label>
-                  <span className="inbox">
-                    <input
-                      type="text"
-                      id="lonNum"
-                      inputMode="numeric"
-                      aria-label="Månadslön i kronor"
-                      value={lonText}
-                      onChange={(e) => {
-                        lonEdited.current = true;
-                        setLonText(e.target.value);
-                      }}
-                      onBlur={() => {
-                        if (lonEdited.current) commitLon();
-                        else setLonText(fmtInt(lon));
-                        lonEdited.current = false;
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && lonEdited.current) {
-                          commitLon();
-                          lonEdited.current = false;
-                        }
-                      }}
-                    />
-                    <span className="unit">kr</span>
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  id="lonSlider"
-                  min={LON.min}
-                  max={LON.max}
-                  step={LON.step}
-                  value={clamp(lon, LON.min, LON.max)}
-                  style={fill(lon, LON.min, LON.max)}
-                  aria-label="Månadslön före skatt"
-                  onChange={(e) => applyLon(+e.target.value)}
-                />
-              </div>
+          <div className={cn("flex items-start gap-3 rounded-xl p-5 text-sm", status.className)} role="status">
+            <span className="text-base leading-5 font-black" aria-hidden="true">
+              {status.icon}
+            </span>
+            <p>
+              <strong className="block font-semibold">{result.title}</strong>
+              {result.text}
+            </p>
+          </div>
 
-              <div className="field">
-                <div className="field-head">
-                  <label htmlFor="beloppNum">Hur mycket vill du löneväxla?</label>
-                  <span className="inbox">
-                    <input
-                      type="text"
-                      id="beloppNum"
-                      inputMode="numeric"
-                      aria-label="Växlat belopp"
-                      value={beloppText}
-                      onChange={(e) => {
-                        beloppEdited.current = true;
-                        setBeloppText(e.target.value);
-                      }}
-                      onBlur={() => {
-                        if (beloppEdited.current) commitBelopp();
-                        else setBeloppText(fmtInt(belopp));
-                        beloppEdited.current = false;
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && beloppEdited.current) {
-                          commitBelopp();
-                          beloppEdited.current = false;
-                        }
-                      }}
-                    />
-                    <span className="unit">kr/mån</span>
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  id="beloppSlider"
-                  min={BELOPP.min}
-                  max={beloppMax}
-                  step={BELOPP.step}
-                  value={clamp(belopp, BELOPP.min, beloppMax)}
-                  style={fill(clamp(belopp, BELOPP.min, beloppMax), BELOPP.min, beloppMax)}
-                  aria-label="Löneväxlat belopp per månad"
-                  onChange={(e) => applyBelopp(+e.target.value)}
-                />
-                <div className="hint">
-                  Tak för löneväxling: <b>{` ${fmtInt(tak)} kr/mån `}</b>
-                  <Info
-                    tip={`Pensionssparande får uppgå till max ${MAX_SPARANDE_PROCENT} % av årslönen, dock högst 10 prisbasbelopp (${fmtText(MAX_SPARANDE_PBB)} kr/år). Det lägsta av dessa gränser avgör ditt tak.`}
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h2 className="font-display text-xl font-semibold">Så växer ditt sparande</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Utveckling fram till pension vid <strong>{selected} %</strong> avkastning per år.
+            </p>
+            <div className="mt-4 h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={series}>
+                  <defs>
+                    <linearGradient id="lv-capital" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.45} />
+                      <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis
+                    dataKey="year"
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={12}
+                    tickFormatter={(y: number) => (y === 0 ? "Idag" : `+${y} år`)}
                   />
-                </div>
-              </div>
-
-              <div className="field">
-                <div className="field-head">
-                  <label htmlFor="alderSlider">Din ålder</label>
-                  <span className="val-only">{`${alder} år`}</span>
-                </div>
-                <input
-                  type="range"
-                  id="alderSlider"
-                  min={ALDER.min}
-                  max={ALDER.max}
-                  step={1}
-                  value={alder}
-                  style={fill(alder, ALDER.min, ALDER.max)}
-                  aria-label="Din ålder"
-                  onChange={(e) => applyAlder(+e.target.value)}
-                />
-              </div>
-
-              <div className="field">
-                <div className="field-head">
-                  <label htmlFor="pensionsalderSlider">Planerad pensionsålder</label>
-                  <span className="val-only">{`${pensionsalder} år`}</span>
-                </div>
-                <input
-                  type="range"
-                  id="pensionsalderSlider"
-                  min={PENSIONSALDER.min}
-                  max={PENSIONSALDER.max}
-                  step={1}
-                  value={pensionsalder}
-                  style={fill(pensionsalder, PENSIONSALDER.min, PENSIONSALDER.max)}
-                  aria-label="Pensionsålder"
-                  onChange={(e) => applyPensionsalder(+e.target.value)}
-                />
-              </div>
-
-              <div className="field" style={{ marginBottom: 0 }}>
-                <div className="field-head">
-                  <label htmlFor="avkastningSlider">Förväntad avkastning per år</label>
-                  <span className="val-only">{`${fmtOneDecimal(avkastning)} %`}</span>
-                </div>
-                <input
-                  type="range"
-                  id="avkastningSlider"
-                  min={AVKASTNING.min}
-                  max={AVKASTNING.max}
-                  step={AVKASTNING.step}
-                  value={avkastning}
-                  style={fill(avkastning, AVKASTNING.min, AVKASTNING.max)}
-                  aria-label="Förväntad avkastning"
-                  onChange={(e) => setAvkastning(+e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Höger: resultat */}
-            <div className="result-box">
-              {/* Hjältekort */}
-              <div className="r-hero">
-                <div className="r-lbl">Ditt månadssparande</div>
-                <div className="r-num">{fmtKr(result.premie)}</div>
-                <div className="r-sub">
-                  Inklusive <b>{fmtUplift(result.uplift)}</b> som
-                  arbetsgivaren skjuter till{" "}
-                  <Info
-                    style={{ color: "var(--primary-foreground)", borderColor: "var(--primary-foreground)", opacity: 0.55 }}
-                    tip={`Arbetsgivaren betalar lägre löneskatt på pensionspremier (${fmtRate(SLP_PCT)} %) än arbetsgivaravgift på lön (${fmtRate(AG_PCT)} %). Skillnaden läggs ovanpå din pensionspremie.`}
+                  <YAxis
+                    tickFormatter={(v: number) => `${num.format(v / 1000)} tkr`}
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={12}
+                    width={80}
                   />
-                </div>
-                <hr />
-                <div className="r-lbl">
-                  Förväntat extra pensionskapital om <span>{result.years}</span> år
-                </div>
-                <div className="r-num">{fmtKr(result.kapital)}</div>
-                <div className="r-foot">{disclaimer(avkastning)}</div>
-              </div>
-
-              {/* Lämplighetsindikator */}
-              <div className={`status ${result.suitability}`}>
-                <div className="s-icon">{STATUS_ICON[result.suitability]}</div>
-                <div>
-                  <b>{result.title}</b>
-                  <span>{result.text}</span>
-                </div>
-              </div>
+                  <Tooltip
+                    formatter={(v: number) => formatSek(v)}
+                    labelFormatter={(y) => (y === 0 ? "Idag" : `Om ${y} år`)}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="deposits"
+                    name="Inbetalt kapital"
+                    stroke="var(--color-chart-2)"
+                    strokeDasharray="6 4"
+                    fill="var(--color-chart-2)"
+                    fillOpacity={0.15}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="capital"
+                    name={`Värde vid ${selected} %`}
+                    stroke="var(--color-chart-1)"
+                    fill="url(#lv-capital)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Gränsvärden */}
-          <div className="rules">
-            <h2>När är löneväxling lämpligt?</h2>
-            <p>
-              Löneväxling är som regel bara lämpligt om din månadslön <b>efter växling</b> överstiger båda gränserna
-              nedan. Annars kan din pensionsgrundande inkomst och socialförsäkringsförmåner påverkas.
-            </p>
-            <div className="limits">
-              <div className="limit">
-                <div className="ln">{fmtText(LIMIT_AVGIFTSTAK)} kr/mån</div>
-                <div className="lt">
-                  Avgiftstaket i allmän pension. Under denna nivå minskar din intjäning till allmän pension.
-                </div>
-              </div>
-              <div className="limit">
-                <div className="ln">{fmtText(LIMIT_BRYTPUNKT)} kr/mån</div>
-                <div className="lt">
-                  Brytpunkten för statlig inkomstskatt. Över denna nivå är marginalskatten ~20 % högre – löneväxling är
-                  extra förmånlig.
-                </div>
-              </div>
-              <div className="limit">
-                <div className="ln">{`Max ${MAX_SPARANDE_PROCENT} % av lön`}</div>
-                <div className="lt">
-                  {`Pensionssparande får uppgå till högst ${MAX_SPARANDE_PROCENT} % av din årslön från anställningen, dock aldrig mer än 10 prisbasbelopp (${fmtText(MAX_SPARANDE_PBB)} kr/år = ${fmtText(MAX_SPARANDE_PBB / 12)} kr/mån, PBB ${YEAR}: ${fmtText(PBB)} kr).`}
-                </div>
-              </div>
-            </div>
-            <h3>Arbetsgivarens ITP1-avsättning på din lön</h3>
-            <div className="limits">
-              <div className="limit">
-                <div className="ln">4,5 % upp till 7,5 IBB</div>
-                <div className="lt">
-                  {`På lönedelar upp till 7,5 inkomstbasbelopp (${fmtText(ITP1_GRENS1)} kr/mån, IBB ${YEAR}: ${fmtText(IBB)} kr) sätter arbetsgivaren in 4,5 %.`}
-                </div>
-              </div>
-              <div className="limit">
-                <div className="ln">30 % mellan 7,5–30 IBB</div>
-                <div className="lt">
-                  {`På lönedelar mellan 7,5 och 30 IBB (${fmtText(ITP1_GRENS1)}–${fmtText(ITP1_GRENS2)} kr/mån) sätter arbetsgivaren in 30 %. Över 30 IBB görs ingen avsättning.`}
-                </div>
-              </div>
-            </div>
-            <p>
-              Källa:{" "}
-              <a href={SOURCE_URL} target="_blank" rel="noopener">
-                Pensionsmyndigheten
-              </a>
-              .
-            </p>
+          <div className="rounded-xl border border-border bg-secondary/50 p-6 text-sm">
+            Arbetsgivaren betalar lägre löneskatt på pensionspremier ({fmtRate(SLP_PCT)} %) än arbetsgivaravgift på lön (
+            {fmtRate(AG_PCT)} %). Skillnaden läggs ovanpå din pensionspremie. {disclaimer(avkastning)}
           </div>
         </div>
-
-        <footer>
-          {`Kalkylatorn är ett förenklat beräkningsverktyg och utgör inte finansiell rådgivning. Beräkningarna bygger på arbetsgivaravgift ${fmtRate(AG_PCT)} % och särskild löneskatt ${fmtRate(SLP_PCT)} %. Historisk avkastning är inte en garanti för framtida avkastning.`}
-        </footer>
       </div>
+
+      <section className="rounded-xl border border-border bg-card p-6 sm:p-8">
+        <h2 className="font-display text-2xl font-semibold">När är löneväxling lämpligt?</h2>
+        <p className="mt-2 max-w-3xl text-sm">
+          Löneväxling är som regel bara lämpligt om din månadslön <strong>efter växling</strong> överstiger båda
+          gränserna nedan. Annars kan din pensionsgrundande inkomst och socialförsäkringsförmåner påverkas.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <Limit title={`${fmtText(LIMIT_AVGIFTSTAK)} kr/mån`}>
+            Avgiftstaket i allmän pension. Under denna nivå minskar din intjäning till allmän pension.
+          </Limit>
+          <Limit title={`${fmtText(LIMIT_BRYTPUNKT)} kr/mån`}>
+            Brytpunkten för statlig inkomstskatt. Över denna nivå är marginalskatten ~20 % högre – löneväxling är extra
+            förmånlig.
+          </Limit>
+          <Limit title={`Max ${MAX_SPARANDE_PROCENT} % av lön`}>
+            {`Pensionssparande får uppgå till högst ${MAX_SPARANDE_PROCENT} % av din årslön från anställningen, dock aldrig mer än 10 prisbasbelopp (${fmtText(MAX_SPARANDE_PBB)} kr/år = ${fmtText(MAX_SPARANDE_PBB / 12)} kr/mån, PBB ${YEAR}: ${fmtText(PBB)} kr).`}
+          </Limit>
+        </div>
+        <h3 className="mt-8 font-display text-lg font-semibold">Arbetsgivarens ITP1-avsättning på din lön</h3>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <Limit title="4,5 % upp till 7,5 IBB">
+            {`På lönedelar upp till 7,5 inkomstbasbelopp (${fmtText(ITP1_GRENS1)} kr/mån, IBB ${YEAR}: ${fmtText(IBB)} kr) sätter arbetsgivaren in 4,5 %.`}
+          </Limit>
+          <Limit title="30 % mellan 7,5–30 IBB">
+            {`På lönedelar mellan 7,5 och 30 IBB (${fmtText(ITP1_GRENS1)}–${fmtText(ITP1_GRENS2)} kr/mån) sätter arbetsgivaren in 30 %. Över 30 IBB görs ingen avsättning.`}
+          </Limit>
+        </div>
+        <p className="mt-4 text-sm">
+          Källa:{" "}
+          <a href={SOURCE_URL} target="_blank" rel="noopener" className="font-medium text-primary underline">
+            Pensionsmyndigheten
+          </a>
+          .
+        </p>
+      </section>
+
+      <p className="text-xs text-muted-foreground">
+        {`Kalkylatorn är ett förenklat beräkningsverktyg och utgör inte finansiell rådgivning. Beräkningarna bygger på arbetsgivaravgift ${fmtRate(AG_PCT)} % och särskild löneskatt ${fmtRate(SLP_PCT)} %. Historisk avkastning är inte en garanti för framtida avkastning.`}
+      </p>
     </div>
   );
 }
