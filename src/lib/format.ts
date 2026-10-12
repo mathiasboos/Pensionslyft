@@ -44,3 +44,30 @@ export function formatSekShort(value: number): string {
   if (Math.abs(value) >= 1_000) return `${num.format(value / 1_000)} tkr`;
   return `${num.format(value)} kr`;
 }
+
+/**
+ * A number typed in a field, written with thousands separators and a decimal comma: "1234567.5" -> "1 234 567,5".
+ * Anything that is not a digit or a decimal separator is dropped; a trailing comma stays so that "32," can be typed.
+ */
+export function groupDigits(text: string): string {
+  const cleaned = text.replace(/[^\d,.]/g, "");
+  const point = cleaned.search(/[.,]/);
+  const whole = (point === -1 ? cleaned : cleaned.slice(0, point)).replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+  return point === -1 ? grouped : `${grouped},${cleaned.slice(point + 1).replace(/\D/g, "")}`;
+}
+
+/** The number in a text typed in a field (spaces ignored, a comma is a decimal point). NaN when there is none. */
+export function parseAmount(text: string): number {
+  return parseFloat(text.replace(/\s/g, "").replace(",", "."));
+}
+
+/**
+ * One step up (direction 1) or down (-1) in an amount field. The value goes to the next step on the grid, as in a
+ * native number input: with step 100, 2 550 goes to 2 600 up and 2 500 down. Kept between min and max.
+ */
+export function stepValue(value: number, step: number, direction: 1 | -1, min = 0, max = Infinity): number {
+  const position = Math.round((value / step) * 1e9) / 1e9;
+  const next = direction > 0 ? Math.floor(position) + 1 : Math.ceil(position) - 1;
+  return Math.min(max, Math.max(min, next * step));
+}

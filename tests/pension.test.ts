@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { formatPercent, formatSek, formatSekShort } from "../src/lib/format";
+import { formatPercent, formatSek, formatSekShort, groupDigits, parseAmount, stepValue } from "../src/lib/format";
 import fireWeb from "./fixtures/fire-web.json";
-import { calculateCompound, calculateFire, calculatePension } from "../src/lib/pension";
+import { calculateCompound, calculateFire, calculatePension, requiredMonthlyDeposit } from "../src/lib/pension";
 
 // Regression values: the calculators must keep giving the same numbers as the
 // original Lovable site for its default inputs.
@@ -41,17 +41,56 @@ describe("calculatePension", () => {
 });
 
 describe("calculateCompound", () => {
-  it("matches the default results shown on the site", () => {
-    const result = calculateCompound({
-      startAmount: 50000,
-      monthlyDeposit: 2500,
-      years: 20,
-      annualReturn: 7,
-      annualFee: 0.3,
-    });
-    expect(Math.round(result.finalCapital)).toBe(1409361);
-    expect(result.totalDeposits).toBe(650000);
-    expect(Math.round(result.totalGrowth)).toBe(759361);
+  const base = { startCapital: 50000, monthlyDeposit: 2500, years: 20, annualReturn: 7, annualFee: 0.3, yieldTax: 1.05 };
+
+  it("is plain monthly compounding when there is no fee and no tax", () => {
+    const result = calculateCompound({ ...base, annualFee: 0, yieldTax: 0 });
+    const rate = Math.pow(1.07, 1 / 12) - 1;
+    let capital = 50000;
+    for (let m = 0; m < 240; m++) capital = capital * (1 + rate) + 2500;
+    expect(result.finalCapital).toBeCloseTo(capital, 4);
+    expect(result.totalFees).toBe(0);
+    expect(result.totalTax).toBe(0);
+  });
+
+  it("adds up: start + deposits + interest - fees - tax = final capital", () => {
+    for (const input of [base, { ...base, years: 1 }, { ...base, annualReturn: 0 }, { ...base, startCapital: 0 }]) {
+      const r = calculateCompound(input);
+      expect(r.startCapital + r.totalDeposits + r.totalGrowth - r.totalFees - r.totalTax).toBeCloseTo(
+        r.finalCapital,
+        4,
+      );
+    }
+  });
+
+  it("splits the net growth into simple interest and interest on interest", () => {
+    const r = calculateCompound(base);
+    for (const row of r.rows) {
+      const netGrowth = row.closing - base.startCapital - row.cumulativeDeposits;
+      expect(row.simpleInterest + row.compoundInterest).toBeCloseTo(Math.max(netGrowth, 0), 6);
+      expect(row.simpleInterest).toBeLessThanOrEqual(Math.max(netGrowth, 0) + 1e-9);
+      expect(row.compoundInterest).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it("gives the default result of the page", () => {
+    const r = calculateCompound(base);
+    expect(r.totalDeposits).toBe(600000);
+    expect(Math.round(r.finalCapital)).toBe(1218382);
+  });
+});
+
+describe("requiredMonthlyDeposit", () => {
+  const base = { startCapital: 50000, years: 10, annualReturn: 7, annualFee: 0.3, yieldTax: 1.05 };
+
+  it("gives the monthly saving that ends at the goal", () => {
+    const m = requiredMonthlyDeposit(base, 1_000_000);
+    expect(m).toBeGreaterThan(0);
+    expect(calculateCompound({ ...base, monthlyDeposit: m }).finalCapital).toBeCloseTo(1_000_000, 4);
+  });
+
+  it("is 0 when the start capital alone reaches the goal", () => {
+    expect(requiredMonthlyDeposit(base, 60000)).toBe(0);
   });
 });
 
@@ -60,6 +99,36 @@ describe("format", () => {
     expect(formatSek(2800224.4).replace(/\s/g, " ")).toBe("2 800 224 kr");
     expect(formatPercent(6.5, 1)).toBe("6,5 %");
     expect(formatPercent(0.6, 2)).toBe("0,60 %");
+  });
+
+  it("groups typed amounts in thousands", () => {
+    const nb = "\u00a0";
+    expect(groupDigits("1234567")).toBe(`1${nb}234${nb}567`);
+    expect(groupDigits("1 234 567,5")).toBe(`1${nb}234${nb}567,5`);
+    expect(groupDigits("1234.5")).toBe("1" + nb + "234,5");
+    expect(groupDigits("32,")).toBe("32,");
+    expect(groupDigits("007")).toBe("7");
+    expect(groupDigits("")).toBe("");
+    expect(groupDigits("abc")).toBe("");
+    expect(groupDigits("999")).toBe("999");
+  });
+
+  it("reads a grouped amount back as a number", () => {
+    expect(parseAmount(groupDigits("1234567,5"))).toBe(1234567.5);
+    expect(parseAmount("100 000")).toBe(100000);
+    expect(parseAmount("")).toBeNaN();
+  });
+
+  it("steps an amount to the next step on the grid", () => {
+    expect(stepValue(2500, 100, 1)).toBe(2600);
+    expect(stepValue(2500, 100, -1)).toBe(2400);
+    expect(stepValue(2550, 100, 1)).toBe(2600);
+    expect(stepValue(2550, 100, -1)).toBe(2500);
+    expect(stepValue(0, 10000, 1)).toBe(10000);
+    expect(stepValue(0, 100, -1)).toBe(0);
+    expect(stepValue(50, 100, -1)).toBe(0);
+    expect(stepValue(990, 100, 1, 0, 1000)).toBe(1000);
+    expect(stepValue(1000, 100, 1, 0, 1000)).toBe(1000);
   });
 
   it("shortens amounts for chart axes", () => {

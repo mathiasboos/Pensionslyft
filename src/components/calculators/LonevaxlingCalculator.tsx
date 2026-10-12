@@ -95,7 +95,7 @@ export default function LonevaxlingCalculator() {
       <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
         <div className="space-y-6 self-start rounded-xl border border-border bg-card p-6">
           <AmountSliderField
-            id="lon"
+            id="lon" stepBy={1000}
             label="Månadslön före skatt"
             value={lon}
             onChange={applyLon}
@@ -106,7 +106,7 @@ export default function LonevaxlingCalculator() {
             suffix="kr"
           />
           <AmountSliderField
-            id="belopp"
+            id="belopp" stepBy={100} stepMax={tak}
             label="Hur mycket vill du löneväxla?"
             value={belopp}
             onChange={applyBelopp}

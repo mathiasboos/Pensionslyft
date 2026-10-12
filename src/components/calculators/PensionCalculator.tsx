@@ -29,19 +29,17 @@ export default function PensionCalculator() {
     <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
       <div className="space-y-6 self-start rounded-xl border border-border bg-card p-6">
         <NumberField
-          id="current-capital"
+          id="current-capital" stepBy={10000}
           label="Nuvarande pensionskapital"
           value={currentCapital}
           onChange={setCurrentCapital}
-          step={10000}
           suffix="kr"
         />
         <NumberField
-          id="monthly-deposit"
+          id="monthly-deposit" stepBy={100}
           label="Månadssparande"
           value={monthlyDeposit}
           onChange={setMonthlyDeposit}
-          step={500}
           suffix="kr"
         />
         <SliderField
