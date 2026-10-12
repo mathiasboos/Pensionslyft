@@ -247,6 +247,10 @@
   .article-body table {
     @apply my-6 block max-w-full border-separate border-spacing-0 overflow-x-auto rounded-lg border border-border text-left text-sm;
   }
+  /* A picture in the text: as wide as the column at most, in the same frame as the tables. */
+  .article-body img {
+    @apply my-6 h-auto max-w-full rounded-lg border border-border bg-white;
+  }
   .article-body thead {
     @apply bg-muted;
   }
