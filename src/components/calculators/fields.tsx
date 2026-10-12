@@ -1,5 +1,5 @@
-import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
-import { num } from "@/lib/format";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { groupDigits, num, parseAmount } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -29,40 +29,15 @@ export function Stat({
   );
 }
 
-export function NumberField({
-  id,
-  label,
-  value,
-  onChange,
-  step,
-  suffix,
-}: {
+/** A whole amount of kronor; the text is written with thousands separators like every amount field. */
+export function NumberField(props: {
   id: string;
   label: string;
   value: number;
   onChange: (v: number) => void;
-  step: number;
   suffix: string;
 }) {
-  return (
-    <div>
-      <Label htmlFor={id} className="text-sm">
-        {label}
-      </Label>
-      <div className="mt-2 flex items-center gap-2">
-        <Input
-          id={id}
-          type="number"
-          inputMode="numeric"
-          value={value}
-          step={step}
-          min={0}
-          onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
-        />
-        <span className="text-sm text-muted-foreground">{suffix}</span>
-      </div>
-    </div>
-  );
+  return <AmountField {...props} />;
 }
 
 export function SliderField({
@@ -108,14 +83,22 @@ export function SliderField({
   );
 }
 
-/** A number as it is written in a field: 32.4 -> "32,4" */
-const toText = (v: number) => String(v).replace(".", ",");
+/** A number as it is written in a field: 1234567.5 -> "1 234 567,5" */
+const toText = (v: number) => groupDigits(String(v).replace(".", ","));
 
-/** A number typed by the user: spaces are ignored and a comma is a decimal point. NaN when it is not a number. */
-const fromText = (t: string) => parseFloat(t.replace(/\s/g, "").replace(",", "."));
+/** Where the caret goes in the grouped text: after the same number of digits and commas as before. */
+function caretAfter(text: string, count: number): number {
+  let seen = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (seen === count) return i;
+    if (/[\d,]/.test(text[i]!)) seen++;
+  }
+  return text.length;
+}
 
 /**
- * A number field that can be empty while the user types and takes a decimal comma. Empty counts as 0 for the
+ * A number field that can be empty while the user types and takes a decimal comma. The amount is written with
+ * thousands separators ("100 000") as it is typed, with the caret kept where it was. Empty counts as 0 for the
  * calculation, and the text is written out again when the value is changed from outside (a list, a reset).
  */
 export function AmountField({
@@ -141,10 +124,20 @@ export function AmountField({
   disabled?: boolean;
 }) {
   const [text, setText] = useState(toText(value));
+  const inputRef = useRef<HTMLInputElement>(null);
+  const caret = useRef<number | null>(null);
   useEffect(() => {
     // Only when the value is not what the text says, so that "32," stays as it is typed.
-    if ((fromText(text) || 0) !== value) setText(toText(value));
+    if ((parseAmount(text) || 0) !== value) setText(toText(value));
   }, [value]);
+  // Grouping changes the length of the text, so the caret is put back after the same digit.
+  useLayoutEffect(() => {
+    const input = inputRef.current;
+    if (caret.current !== null && input && document.activeElement === input) {
+      input.setSelectionRange(caret.current, caret.current);
+    }
+    caret.current = null;
+  }, [text]);
 
   return (
     <div>
@@ -161,10 +154,15 @@ export function AmountField({
           type="text"
           inputMode="decimal"
           autoComplete="off"
+          ref={inputRef}
           value={text}
           onChange={(e) => {
-            setText(e.target.value);
-            const v = fromText(e.target.value);
+            const raw = e.target.value;
+            const before = raw.slice(0, e.target.selectionStart ?? raw.length).replace(/[^\d,.]/g, "").length;
+            const grouped = groupDigits(raw);
+            caret.current = caretAfter(grouped, before);
+            setText(grouped);
+            const v = parseAmount(grouped);
             onChange(Number.isFinite(v) ? Math.max(0, v) : 0);
           }}
           onBlur={() => setText(toText(value))}

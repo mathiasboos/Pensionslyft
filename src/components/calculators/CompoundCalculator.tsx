@@ -63,7 +63,7 @@ export default function CompoundCalculator() {
   const [annualReturn, setAnnualReturn] = useState(7);
   const [annualFee, setAnnualFee] = useState(0.3);
   const [yieldTax, setYieldTax] = useState(1.05);
-  const [chart, setChart] = useState<ChartKind>("ranta");
+  const [chart, setChart] = useState<ChartKind>("totalt");
 
   // With a goal, the monthly saving is what it takes to reach it; the saving the visitor typed comes back with "Återställ".
   const base = { startCapital, years, annualReturn, annualFee, yieldTax };
@@ -119,7 +119,6 @@ export default function CompoundCalculator() {
           label="Startkapital"
           value={startCapital}
           onChange={setStartCapital}
-          step={10000}
           suffix="kr"
         />
         <div>

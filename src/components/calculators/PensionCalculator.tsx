@@ -33,7 +33,6 @@ export default function PensionCalculator() {
           label="Nuvarande pensionskapital"
           value={currentCapital}
           onChange={setCurrentCapital}
-          step={10000}
           suffix="kr"
         />
         <NumberField
@@ -41,7 +40,6 @@ export default function PensionCalculator() {
           label="Månadssparande"
           value={monthlyDeposit}
           onChange={setMonthlyDeposit}
-          step={500}
           suffix="kr"
         />
         <SliderField

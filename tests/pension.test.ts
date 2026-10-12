@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatPercent, formatSek, formatSekShort } from "../src/lib/format";
+import { formatPercent, formatSek, formatSekShort, groupDigits, parseAmount } from "../src/lib/format";
 import fireWeb from "./fixtures/fire-web.json";
 import { calculateCompound, calculateFire, calculatePension, requiredMonthlyDeposit } from "../src/lib/pension";
 
@@ -99,6 +99,24 @@ describe("format", () => {
     expect(formatSek(2800224.4).replace(/\s/g, " ")).toBe("2 800 224 kr");
     expect(formatPercent(6.5, 1)).toBe("6,5 %");
     expect(formatPercent(0.6, 2)).toBe("0,60 %");
+  });
+
+  it("groups typed amounts in thousands", () => {
+    const nb = "\u00a0";
+    expect(groupDigits("1234567")).toBe(`1${nb}234${nb}567`);
+    expect(groupDigits("1 234 567,5")).toBe(`1${nb}234${nb}567,5`);
+    expect(groupDigits("1234.5")).toBe("1" + nb + "234,5");
+    expect(groupDigits("32,")).toBe("32,");
+    expect(groupDigits("007")).toBe("7");
+    expect(groupDigits("")).toBe("");
+    expect(groupDigits("abc")).toBe("");
+    expect(groupDigits("999")).toBe("999");
+  });
+
+  it("reads a grouped amount back as a number", () => {
+    expect(parseAmount(groupDigits("1234567,5"))).toBe(1234567.5);
+    expect(parseAmount("100 000")).toBe(100000);
+    expect(parseAmount("")).toBeNaN();
   });
 
   it("shortens amounts for chart axes", () => {
