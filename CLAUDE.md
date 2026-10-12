@@ -92,6 +92,9 @@ look at on the preview.
   opens when the pointer rests on its title and stays open while the pointer travels into it; a click, a tap, Enter or
   Space toggles it, and Escape closes it. On a phone a hamburger opens a sheet with the same links. Test a change to
   the header with hover, keyboard and touch (Playwright, with an iPhone profile for touch).
+- **Articles** (`src/content/articles/*.md`, page `src/pages/artiklar/[slug].astro`). Pictures go in `public/artiklar/` and
+  are linked from the Markdown as `/artiklar/<name>.png`. A reading meter (`data-read-progress`) sits under the header
+  on every article; it is at `top-[65px]` because the header is 64 px plus its border, so change both together.
 - `/rapporter` lists links to the authorities' reports from `src/data/rapporter.ts`. Link to a page that lists every
   edition rather than to one year's PDF, and only add a link that has been checked to work.
 - The articles have no images: `ArticleCover.astro` draws a cover from the category (colour) and the article (the
