@@ -31,8 +31,10 @@ export function Stat({
 }
 
 /**
- * The − and + of an amount field. One click is one step; holding the button repeats the step (after 400 ms, then
- * about every 90 ms) until the pointer is released, leaves the button or is cancelled.
+ * The − and + of an amount field. A tap or a click is one step, made on the click itself, which every browser on a
+ * phone sends. Holding the button repeats the step (after 400 ms, then about every 90 ms) until the pointer is
+ * released, leaves the button or is cancelled; that is the only part that needs pointer events, so a phone that
+ * does not send them still steps on a tap.
  */
 function StepButton({
   direction,
@@ -51,6 +53,8 @@ function StepButton({
   latest.current = onStep;
   const delay = useRef<number | undefined>(undefined);
   const repeat = useRef<number | undefined>(undefined);
+  // Set when a hold has begun to repeat, so that the click that may follow the release does not step once more.
+  const held = useRef(false);
   const stop = () => {
     window.clearTimeout(delay.current);
     window.clearInterval(repeat.current);
@@ -65,21 +69,26 @@ function StepButton({
       onPointerDown={(e) => {
         if (e.button !== 0 || disabled) return;
         stop();
-        latest.current();
+        held.current = false;
         delay.current = window.setTimeout(() => {
+          held.current = true;
+          latest.current();
           repeat.current = window.setInterval(() => latest.current(), 90);
         }, 400);
       }}
-      // Keeps the focus where it is, so that a number being typed is not left by a click on a button.
-      onMouseDown={(e) => e.preventDefault()}
       onPointerUp={stop}
       onPointerLeave={stop}
       onPointerCancel={stop}
-      // A click made with the keyboard (Enter or Space) has no pointer, so it steps here; a click made with a
-      // pointer has already stepped on pointer down.
-      onClick={(e) => e.detail === 0 && latest.current()}
+      onClick={() => {
+        if (held.current) held.current = false;
+        else latest.current();
+      }}
+      // Keeps the focus where it is, so that a number being typed is not left by a click on a button, and keeps a
+      // long press on a phone from opening a menu.
+      onMouseDown={(e) => e.preventDefault()}
+      onContextMenu={(e) => e.preventDefault()}
       className={cn(
-        "grid shrink-0 cursor-pointer touch-manipulation place-items-center rounded-md border border-input bg-card text-foreground select-none transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-input disabled:hover:bg-card disabled:hover:text-foreground",
+        "grid shrink-0 cursor-pointer touch-manipulation place-items-center rounded-md border border-input bg-card text-foreground select-none transition-colors [-webkit-touch-callout:none] hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-input disabled:hover:bg-card disabled:hover:text-foreground",
         compact ? "size-8" : "size-9",
       )}
     >
