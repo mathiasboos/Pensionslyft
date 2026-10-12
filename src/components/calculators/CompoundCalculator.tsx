@@ -101,11 +101,12 @@ export default function CompoundCalculator() {
 
   // Diagram d): what comes in and what goes out each year.
   const flows = [
-    { name: "Start", Startkapital: Math.round(startCapital), Månadssparande: 0, "Årlig avgift": 0, Skatt: 0 },
+    { name: "Start", Startkapital: Math.round(startCapital), Månadssparande: 0, Ränta: 0, "Årlig avgift": 0, Skatt: 0 },
     ...rows.map((r) => ({
       name: String(r.year),
       Startkapital: 0,
       Månadssparande: Math.round(r.deposits),
+      Ränta: Math.round(r.growth),
       "Årlig avgift": -Math.round(r.fees),
       Skatt: -Math.round(r.tax),
     })),
@@ -290,6 +291,7 @@ export default function CompoundCalculator() {
                 {legend}
                 <Bar dataKey="Startkapital" stackId="f" fill={NAVY} />
                 <Bar dataKey="Månadssparande" stackId="f" fill={STEEL} />
+                <Bar dataKey="Ränta" stackId="f" fill={TEAL} />
                 <Bar dataKey="Årlig avgift" stackId="f" fill={BRICK} />
                 <Bar dataKey="Skatt" stackId="f" fill={GOLD} />
               </BarChart>
