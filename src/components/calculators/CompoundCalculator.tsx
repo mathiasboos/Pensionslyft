@@ -115,7 +115,7 @@ export default function CompoundCalculator() {
     <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
       <div className="space-y-6 self-start rounded-xl border border-border bg-card p-6">
         <NumberField
-          id="start-capital"
+          id="start-capital" stepBy={10000}
           label="Startkapital"
           value={startCapital}
           onChange={setStartCapital}
@@ -123,7 +123,7 @@ export default function CompoundCalculator() {
         />
         <div>
           <AmountField
-            id="monthly-deposit"
+            id="monthly-deposit" stepBy={100}
             label="Månadssparande"
             value={Math.round(effectiveDeposit)}
             onChange={setMonthlyDeposit}
@@ -134,7 +134,7 @@ export default function CompoundCalculator() {
         </div>
         <div>
           <AmountField
-            id="goal"
+            id="goal" stepBy={10000}
             label="Sparmål"
             value={goal ?? Math.round(final)}
             onChange={setGoal}

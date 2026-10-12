@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { groupDigits, num, parseAmount } from "@/lib/format";
+import { Minus, Plus } from "lucide-react";
+import { groupDigits, num, parseAmount, stepValue } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,64 @@ export function Stat({
   );
 }
 
+/**
+ * The − and + of an amount field. One click is one step; holding the button repeats the step (after 400 ms, then
+ * about every 90 ms) until the pointer is released, leaves the button or is cancelled.
+ */
+function StepButton({
+  direction,
+  label,
+  onStep,
+  disabled,
+  compact,
+}: {
+  direction: 1 | -1;
+  label: string;
+  onStep: () => void;
+  disabled?: boolean;
+  compact?: boolean;
+}) {
+  const latest = useRef(onStep);
+  latest.current = onStep;
+  const delay = useRef<number | undefined>(undefined);
+  const repeat = useRef<number | undefined>(undefined);
+  const stop = () => {
+    window.clearTimeout(delay.current);
+    window.clearInterval(repeat.current);
+  };
+  useEffect(() => stop, []);
+
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onPointerDown={(e) => {
+        if (e.button !== 0 || disabled) return;
+        stop();
+        latest.current();
+        delay.current = window.setTimeout(() => {
+          repeat.current = window.setInterval(() => latest.current(), 90);
+        }, 400);
+      }}
+      // Keeps the focus where it is, so that a number being typed is not left by a click on a button.
+      onMouseDown={(e) => e.preventDefault()}
+      onPointerUp={stop}
+      onPointerLeave={stop}
+      onPointerCancel={stop}
+      // A click made with the keyboard (Enter or Space) has no pointer, so it steps here; a click made with a
+      // pointer has already stepped on pointer down.
+      onClick={(e) => e.detail === 0 && latest.current()}
+      className={cn(
+        "grid shrink-0 cursor-pointer touch-manipulation place-items-center rounded-md border border-input bg-card text-foreground select-none transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-input disabled:hover:bg-card disabled:hover:text-foreground",
+        compact ? "size-8" : "size-9",
+      )}
+    >
+      {direction > 0 ? <Plus className="size-4" aria-hidden="true" /> : <Minus className="size-4" aria-hidden="true" />}
+    </button>
+  );
+}
+
 /** A whole amount of kronor; the text is written with thousands separators like every amount field. */
 export function NumberField(props: {
   id: string;
@@ -36,6 +95,7 @@ export function NumberField(props: {
   value: number;
   onChange: (v: number) => void;
   suffix: string;
+  stepBy?: number;
 }) {
   return <AmountField {...props} />;
 }
@@ -111,6 +171,7 @@ export function AmountField({
   action,
   compact,
   disabled,
+  stepBy,
 }: {
   id: string;
   label: string;
@@ -122,6 +183,8 @@ export function AmountField({
   action?: ReactNode;
   compact?: boolean;
   disabled?: boolean;
+  /** the size of a step of the − and + buttons (and the arrow keys); without it the field has no buttons */
+  stepBy?: number;
 }) {
   const [text, setText] = useState(toText(value));
   const inputRef = useRef<HTMLInputElement>(null);
@@ -139,6 +202,20 @@ export function AmountField({
     caret.current = null;
   }, [text]);
 
+  const step = (direction: 1 | -1) => stepBy && onChange(stepValue(value, stepBy, direction));
+  const stepButtons = stepBy
+    ? ([-1, 1] as const).map((direction) => (
+        <StepButton
+          key={direction}
+          direction={direction}
+          label={`${direction > 0 ? "Öka" : "Minska"} ${label} med ${num.format(stepBy)} kr`}
+          onStep={() => step(direction)}
+          disabled={disabled || (direction < 0 && value <= 0)}
+          compact={compact}
+        />
+      ))
+    : null;
+
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
@@ -149,6 +226,7 @@ export function AmountField({
       </div>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       <div className={cn("flex items-center gap-2", compact ? "mt-1" : "mt-2")}>
+        {stepButtons?.[0]}
         <Input
           id={id}
           type="text"
@@ -165,10 +243,16 @@ export function AmountField({
             const v = parseAmount(grouped);
             onChange(Number.isFinite(v) ? Math.max(0, v) : 0);
           }}
+          onKeyDown={(e) => {
+            if (!stepBy || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+            e.preventDefault();
+            step(e.key === "ArrowUp" ? 1 : -1);
+          }}
           onBlur={() => setText(toText(value))}
           disabled={disabled}
-          className={cn("tabular-nums", compact && "h-8")}
+          className={cn("min-w-0 tabular-nums", compact && "h-8", stepBy && "text-center")}
         />
+        {stepButtons?.[1]}
         <span className="w-14 shrink-0 text-sm text-muted-foreground">{suffix}</span>
       </div>
     </div>
@@ -278,6 +362,8 @@ export function AmountSliderField({
   typedMax,
   suffix,
   hint,
+  stepBy,
+  stepMax,
 }: {
   id: string;
   label: string;
@@ -289,6 +375,10 @@ export function AmountSliderField({
   typedMax: number;
   suffix: string;
   hint?: ReactNode;
+  /** the size of a step of the − and + buttons (and the arrow keys) */
+  stepBy?: number;
+  /** the highest value the buttons go to (the field itself takes up to typedMax) */
+  stepMax?: number;
 }) {
   const [text, setText] = useState(grouped(value));
   // Counts the times the field was left, so that the text is written out again even if the value did not change.
@@ -301,6 +391,26 @@ export function AmountSliderField({
     setCommits((c) => c + 1);
   };
 
+  // A step starts from what is typed in the field, if it has not been entered yet.
+  const step1 = (direction: 1 | -1) => {
+    if (!stepBy) return;
+    const typed = parseAmount(text);
+    const from = Number.isFinite(typed) ? Math.min(typedMax, Math.max(0, typed)) : value;
+    onChange(stepValue(from, stepBy, direction, 0, stepMax ?? typedMax));
+    setCommits((c) => c + 1);
+  };
+  const stepButtons = stepBy
+    ? ([-1, 1] as const).map((direction) => (
+        <StepButton
+          key={direction}
+          direction={direction}
+          label={`${direction > 0 ? "Öka" : "Minska"} ${label} med ${num.format(stepBy)} kr`}
+          onStep={() => step1(direction)}
+          disabled={direction < 0 ? value <= 0 : value >= (stepMax ?? typedMax)}
+        />
+      ))
+    : null;
+
   const shown = Math.min(max, Math.max(min, value));
   const fill = max > min ? ((shown - min) / (max - min)) * 100 : 0;
   return (
@@ -309,6 +419,7 @@ export function AmountSliderField({
         {label}
       </Label>
       <div className="mt-2 flex items-center gap-2">
+        {stepButtons?.[0]}
         <Input
           id={id}
           type="text"
@@ -317,9 +428,16 @@ export function AmountSliderField({
           value={text}
           onChange={(e) => setText(e.target.value)}
           onBlur={commit}
-          onKeyDown={(e) => e.key === "Enter" && commit()}
-          className="tabular-nums"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            else if (stepBy && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+              e.preventDefault();
+              step1(e.key === "ArrowUp" ? 1 : -1);
+            }
+          }}
+          className={cn("min-w-0 tabular-nums", stepBy && "text-center")}
         />
+        {stepButtons?.[1]}
         <span className="w-14 shrink-0 text-sm text-muted-foreground">{suffix}</span>
       </div>
       <input

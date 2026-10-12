@@ -293,7 +293,7 @@ export default function NettolonCalculator() {
           <p className="mt-1 text-xs text-muted-foreground">Justera värdena — allt räknas om direkt.</p>
         </div>
 
-        <AmountField id="nl-lon" label="Bruttolön per månad" value={input.lon} onChange={(v) => set("lon", v)} suffix="kr/mån" />
+        <AmountField id="nl-lon" stepBy={1000} label="Bruttolön per månad" value={input.lon} onChange={(v) => set("lon", v)} suffix="kr/mån" />
 
         <div className="space-y-2">
           <SelectField
@@ -321,7 +321,7 @@ export default function NettolonCalculator() {
         </div>
 
         <AmountField
-          id="nl-vaxling"
+          id="nl-vaxling" stepBy={100}
           label="Bruttolöneavdrag"
           hint="löneväxling, bil, cykel etc."
           value={input.vaxling}
@@ -329,7 +329,7 @@ export default function NettolonCalculator() {
           suffix="kr/mån"
         />
         <AmountField
-          id="nl-pension"
+          id="nl-pension" stepBy={1000}
           label="Pensionsinkomst"
           value={input.pension}
           onChange={(v) => set("pension", v)}
@@ -423,28 +423,30 @@ export default function NettolonCalculator() {
           className="border-t border-border pt-4"
         >
           <div className="mt-4 space-y-5">
-            <AmountField id="nl-kapink" label="Ränta & utdelning" hint="ränteinkomst, aktieutdelning" value={input.kapInk} onChange={(v) => set("kapInk", v)} suffix="kr/år" />
+            <AmountField id="nl-kapink" stepBy={1000} label="Ränta & utdelning" hint="ränteinkomst, aktieutdelning" value={input.kapInk} onChange={(v) => set("kapInk", v)} suffix="kr/år" />
             <AmountField
               id="nl-isk"
+              stepBy={10000}
               label="Kapitalunderlag ISK / Kapitalförsäkring"
               hint="fribelopp 300 000 kr, schablonränta 3,55 %"
               value={input.iskUnderlag}
               onChange={(v) => set("iskUnderlag", v)}
               suffix="kr"
             />
-            <AmountField id="nl-aktievinst" label="Aktievinst (marknadsnoterad)" hint="realiserad vinst, aktier/fonder" value={input.aktievinst} onChange={(v) => set("aktievinst", v)} suffix="kr/år" />
+            <AmountField id="nl-aktievinst" stepBy={1000} label="Aktievinst (marknadsnoterad)" hint="realiserad vinst, aktier/fonder" value={input.aktievinst} onChange={(v) => set("aktievinst", v)} suffix="kr/år" />
             <AmountField
               id="nl-aktieforlust"
+              stepBy={1000}
               label="Aktieförlust (marknadsnoterad)"
               hint="kvittas mot vinst, rest kvoteras 70 %"
               value={input.aktieforlust}
               onChange={(v) => set("aktieforlust", v)}
               suffix="kr/år"
             />
-            <AmountField id="nl-rantutg" label="Ränteutgifter / övriga avdrag" hint="avdragsgill ränta (100 %)" value={input.rantUtg} onChange={(v) => set("rantUtg", v)} suffix="kr/år" />
-            <AmountField id="nl-rot" label="ROT-arbete (arbetskostnad)" hint="30 %, max 50 000 kr reduktion" value={input.rotArb} onChange={(v) => set("rotArb", v)} suffix="kr/år" />
-            <AmountField id="nl-rut" label="RUT-arbete (arbetskostnad)" hint="50 %, gemensamt tak 75 000 kr" value={input.rutArb} onChange={(v) => set("rutArb", v)} suffix="kr/år" />
-            <AmountField id="nl-taxvarde" label="Taxeringsvärde (småhus)" hint="0,75 %, takbelopp 10 425 kr" value={input.taxvarde} onChange={(v) => set("taxvarde", v)} suffix="kr" />
+            <AmountField id="nl-rantutg" stepBy={1000} label="Ränteutgifter / övriga avdrag" hint="avdragsgill ränta (100 %)" value={input.rantUtg} onChange={(v) => set("rantUtg", v)} suffix="kr/år" />
+            <AmountField id="nl-rot" stepBy={1000} label="ROT-arbete (arbetskostnad)" hint="30 %, max 50 000 kr reduktion" value={input.rotArb} onChange={(v) => set("rotArb", v)} suffix="kr/år" />
+            <AmountField id="nl-rut" stepBy={1000} label="RUT-arbete (arbetskostnad)" hint="50 %, gemensamt tak 75 000 kr" value={input.rutArb} onChange={(v) => set("rutArb", v)} suffix="kr/år" />
+            <AmountField id="nl-taxvarde" stepBy={10000} label="Taxeringsvärde (småhus)" hint="0,75 %, takbelopp 10 425 kr" value={input.taxvarde} onChange={(v) => set("taxvarde", v)} suffix="kr" />
             <SwitchRow
               id="nl-nybyggt"
               label="Nybyggt hus"

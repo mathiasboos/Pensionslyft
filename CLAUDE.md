@@ -69,6 +69,11 @@ look at on the preview.
   year-end capital, like the FIRE calculator, so the KPI boxes add up (Startkapital + Månadssparande + Ränta − Årlig
   avgift − Avkastningsskatt = Slutkapital). A typed Sparmål gives the monthly saving through `requiredMonthlyDeposit`
   (the final capital is linear in the saving). The charts write amounts in kronor, never "tkr".
+- **Amount fields** (`fields.tsx`): `AmountField`, `NumberField` and `AmountSliderField` write the amount with thousands
+  separators as it is typed ("100 000") and take `stepBy` for the − / + buttons (hold to repeat, arrow keys in the field,
+  snapping to the step; `stepValue` in `src/lib/format.ts`). Give every field in kronor a `stepBy` (100 for a monthly
+  saving, 1 000 for a salary, 10 000 for a capital); fields in % get none. FIRE has only sliders, and the embedded
+  Typfallsmodellen page is its own app.
 - `src/lib/nettolon.ts`, `src/components/calculators/NettolonCalculator.tsx` and `src/data/kommunalskatt-2026.json`
   are a port of `Net_Salary_2026.html`. The calculation and its rounding are the original's, and
   `tests/nettolon.test.ts` compares it with what the original shows for 190 sets of inputs

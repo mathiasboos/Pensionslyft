@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatPercent, formatSek, formatSekShort, groupDigits, parseAmount } from "../src/lib/format";
+import { formatPercent, formatSek, formatSekShort, groupDigits, parseAmount, stepValue } from "../src/lib/format";
 import fireWeb from "./fixtures/fire-web.json";
 import { calculateCompound, calculateFire, calculatePension, requiredMonthlyDeposit } from "../src/lib/pension";
 
@@ -117,6 +117,18 @@ describe("format", () => {
     expect(parseAmount(groupDigits("1234567,5"))).toBe(1234567.5);
     expect(parseAmount("100 000")).toBe(100000);
     expect(parseAmount("")).toBeNaN();
+  });
+
+  it("steps an amount to the next step on the grid", () => {
+    expect(stepValue(2500, 100, 1)).toBe(2600);
+    expect(stepValue(2500, 100, -1)).toBe(2400);
+    expect(stepValue(2550, 100, 1)).toBe(2600);
+    expect(stepValue(2550, 100, -1)).toBe(2500);
+    expect(stepValue(0, 10000, 1)).toBe(10000);
+    expect(stepValue(0, 100, -1)).toBe(0);
+    expect(stepValue(50, 100, -1)).toBe(0);
+    expect(stepValue(990, 100, 1, 0, 1000)).toBe(1000);
+    expect(stepValue(1000, 100, 1, 0, 1000)).toBe(1000);
   });
 
   it("shortens amounts for chart axes", () => {

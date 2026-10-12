@@ -61,3 +61,13 @@ export function groupDigits(text: string): string {
 export function parseAmount(text: string): number {
   return parseFloat(text.replace(/\s/g, "").replace(",", "."));
 }
+
+/**
+ * One step up (direction 1) or down (-1) in an amount field. The value goes to the next step on the grid, as in a
+ * native number input: with step 100, 2 550 goes to 2 600 up and 2 500 down. Kept between min and max.
+ */
+export function stepValue(value: number, step: number, direction: 1 | -1, min = 0, max = Infinity): number {
+  const position = Math.round((value / step) * 1e9) / 1e9;
+  const next = direction > 0 ? Math.floor(position) + 1 : Math.ceil(position) - 1;
+  return Math.min(max, Math.max(min, next * step));
+}
