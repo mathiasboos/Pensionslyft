@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import kommunalskatt from "@/data/kommunalskatt-2026.json";
 import { BEGRAVNING, DEFAULTS, fmt, nettolonView, rowCells, type NettolonInput } from "@/lib/nettolon";
 import { cn } from "@/lib/utils";
+import { Collapsible } from "./Collapsible";
 import { AmountField, SelectField, SwitchRow } from "./fields";
 
 const RATES = kommunalskatt as Record<string, number>;
@@ -23,46 +23,6 @@ function ExternalLink({ href, children }: { href: string; children: ReactNode })
     >
       {children}
     </a>
-  );
-}
-
-function Collapsible({
-  id,
-  title,
-  aside,
-  open,
-  onToggle,
-  children,
-  className,
-  small,
-}: {
-  id: string;
-  title: string;
-  aside?: string;
-  /** the title of a part of the form, not of a card */
-  small?: boolean;
-  open: boolean;
-  onToggle: () => void;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <button
-        type="button"
-        className="flex w-full cursor-pointer items-center justify-between gap-3 text-left"
-        aria-expanded={open}
-        aria-controls={id}
-        onClick={onToggle}
-      >
-        <span className={small ? "text-sm font-medium" : "font-display text-lg font-semibold"}>{title}</span>
-        <span className="flex items-center gap-2 text-xs text-muted-foreground">
-          {aside}
-          <ChevronDown className={cn("size-5 transition-transform", open && "rotate-180")} aria-hidden="true" />
-        </span>
-      </button>
-      {open && <div id={id}>{children}</div>}
-    </div>
   );
 }
 

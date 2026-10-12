@@ -14,9 +14,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { calculateCompound, requiredMonthlyDeposit } from "@/lib/pension";
+import type { ExportColumn } from "@/lib/export";
+import { calculateCompound, requiredMonthlyDeposit, type CompoundYear } from "@/lib/pension";
 import { formatPercent, formatSek, num } from "@/lib/format";
 import { AmountField, NumberField, SelectField, SliderField, Stat } from "./fields";
+import { YearTable } from "./YearTable";
 
 type ChartKind = "ranta" | "totalt" | "sparmal" | "arsfloden";
 
@@ -41,6 +43,18 @@ const grid = <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" /
 const money = (v: number) => formatSek(v);
 // The legend text stays in the text colour; the swatch beside it carries the series colour.
 const legend = <Legend formatter={(value: string) => <span className="text-foreground">{value}</span>} />;
+
+const columns = (simpleLabel: string): ExportColumn<CompoundYear>[] => [
+  { label: "År", value: (r) => r.year, plain: true },
+  { label: "Ingående kapital", value: (r) => r.opening },
+  { label: "Insättningar", value: (r) => r.deposits },
+  { label: "Ränta", value: (r) => r.growth },
+  { label: "Årlig avgift", value: (r) => r.fees },
+  { label: "Avkastningsskatt", value: (r) => r.tax },
+  { label: "Utgående kapital", value: (r) => r.closing },
+  { label: simpleLabel, value: (r) => r.simpleInterest },
+  { label: "Ränta-på-ränta totalt", value: (r) => r.compoundInterest },
+];
 
 function ChartFrame({ children, caption }: { children: ReactNode; caption?: string }) {
   return (
@@ -307,6 +321,16 @@ export default function CompoundCalculator() {
           <Stat label="− Avkastningsskatt" value={formatSek(result.totalTax)} />
           <Stat label="= Slutkapital" value={formatSek(result.finalCapital)} highlight />
         </div>
+
+        <YearTable
+          id="compound-table"
+          title={`År för år (${rows.length} år)`}
+          columns={columns(`Enkel ränta totalt (${netRate})`)}
+          rows={rows}
+          rowKey={(r) => r.year}
+          fileName="ranta-pa-ranta"
+          sheet="Ränta på ränta"
+        />
       </div>
     </div>
   );

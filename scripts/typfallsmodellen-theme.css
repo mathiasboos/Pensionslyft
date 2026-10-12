@@ -89,3 +89,51 @@ body {
 .disclaimer {
   border-left-color: #a18142;
 }
+
+/*
+ * The fold-in of the table "Månadsinkomster" (scripts/typfallsmodellen-site.js): an arrow at the far left of the title
+ * bar and then the name, as in the other calculators. The table is hidden while folded in; the buttons of the bar stay.
+ */
+.panel > h2 .pl-fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 0 -4px;
+  padding: 2px 8px 2px 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.panel > h2 .pl-fold:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.pl-fold .pl-chevron {
+  flex: none;
+  color: var(--text-muted);
+  transition: transform 0.15s;
+}
+.pl-fold[aria-expanded="true"] .pl-chevron {
+  transform: rotate(90deg);
+}
+.pl-folded > .scroll {
+  display: none;
+}
+/* Folded in, the panel is only its title bar. */
+.panel.pl-folded {
+  padding-bottom: 0;
+}
+.panel.pl-folded > h2 {
+  margin-bottom: 0;
+  border-radius: var(--radius);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-fold .pl-chevron {
+    transition: none;
+  }
+}

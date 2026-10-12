@@ -2,7 +2,27 @@ import { useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { calculatePension } from "@/lib/pension";
 import { formatPercent, formatSek, num } from "@/lib/format";
+import type { ExportColumn } from "@/lib/export";
 import { NumberField, SliderField, Stat } from "./fields";
+import { YearTable } from "./YearTable";
+
+interface PensionYear {
+  year: number;
+  opening: number;
+  deposits: number;
+  growth: number;
+  closing: number;
+  totalIn: number;
+}
+
+const COLUMNS: ExportColumn<PensionYear>[] = [
+  { label: "År", value: (r) => r.year, plain: true },
+  { label: "Ingående kapital", value: (r) => r.opening },
+  { label: "Insättningar", value: (r) => r.deposits },
+  { label: "Avkastning efter avgift", value: (r) => r.growth },
+  { label: "Utgående kapital", value: (r) => r.closing },
+  { label: "Insatt totalt", value: (r) => r.totalIn },
+];
 
 export default function PensionCalculator() {
   const [currentCapital, setCurrentCapital] = useState(350000);
@@ -24,6 +44,20 @@ export default function PensionCalculator() {
       }),
     [currentCapital, monthlyDeposit, yearsToRetirement, annualReturn, annualFee, payoutYears],
   );
+
+  // The result year by year, from the running totals of the calculation.
+  const rows: PensionYear[] = result.series.slice(1).map((point, i) => {
+    const before = result.series[i]!;
+    const deposits = point.deposits - before.deposits;
+    return {
+      year: point.year,
+      opening: before.capital,
+      deposits,
+      growth: point.capital - before.capital - deposits,
+      closing: point.capital,
+      totalIn: point.deposits,
+    };
+  });
 
   return (
     <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
@@ -128,6 +162,16 @@ export default function PensionCalculator() {
             </ResponsiveContainer>
           </div>
         </div>
+
+        <YearTable
+          id="pension-table"
+          title={`År för år (${rows.length} år)`}
+          columns={COLUMNS}
+          rows={rows}
+          rowKey={(r) => r.year}
+          fileName="pensionskalkyl"
+          sheet="Pensionskalkyl"
+        />
 
         <div className="rounded-xl border border-border bg-secondary/50 p-6 text-sm">
           Avgiften på {formatPercent(annualFee, 2)} kostar dig ungefär{" "}
