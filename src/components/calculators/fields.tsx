@@ -127,6 +127,7 @@ export function AmountField({
   suffix,
   action,
   compact,
+  disabled,
 }: {
   id: string;
   label: string;
@@ -137,6 +138,7 @@ export function AmountField({
   /** a link beside the label */
   action?: ReactNode;
   compact?: boolean;
+  disabled?: boolean;
 }) {
   const [text, setText] = useState(toText(value));
   useEffect(() => {
@@ -166,6 +168,7 @@ export function AmountField({
             onChange(Number.isFinite(v) ? Math.max(0, v) : 0);
           }}
           onBlur={() => setText(toText(value))}
+          disabled={disabled}
           className={cn("tabular-nums", compact && "h-8")}
         />
         <span className="w-14 shrink-0 text-sm text-muted-foreground">{suffix}</span>

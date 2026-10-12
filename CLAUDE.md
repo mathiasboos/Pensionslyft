@@ -64,6 +64,11 @@ look at on the preview.
   The page (`LonevaxlingCalculator.tsx`) keeps the original's texts and behaviour but is built like the
   Pensionskalkylatorn, in the site's own components: inputs in a frame to the left, results and a Recharts chart to
   the right (`AmountSliderField` is in `fields.tsx`). There is no separate stylesheet or canvas chart any more.
+- **Ränta på ränta** (`calculateCompound` in `src/lib/pension.ts`, `CompoundCalculator.tsx`): the capital grows at the
+  gross return and the tax (Avkastningsskatt, default 1,05 %) and the fee are taken each year as a share of the
+  year-end capital, like the FIRE calculator, so the KPI boxes add up (Startkapital + Månadssparande + Ränta − Årlig
+  avgift − Avkastningsskatt = Slutkapital). A typed Sparmål gives the monthly saving through `requiredMonthlyDeposit`
+  (the final capital is linear in the saving). The charts write amounts in kronor, never "tkr".
 - `src/lib/nettolon.ts`, `src/components/calculators/NettolonCalculator.tsx` and `src/data/kommunalskatt-2026.json`
   are a port of `Net_Salary_2026.html`. The calculation and its rounding are the original's, and
   `tests/nettolon.test.ts` compares it with what the original shows for 190 sets of inputs
