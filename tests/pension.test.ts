@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { toCsv } from "../src/lib/export";
 import { formatPercent, formatSek, formatSekShort, groupDigits, parseAmount, stepValue } from "../src/lib/format";
 import fireWeb from "./fixtures/fire-web.json";
 import { calculateCompound, calculateFire, calculatePension, requiredMonthlyDeposit } from "../src/lib/pension";
@@ -91,6 +92,20 @@ describe("requiredMonthlyDeposit", () => {
 
   it("is 0 when the start capital alone reaches the goal", () => {
     expect(requiredMonthlyDeposit(base, 60000)).toBe(0);
+  });
+});
+
+describe("toCsv", () => {
+  it("writes a header and whole numbers with semicolons", () => {
+    const rows = [
+      { year: 1, capital: 1234.6 },
+      { year: 2, capital: 2500.4 },
+    ];
+    const columns = [
+      { label: "År", value: (r: (typeof rows)[number]) => r.year, plain: true },
+      { label: "Kapital", value: (r: (typeof rows)[number]) => r.capital },
+    ];
+    expect(toCsv(rows, columns)).toBe("År;Kapital\r\n1;1235\r\n2;2500");
   });
 });
 

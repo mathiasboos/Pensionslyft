@@ -74,6 +74,12 @@ look at on the preview.
   snapping to the step; `stepValue` in `src/lib/format.ts`). Give every field in kronor a `stepBy` (100 for a monthly
   saving, 1 000 for a salary, 10 000 for a capital); fields in % get none. FIRE has only sliders, and the embedded
   Typfallsmodellen page is its own app.
+- **Tables and fold-outs.** Every fold-out in the calculators is `Collapsible` (an arrow at the far left, then the name; closed
+  from the start). A table of the result year by year is `YearTable` (a `Collapsible` with CSV and Excel buttons in its
+  header; `src/lib/export.ts` writes the files): Pensionskalkylatorn, Ränta på ränta and FIRE use it, so a new calculator with a
+  table should too. The embedded Typfallsmodellen app is built from another project, so the fold-in of its table
+  "Månadsinkomster" is added by `scripts/typfallsmodellen-site.js` and `scripts/typfallsmodellen-theme.css`, which the sync script
+  puts into the file (`node scripts/sync-typfallsmodellen.mjs --reapply` does it again after an edit, with no build).
 - `src/lib/nettolon.ts`, `src/components/calculators/NettolonCalculator.tsx` and `src/data/kommunalskatt-2026.json`
   are a port of `Net_Salary_2026.html`. The calculation and its rounding are the original's, and
   `tests/nettolon.test.ts` compares it with what the original shows for 190 sets of inputs

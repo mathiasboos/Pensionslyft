@@ -10,16 +10,17 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ChevronDown, Download, LineChart, SlidersHorizontal, Table } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LineChart, SlidersHorizontal, Table } from "lucide-react";
 import { calculateFire, FIRE_YEARS, ISK_TAX_FREE_AMOUNT, type FireYear } from "@/lib/pension";
-import { formatPercent, formatSek, formatSekShort, num } from "@/lib/format";
+import { formatPercent, formatSek, formatSekShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import type { ExportColumn } from "@/lib/export";
 import { SliderField } from "./fields";
+import { YearTable } from "./YearTable";
 
-const COLUMNS: { label: string; value: (r: FireYear) => number }[] = [
-  { label: "År", value: (r) => r.year },
-  { label: "Ålder", value: (r) => r.age },
+const COLUMNS: ExportColumn<FireYear>[] = [
+  { label: "År", value: (r) => r.year, plain: true },
+  { label: "Ålder", value: (r) => r.age, plain: true },
   { label: "Månadslön", value: (r) => r.monthlySalary },
   { label: "Månadssparande", value: (r) => r.monthlySavings },
   { label: "Årssparande", value: (r) => r.yearlySavings },
@@ -31,38 +32,6 @@ const COLUMNS: { label: string; value: (r: FireYear) => number }[] = [
   { label: "FIRE-mål", value: (r) => r.target },
   { label: "Kvar till målet", value: (r) => r.gap },
 ];
-
-function download(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function downloadCsv(rows: FireYear[]) {
-  // Semicolons and a byte order mark let Swedish Excel open the file directly.
-  const lines = [
-    COLUMNS.map((c) => c.label).join(";"),
-    ...rows.map((r) => COLUMNS.map((c) => Math.round(c.value(r))).join(";")),
-  ];
-  download(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }), "fire-kalkyl.csv");
-}
-
-async function downloadExcel(rows: FireYear[]) {
-  const { default: writeExcelFile } = await import("write-excel-file/browser");
-  const data = [
-    COLUMNS.map((c) => ({ value: c.label, fontWeight: "bold" as const })),
-    ...rows.map((r) => COLUMNS.map((c, i) => ({ value: Math.round(c.value(r)), format: i < 2 ? "0" : "#,##0" }))),
-  ];
-  const blob = await writeExcelFile(data, {
-    sheet: "FIRE-kalkyl",
-    columns: COLUMNS.map((c, i) => ({ width: i < 2 ? 7 : Math.max(12, c.label.length + 2) })),
-    stickyRowsCount: 1,
-  }).toBlob();
-  download(blob, "fire-kalkyl.xlsx");
-}
 
 export default function FireCalculator() {
   const [currentAge, setCurrentAge] = useState(20);
@@ -415,69 +384,27 @@ export default function FireCalculator() {
             </div>
           </div>
 
-          <div ref={tableRef} className="rounded-xl border border-border bg-card">
-            <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:px-6">
-              <button
-                type="button"
-                className="flex cursor-pointer items-center gap-2 font-display text-lg font-semibold"
-                aria-expanded={tableOpen}
-                aria-controls="fire-table"
-                onClick={() => setTableOpen(!tableOpen)}
-              >
-                År för år ({rows.length} år)
-                <ChevronDown
-                  className={cn("size-5 transition-transform", tableOpen && "rotate-180")}
-                  aria-hidden="true"
-                />
-              </button>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => downloadCsv(rows)}>
-                  <Download aria-hidden="true" /> CSV
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => downloadExcel(rows)}>
-                  <Download aria-hidden="true" /> Excel
-                </Button>
-              </div>
-            </div>
-            {tableOpen && (
-              <div id="fire-table" className="max-h-96 overflow-auto border-t border-border">
-                <table className="w-full text-right text-xs tabular-nums">
-                  <thead className="sticky top-0 bg-muted">
-                    <tr>
-                      {COLUMNS.map((c) => (
-                        <th key={c.label} scope="col" className="px-3 py-2 font-medium whitespace-nowrap first:text-left">
-                          {c.label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((r) => (
-                      <tr
-                        key={r.year}
-                        className={cn(
-                          "border-t border-border",
-                          r.gap <= 0 && "bg-secondary/50",
-                          r.year === fireYear && "font-semibold",
-                        )}
-                      >
-                        {COLUMNS.map((c, i) => (
-                          <td key={c.label} className="px-3 py-1.5 whitespace-nowrap first:text-left">
-                            {i < 2 ? c.value(r) : num.format(c.value(r))}
-                            {i === 1 && r.year === fireYear && (
-                              <span role="img" aria-label="FIRE-året">
-                                {" "}
-                                🔥
-                              </span>
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          <div ref={tableRef}>
+            <YearTable
+              id="fire-table"
+              title={`År för år (${rows.length} år)`}
+              columns={COLUMNS}
+              rows={rows}
+              rowKey={(r) => r.year}
+              fileName="fire-kalkyl"
+              sheet="FIRE-kalkyl"
+              open={tableOpen}
+              onToggle={() => setTableOpen(!tableOpen)}
+              rowClassName={(r) => cn(r.gap <= 0 && "bg-secondary/50", r.year === fireYear && "font-semibold")}
+              cellSuffix={(r, i) =>
+                i === 1 && r.year === fireYear ? (
+                  <span role="img" aria-label="FIRE-året">
+                    {" "}
+                    🔥
+                  </span>
+                ) : null
+              }
+            />
           </div>
         </div>
       </div>
