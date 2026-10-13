@@ -47,13 +47,35 @@ look at on the preview.
   mode, plus the Google Fonts link of the site), so that the page looks like the other calculators; change
   colours and fonts there, never in the HTML. The old React
   port (`src/lib/typfall/`) is in git history up to commit a4c6971.
+- **Pensionsplaneraren is not ported either, and it updates itself.** `/pensionsplaneraren` shows
+  `Retirement_Planner.html` of `github.com/mathiasboos/Calculators` (11 tabs, Chart.js and SheetJS inline, EN/SV)
+  in a same-origin iframe like Typfallsmodellen. The owner develops it there and wants every change, a parameter or a
+  tab added or removed, on the site without porting: Calculators `main` is the source of truth. The GitHub Action
+  `.github/workflows/pensionsplaneraren.yml` runs every hour (and on "Run workflow"):
+  `node scripts/sync-pensionsplaneraren.mjs` fetches the file (a blob-less clone, no token: the repo is public)
+  and writes `public/pensionsplaneraren-app.html` and `src/data/pensionsplaneraren-source.json` (the file's last
+  commit, shown on the page). If they changed, `scripts/check-pensionsplaneraren.mjs` (Playwright: no script errors,
+  Swedish, every tab opens, charts drawn, Monte Carlo runs), `npm test` and the build must pass. Then it commits to
+  `main` and Cloudflare deploys. A failure publishes nothing and opens the issue "Pensionsplaneraren kunde inte
+  uppdateras". Never edit the HTML by hand. The site's part is in `scripts/`:
+  - `pensionsplaneraren-colors.mjs` maps every colour the app writes into its code to a site colour, by use (text,
+    area or chart series), and is applied by `scripts/lib/recolor.mjs`.
+  - `pensionsplaneraren-theme.css` holds the app's CSS variables and its main parts in the site's style.
+  - `pensionsplaneraren-site.js` holds Swedish by default (the visitor's EN/SV click is remembered), white tooltips
+    and chart fonts.
+
+  After changing one of them, run the sync script with `--reapply`. The Action would also redo it on its next run.
+  Colours the app starts to use later keep their own colour until added to the map; the sync prints them and the
+  Action lists them in its summary. New texts in the planner need Swedish in its own `LANG.sv`. The shared
+  injection (`<!-- pensionslyft:begin/end -->`, the site's fonts) is `scripts/lib/embed.mjs`, also used by the
+  Typfallsmodellen script.
 - **One palette and one typeface for all calculators.** The owner wants every calculator in the colours and fonts
   of the Pensionskalkylatorn: the tokens in `src/styles/global.css` (navy, gold, sand, white; the `chart-*`
   colours in diagrams), Inter for text and Inter `font-display` for headings and big numbers. A
   calculator taken from GitHub keeps its calculation, texts and layout, but not its own palette or fonts: map
   them to the site's, and check diagram colours with the dataviz validator.
 - **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
-  public repositories: `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
+  public repositories (Calculators was made public in October 2026 so the planner can be fetched without a token): `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
   `Salary_Exchange_Consumer.html`, `Net_Salary_2026.html`, and others, with the tax constants to check every December in its
   CLAUDE.md) and `github.com/mathiasboos/Typfallsmodellen` (the TypeScript engine and the web app that is
   built into `typfallsmodellen.html`). When a calculator on this site is added, changed or checked, read the

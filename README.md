@@ -30,6 +30,7 @@ visual editor (Framer, Lovable) is needed.
 | Pension calculator | `/pensionskalkylator` | `src/pages/pensionskalkylator.astro` + `src/components/calculators/PensionCalculator.tsx` |
 | Compound interest | `/ranta-pa-ranta` | `src/pages/ranta-pa-ranta.astro` + `src/components/calculators/CompoundCalculator.tsx` |
 | FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
+| Pensionsplaneraren | `/pensionsplaneraren` | `src/pages/pensionsplaneraren.astro` (shows `public/pensionsplaneraren-app.html`, fetched from GitHub every hour by `.github/workflows/pensionsplaneraren.yml` with `scripts/sync-pensionsplaneraren.mjs`) |
 | Typfallsmodellen | `/typfallsmodellen` | `src/pages/typfallsmodellen.astro` (shows `public/typfallsmodellen-app.html`, built from GitHub by `scripts/sync-typfallsmodellen.mjs`) |
 | Löneväxling | `/lonevaxlingskalkylator` | `src/pages/lonevaxlingskalkylator.astro` + `src/components/calculators/LonevaxlingCalculator.tsx` + `src/lib/lonevaxling.ts` |
 | Nettolön | `/nettolonkalkylator` | `src/pages/nettolonkalkylator.astro` + `src/components/calculators/NettolonCalculator.tsx` + `src/lib/nettolon.ts` + `src/data/kommunalskatt-2026.json` |

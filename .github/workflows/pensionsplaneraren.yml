@@ -1,0 +1,109 @@
+# Keeps /pensionsplaneraren up to date with Retirement_Planner.html in github.com/mathiasboos/Calculators, so that a
+# change the owner makes there (a parameter or a tab added or removed) reaches the site without anyone porting it.
+#
+# Every hour, and when started by hand (Actions → Pensionsplaneraren → Run workflow), it fetches the file with the
+# site's look put on it (scripts/sync-pensionsplaneraren.mjs). If the result differs from what the site has, it checks
+# the planner in a browser (scripts/check-pensionsplaneraren.mjs), runs the tests and the build, and commits it to main,
+# which Cloudflare Pages then publishes. If anything fails, nothing is published and the issue "Pensionsplaneraren kunde
+# inte uppdateras" is opened (or updated); it is closed again by the next run that works.
+name: Pensionsplaneraren
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: pensionsplaneraren
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Fetch the planner from Calculators
+        run: node scripts/sync-pensionsplaneraren.mjs
+
+      - name: Anything new?
+        id: diff
+        run: |
+          if git diff --quiet -- public/pensionsplaneraren-app.html src/data/pensionsplaneraren-source.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing new: the site already has this version of the Pensionsplaneraren." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm ci
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Check the planner in a browser
+        if: steps.diff.outputs.changed == 'true'
+        run: node scripts/check-pensionsplaneraren.mjs
+
+      - name: Tests and build
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm test
+          npm run build
+
+      - name: Publish
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          subject=$(node -p "require('./src/data/pensionsplaneraren-source.json').subject")
+          commit=$(node -p "require('./src/data/pensionsplaneraren-source.json').commit.slice(0, 7)")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/pensionsplaneraren-app.html src/data/pensionsplaneraren-source.json
+          git commit -m "Pensionsplaneraren: ${subject} (${commit})"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "Published the Pensionsplaneraren from ${commit}: ${subject}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report a failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Pensionsplaneraren kunde inte uppdateras";
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "Den automatiska uppdateringen av Pensionsplaneraren från github.com/mathiasboos/Calculators misslyckades,",
+              "så sajten visar fortfarande den förra versionen. Ärendet stängs av sig självt när en körning lyckas igen.",
+              "",
+              `Senaste körningen: ${run}`,
+            ].join("\n");
+            const { owner, repo } = context.repo;
+            const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: "open", per_page: 100 });
+            const existing = open.find((issue) => issue.title === title && !issue.pull_request);
+            if (existing) await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+            else await github.rest.issues.create({ owner, repo, title, body });
+
+      - name: Close a failure report
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Pensionsplaneraren kunde inte uppdateras";
+            const { owner, repo } = context.repo;
+            const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: "open", per_page: 100 });
+            for (const issue of open.filter((i) => i.title === title && !i.pull_request)) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: issue.number, body: "Uppdateringen fungerar igen." });
+              await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: "closed", state_reason: "completed" });
+            }

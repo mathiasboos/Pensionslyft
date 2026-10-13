@@ -1,0 +1,66 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import source from "@/data/pensionsplaneraren-source.json";
+import { formatDate } from "@/lib/format";
+
+// The planner is Retirement_Planner.html of github.com/mathiasboos/Calculators, fetched with the site's colours, fonts
+// and Swedish as the default language by scripts/sync-pensionsplaneraren.mjs (a GitHub Action does it every hour). It
+// is shown as it is, in a frame the height of the window: it has its own header, tabs and scrolling.
+const app = "/pensionsplaneraren-app.html";
+const file = `${source.repository}/blob/main/${source.path}`;
+---
+
+<BaseLayout
+  title="Pensionsplaneraren – planera pension, uttag och kapital år för år"
+  description="Planera hela pensionen: tillgångar, utgifter, uttag per konto, scenarier och Monte Carlo, med svensk skatt, allmän pension och tjänstepension. Gratis och räknar i webbläsaren."
+  ogTitle="Pensionsplaneraren – Pensionslyft"
+  ogDescription="Tillgångar, utgifter, uttag och scenarier år för år, med svensk skatt."
+>
+  <h1 class="sr-only">Pensionsplaneraren</h1>
+
+  <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-2 text-xs text-muted-foreground">
+    <p>Planera hela pensionen: tillgångar, utgifter, uttag och scenarier. Allt räknas i din webbläsare.</p>
+    <a href={app} target="_blank" rel="noopener" class="font-medium text-primary hover:underline">
+      Öppna i eget fönster ↗
+    </a>
+  </div>
+
+  <iframe
+    src={app}
+    title="Pensionsplaneraren"
+    class="block h-[calc(100dvh-6.25rem)] min-h-[34rem] w-full border-y border-border bg-card"></iframe>
+  <noscript>
+    <p class="mx-auto max-w-7xl px-4 py-8 text-sm text-muted-foreground">
+      Pensionsplaneraren behöver JavaScript. Slå på det i webbläsaren, eller öppna <a href={app} class="underline">planeraren i eget fönster</a>.
+    </p>
+  </noscript>
+
+  <section class="mx-auto max-w-7xl px-4 pt-12">
+    <h2 class="font-display text-2xl font-semibold">Om Pensionsplaneraren</h2>
+    <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
+      <p>
+        Pensionsplaneraren räknar fram din ekonomi år för år, från i dag till slutet av livet: lön och skatt, allmän
+        pension och tjänstepension, sparande på ISK och i kapitalförsäkring, utgifter och uttag från varje konto. Du
+        kan jämföra scenarier och pröva planen mot slumpmässig avkastning i en Monte Carlo-simulering. Allt räknas i
+        fasta priser, i dagens kronor, med svenska skatteregler.
+      </p>
+      <p>
+        Börja i menyn <em>Börja här för att skapa en plan</em> högst upp i planeraren. När du sparar din plan sparas den
+        bara i den här webbläsaren, och du kan exportera den som en fil och läsa in den igen. Ingenting skickas
+        någonstans.
+      </p>
+      <p>
+        Resultatet är en uppskattning och inget besked om din egen pension eller finansiell rådgivning. Din personliga
+        prognos finns på minPension.
+      </p>
+      <p>
+        Planeraren är filen{" "}
+        <a href={file} target="_blank" rel="noopener" class="text-primary underline underline-offset-2"
+          >Retirement_Planner.html i projektet Calculators på GitHub</a
+        >, och sidan uppdateras automatiskt när den ändras där. Den här sidan visar version <code
+          >{source.commit.slice(0, 7)}</code
+        >{source.committedAt && <> från {formatDate(source.committedAt)}</>}.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
