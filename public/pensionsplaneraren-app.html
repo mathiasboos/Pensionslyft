@@ -83,7 +83,7 @@ var retirementLinePlugin = {
     ctx.fillStyle = 'rgba(70,117,164,0.7)';
     ctx.font = '500 10px Inter, ui-sans-serif, system-ui, sans-serif, monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('Retirement', x + 5, ca.top + 14);
+    ctx.fillText(typeof t === 'function' ? t('proj.tag.ret') : 'Retirement', x + 5, ca.top + 14);
     ctx.restore();
   }
 };
@@ -636,7 +636,7 @@ input[type="number"]::-webkit-outer-spin-button {
     color: var(--pl-gold-ink) !important;
   }
   /* Remove button smaller on mobile */
-  #accounts-table button[title="Remove account"] {
+  #accounts-table button.acc-remove-btn {
     width: 24px !important; height: 24px !important;
   }
   /* Card header for Accounts */
@@ -1095,11 +1095,11 @@ header {
   <div class="logo">
     <div class="logo-icon">⚖</div>
     <div>
-      <h1>Retirement Planner</h1>
+      <h1 data-i18n="hdr.title">Retirement Planner</h1>
       <span id="hdr-sub">Constant Prices · Swedish Tax Rules</span>
     </div>
     <!-- Plan presets: new plan (guided), typical cases, clear -->
-    <select id="plan-preset" class="preset-attn" onchange="planPresetFromMenu(this)" title="Start a new plan or load a typical case"
+    <select id="plan-preset" class="preset-attn" onchange="planPresetFromMenu(this)" title="Start a new plan or load a typical case" data-i18n-title="preset.tip"
       style="width:auto;max-width:260px;margin-left:10px;background:var(--s2);border:1px solid var(--gold);border-radius:6px;color:var(--text);font-family:var(--font-b);
              font-size:11px;font-weight:600;letter-spacing:.04em;padding:5px 8px;cursor:pointer">
       <option value="" selected disabled hidden data-i18n-opt="preset.placeholder">Begin here to create a plan</option>
@@ -1109,12 +1109,12 @@ header {
     </select>
   </div>
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
-    <div class="header-badge">All amounts in SEK</div>
+    <div class="header-badge" data-i18n="hdr.badge">All amounts in SEK</div>
 
 
     <!-- Save / Load controls -->
     <div style="display:flex;align-items:center;gap:6px">
-      <button onclick="planSave()" title="Save plan to browser"
+      <button onclick="planSave()" title="Save plan to browser" data-i18n-title="hdr.save.tip"
         style="display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);
                border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:11px;font-weight:600;
                letter-spacing:.04em;padding:5px 11px;cursor:pointer;transition:border-color .15s,background .15s"
@@ -1123,9 +1123,9 @@ header {
           <path d="M13 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V5l-3-3z"/>
           <path d="M11 2v3H5V2M5 9h6M5 12h6"/>
         </svg>
-        Save
+        <span data-i18n="hdr.save">Save</span>
       </button>
-      <button onclick="planLoad()" title="Restore last saved plan"
+      <button onclick="planLoad()" title="Restore last saved plan" data-i18n="hdr.restore" data-i18n-title="hdr.restore.tip"
         style="background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--muted);
                font-family:var(--font-b);font-size:11px;font-weight:600;letter-spacing:.04em;
                padding:5px 11px;cursor:pointer;transition:border-color .15s,color .15s"
@@ -1134,13 +1134,13 @@ header {
         Restore
       </button>
       <div style="width:1px;height:18px;background:var(--border)"></div>
-      <button onclick="planExport()" title="Export plan as JSON file"
+      <button onclick="planExport()" title="Export plan as JSON file" data-i18n="hdr.export" data-i18n-title="hdr.export.tip"
         style="background:none;border:none;color:var(--muted);font-family:var(--font-b);font-size:11px;
                font-weight:600;letter-spacing:.04em;padding:5px 6px;cursor:pointer"
         onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
         Export ↓
       </button>
-      <button onclick="planImport()" title="Import plan from JSON file"
+      <button onclick="planImport()" title="Import plan from JSON file" data-i18n="hdr.import" data-i18n-title="hdr.import.tip"
         style="background:none;border:none;color:var(--muted);font-family:var(--font-b);font-size:11px;
                font-weight:600;letter-spacing:.04em;padding:5px 6px;cursor:pointer"
         onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
@@ -1328,7 +1328,7 @@ header {
       <div style="text-align:center;padding:20px 0 14px">
         <div style="font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px" data-i18n="inc.net.monthly.label">Net Monthly Salary</div>
         <div id="inc-netMonth" style="font-size:2.6rem;font-weight:700;font-family:var(--font-m);color:#0C2A49">—</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Gross&nbsp;<span id="inc-totalGross" style="color:var(--text);font-family:var(--font-m)">—</span>&nbsp;·&nbsp;Pension&nbsp;<span id="inc-totalPens" style="color:var(--text);font-family:var(--font-m)">—</span>&nbsp;·&nbsp;Lönväxling&nbsp;<span id="inc-totalVax" style="color:var(--text);font-family:var(--font-m)">—</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px"><span data-i18n="inc.tot.gross">Gross</span>&nbsp;<span id="inc-totalGross" style="color:var(--text);font-family:var(--font-m)">—</span>&nbsp;·&nbsp;Pension&nbsp;<span id="inc-totalPens" style="color:var(--text);font-family:var(--font-m)">—</span>&nbsp;·&nbsp;Löneväxling&nbsp;<span id="inc-totalVax" style="color:var(--text);font-family:var(--font-m)">—</span></div>
         <div style="margin-top:8px;padding:6px 14px;background:rgba(240,199,94,.08);border-radius:6px;display:inline-block"><span style="font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase" data-i18n="inc.total.monthly">Total Monthly Income&nbsp;</span><span id="inc-totalIncome" style="font-family:var(--font-m);font-size:1.1rem;font-weight:700;color:var(--pl-gold-ink)">—</span><span style="font-size:11px;color:var(--muted)" data-i18n="inc.kr.mth">&nbsp;kr/mth</span></div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px" data-i18n="inc.kr.month">kr / month</div>
       </div>
@@ -1561,7 +1561,7 @@ header {
       <div style="display:flex;align-items:center;gap:8px">
         <div style="display:flex;background:var(--s2);border-radius:6px;overflow:hidden;border:1px solid var(--border)">
           <button id="pv-btn-total" onclick="setPvMode('total')" style="padding:4px 11px;font-size:11px;font-weight:600;background:#F0C75E;color:#0c2a49;border:none;cursor:pointer"><span data-i18n="pv.btn.total">Total</span></button>
-          <button id="pv-btn-taxadj" onclick="setPvMode('taxadj')" style="padding:4px 11px;font-size:11px;font-weight:500;background:transparent;color:var(--muted);border:none;cursor:pointer">Tax-adjusted</button>
+          <button id="pv-btn-taxadj" data-i18n="pv.btn.taxadj" onclick="setPvMode('taxadj')" style="padding:4px 11px;font-size:11px;font-weight:500;background:transparent;color:var(--muted);border:none;cursor:pointer">Tax-adjusted</button>
         </div>
         <button onclick="exportPortfolioCSV()" style="padding:5px 12px;font-size:11px;font-weight:600;background:rgba(123,176,171,.12);border:1px solid rgba(123,176,171,.35);border-radius:6px;color:#0C2A49;cursor:pointer">↓ CSV</button>
         <button onclick="exportPortfolioExcel()" style="padding:5px 12px;font-size:11px;font-weight:600;background:rgba(70,117,164,.12);border:1px solid rgba(70,117,164,.35);border-radius:6px;color:#22507B;cursor:pointer">↓ Excel</button>
@@ -1624,9 +1624,9 @@ header {
     <!-- LEFT COLUMN: Simulation Configuration -->
     <div style="display:flex;flex-direction:column;gap:14px">
 
-      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.start.age">Start Age</span> <span title="Default = Retirement Age" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-start-age" type="number" min="30" max="100" step="1" value="65" oninput="updateMCSimYears()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.start.age">Start Age</span> <span title="Default = Retirement Age" data-i18n-title="mc.start.age.hint" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-start-age" type="number" min="30" max="100" step="1" value="65" oninput="updateMCSimYears()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"></div>
 
-      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.end.age">End Age</span> <span title="Default = Life Expectancy Age" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-end-age" type="number" min="50" max="120" step="1" value="90" oninput="updateMCSimYears()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.end.age">End Age</span> <span title="Default = Life Expectancy Age" data-i18n-title="mc.end.age.hint" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-end-age" type="number" min="50" max="120" step="1" value="90" oninput="updateMCSimYears()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"></div>
 
       <div style="padding:10px 12px;background:var(--s2);border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:12px;font-weight:600;color:var(--muted)" data-i18n="mc.sim.period">Simulation Period</span>
@@ -1654,7 +1654,7 @@ header {
 
       <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.wd.freq">Withdrawal Frequency</span></div><select id="mc-wd-freq" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m);cursor:pointer"><option value="annual" data-i18n-opt="mc.wd.freq.annual">Annually</option><option value="quarterly" data-i18n-opt="mc.wd.freq.quarterly">Quarterly</option><option value="monthly" data-i18n-opt="mc.wd.freq.monthly">Monthly</option></select></div>
 
-      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.tax.treat">Tax Treatment</span> <span title="Pre-tax: gross withdrawals. After-tax: annual tax drag deducted from portfolio." style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><select id="mc-tax-mode" onchange="mcTaxModeChange()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m);cursor:pointer"><option value="pretax" data-i18n-opt="mc.tax.pretax">Pre-tax Returns</option><option value="aftertax" data-i18n-opt="mc.tax.aftertax">After-tax Returns</option></select>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.tax.treat">Tax Treatment</span> <span title="Pre-tax: gross withdrawals. After-tax: annual tax drag deducted from portfolio." data-i18n-title="mc.tax.treat.tip" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><select id="mc-tax-mode" onchange="mcTaxModeChange()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m);cursor:pointer"><option value="pretax" data-i18n-opt="mc.tax.pretax">Pre-tax Returns</option><option value="aftertax" data-i18n-opt="mc.tax.aftertax">After-tax Returns</option></select>
         <div id="mc-tax-drag-wrap" style="display:none;margin-top:8px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px" data-i18n="mc.tax.drag.lbl">Annual tax drag (%/yr)</div><input id="mc-tax-drag" type="text" inputmode="decimal" value="0,75" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"><div style="font-size:10px;color:var(--muted);margin-top:3px" data-i18n="mc.tax.drag.hint">ISK schablonbeskattning ≈ 0,5–1,0%</div></div>
       </div>
 
@@ -1673,15 +1673,15 @@ header {
         <div id="mc-mu-display" style="margin-top:6px;font-size:11px;color:var(--pl-gold-ink);font-weight:600;text-align:right">—</div>
       </div>
 
-      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.ret.eq">Real Return — Equities (%)</span> <span title="From Parameters tab. Blended with bond return, weighted by bracket equity %." style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-ret-eq" type="text" inputmode="decimal" value="1,9" oninput="updateMCMuDisplay()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"><div style="font-size:10px;color:var(--muted);margin-top:3px" data-i18n="mc.ret.hint">From Parameters tab</div></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.ret.eq">Real Return — Equities (%)</span> <span title="From Parameters tab. Blended with bond return, weighted by bracket equity %." data-i18n-title="mc.ret.eq.tip" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-ret-eq" type="text" inputmode="decimal" value="1,9" oninput="updateMCMuDisplay()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"><div style="font-size:10px;color:var(--muted);margin-top:3px" data-i18n="mc.ret.hint">From Parameters tab</div></div>
 
-      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.ret.bd">Real Return — Bonds (%)</span> <span title="From Parameters tab." style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-ret-bd" type="text" inputmode="decimal" value="1,9" oninput="updateMCMuDisplay()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"><div style="font-size:10px;color:var(--muted);margin-top:3px" data-i18n="mc.ret.hint">From Parameters tab</div></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.ret.bd">Real Return — Bonds (%)</span> <span title="From Parameters tab." data-i18n-title="mc.ret.bd.tip" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-ret-bd" type="text" inputmode="decimal" value="1,9" oninput="updateMCMuDisplay()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"><div style="font-size:10px;color:var(--muted);margin-top:3px" data-i18n="mc.ret.hint">From Parameters tab</div></div>
 
-      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.sigma.eq">Equity Volatility σ_eq (%/yr)</span> <span title="Portfolio σ = √(eq²·σ_eq² + bd²·σ_bd²), ρ = 0" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-sigma-eq" type="text" inputmode="decimal" value="16,0" oninput="updateMCMuDisplay()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.sigma.eq">Equity Volatility σ_eq (%/yr)</span> <span title="Portfolio σ = √(eq²·σ_eq² + bd²·σ_bd²), ρ = 0" data-i18n-title="mc.sigma.eq.tip" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-sigma-eq" type="text" inputmode="decimal" value="16,0" oninput="updateMCMuDisplay()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"></div>
 
-      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.sigma.bd">Bond Volatility σ_bd (%/yr)</span> <span title="Assuming zero correlation with equities." style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-sigma-bd" type="text" inputmode="decimal" value="4,0" oninput="updateMCMuDisplay()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.sigma.bd">Bond Volatility σ_bd (%/yr)</span> <span title="Assuming zero correlation with equities." data-i18n-title="mc.sigma.bd.tip" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-sigma-bd" type="text" inputmode="decimal" value="4,0" oninput="updateMCMuDisplay()" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"></div>
 
-      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.inflation">Inflation (%/yr)</span> <span title="Set to 0% when using real (inflation-adjusted) returns." style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-infl" type="text" inputmode="decimal" value="0,0" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"><div id="mc-infl-hint" style="font-size:10px;color:var(--muted);margin-top:3px" data-i18n="mc.infl.hint">From Parameters tab</div></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px"><span data-i18n="mc.inflation">Inflation (%/yr)</span> <span title="Set to 0% when using real (inflation-adjusted) returns." data-i18n-title="mc.inflation.tip" style="cursor:help;color:var(--muted);font-size:11px">ⓘ</span></div><input id="mc-infl" type="text" inputmode="decimal" value="0,0" style="width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:var(--font-m)"><div id="mc-infl-hint" style="font-size:10px;color:var(--muted);margin-top:3px" data-i18n="mc.infl.hint">From Parameters tab</div></div>
 
     </div>
   </div>
@@ -1813,7 +1813,7 @@ header {
           style="padding:4px 11px;font-size:11px;font-weight:600;background:transparent;
                  border:1px solid rgba(70,117,164,.5);border-radius:6px;color:#22507B;
                  cursor:pointer;white-space:nowrap;letter-spacing:.03em"
-          title="Set each account's annual withdrawal so Asset at Retirement End ≈ 0">
+          title="Set each account's annual withdrawal so Asset at Retirement End ≈ 0" data-i18n-title="wd.optimize.tip">
           ⚡ <span data-i18n="wd.optimize">Optimize to Zero</span>
         </button>
         <div style="display:flex;background:var(--s2);border-radius:6px;overflow:hidden;border:1px solid var(--border);flex-shrink:0">
@@ -1971,12 +1971,12 @@ header {
           <tr>
             <td style="padding:4px 6px;font-size:11px;color:var(--text)" data-i18n="par.min.basic">Min. Basic Allowance ≤</td>
             <td style="padding:4px 4px;text-align:center"><input class="inp inp-sm" type="text" inputmode="numeric" style="width:42px;text-align:center" id="allowance67Age" value="66" onchange="recalc()"></td>
-            <td style="padding:4px 4px;text-align:right"><input class="inp inp-sm" type="text" inputmode="numeric" style="width:90px;text-align:right;opacity:.45" title="Not used: pension tax follows Typfallsmodellen" id="allowance67" value="17 400" onchange="this.value=(parseInt(this.value.replace(/[^0-9]/g,''))||0).toLocaleString('sv-SE');recalc()"></td>
+            <td style="padding:4px 4px;text-align:right"><input class="inp inp-sm" type="text" inputmode="numeric" style="width:90px;text-align:right;opacity:.45" title="Not used: pension tax follows Typfallsmodellen" data-i18n-title="par.allow.unused" id="allowance67" value="17 400" onchange="this.value=(parseInt(this.value.replace(/[^0-9]/g,''))||0).toLocaleString('sv-SE');recalc()"></td>
           </tr>
           <tr>
             <td style="padding:4px 6px;font-size:11px;color:var(--text)" data-i18n="par.min.enhanced">Min. Enhanced Allowance ≥</td>
             <td style="padding:4px 4px;text-align:center"><input class="inp inp-sm" type="text" inputmode="numeric" style="width:42px;text-align:center" id="allowanceAge" value="67" onchange="recalc()"></td>
-            <td style="padding:4px 4px;text-align:right"><input class="inp inp-sm" type="text" inputmode="numeric" style="width:90px;text-align:right;opacity:.45" title="Not used: pension tax follows Typfallsmodellen" id="allowance" value="117 500" onchange="this.value=(parseInt(this.value.replace(/[^0-9]/g,''))||0).toLocaleString('sv-SE');recalc()"></td>
+            <td style="padding:4px 4px;text-align:right"><input class="inp inp-sm" type="text" inputmode="numeric" style="width:90px;text-align:right;opacity:.45" title="Not used: pension tax follows Typfallsmodellen" data-i18n-title="par.allow.unused" id="allowance" value="117 500" onchange="this.value=(parseInt(this.value.replace(/[^0-9]/g,''))||0).toLocaleString('sv-SE');recalc()"></td>
           </tr>
           <tr>
             <td style="padding:4px 6px;font-size:11px;color:var(--text)" data-i18n="par.state.thresh.lo">State Tax Threshold ≤</td>
@@ -2632,6 +2632,110 @@ en:{
 
 
 
+  // ── Header, save and load, messages (texts that were in English only) ──
+  'hdr.title':'Retirement Planner',
+  'hdr.badge':'All amounts in SEK',
+  'hdr.save':'Save',
+  'hdr.save.tip':'Save plan to browser',
+  'hdr.restore':'Restore',
+  'hdr.restore.tip':'Restore last saved plan',
+  'hdr.export':'Export ↓',
+  'hdr.export.tip':'Export plan as JSON file',
+  'hdr.import':'Import ↑',
+  'hdr.import.tip':'Import plan from JSON file',
+  'toast.incompatible':'Incompatible save file (version mismatch)',
+  'toast.saved':'Plan saved at {time}',
+  'toast.save.failed':'Save failed: {msg}',
+  'toast.nosaved':'No saved plan found in this browser',
+  'toast.restored':'Plan restored',
+  'toast.restore.failed':'Restore failed: {msg}',
+  'toast.exported':'Exported {file}',
+  'toast.imported':'Imported: {file}',
+  'toast.import.failed':'Import failed: {msg}',
+  'toast.autorestored':'Plan auto-restored (saved {date})',
+  'alert.life.after.ret':'Life Expectancy Year must be after Retirement Year.',
+  'alert.run.first':'Run a calculation first.',
+  'alert.xlsx.loading':'Excel library not loaded yet, try again in a moment.',
+  'alert.xlsx.missing':'Excel export not available — use CSV instead.',
+  'alert.run.projection':'Please run a projection first.',
+  'proj.tag.ret.short':'Ret',
+  'exp.add':'+ Add category',
+  'exp.new':'New Category',
+  'sc.card.port':'Port. at retirement',
+  'mc.bd.short':'Bd',
+  'mc.at.start':'At start age',
+  'wd.col.wdyr':'Withdrawal/yr',
+  'wd.col.wdyr.net':'Withdrawal/yr (net)',
+  'unit.per.mth':'/mth',
+  'unit.per.yr':'/yr',
+  // ── Phone tab bar, tips, new accounts (texts that were in English only) ──
+  'mqn.dashboard':'DASHBOARD',
+  'mqn.personal':'PERSONAL',
+  'mqn.accounts':'ACCOUNTS',
+  'mqn.withdrawals':'WITHDRAW',
+  'mqn.projection':'PROJECTION',
+  'mc.tax.treat.tip':'Pre-tax: gross withdrawals. After-tax: annual tax drag deducted from portfolio.',
+  'mc.ret.eq.tip':'From Parameters tab. Blended with bond return, weighted by bracket equity %.',
+  'mc.ret.bd.tip':'From Parameters tab.',
+  'mc.sigma.eq.tip':'Portfolio σ = √(eq²·σ_eq² + bd²·σ_bd²), ρ = 0',
+  'mc.sigma.bd.tip':'Assuming zero correlation with equities.',
+  'mc.inflation.tip':'Set to 0% when using real (inflation-adjusted) returns.',
+  'exp.rename':'Rename',
+  'exp.delete':'Delete category',
+  'acc.remove':'Remove account',
+  'grp.expand':'Expand group',
+  'grp.collapse':'Collapse group',
+  'pgb.remove':'Remove',
+  'wd.dt.own.tip':'Your own divisor — annual wd = balance ÷ this number',
+  'wd.manual.wd.tip':'Switch to manual withdrawal entry',
+  'wd.year1':'Year 1',
+  'wd.use.dt.tip':'Use Pensionsmyndighetens delningstal (PFS 2024:2 / PP 2026) instead of manual wd',
+  'wd.optimize.tip':'Set each account\'s annual withdrawal so Asset at Retirement End ≈ 0',
+  'preset.tip':'Start a new plan or load a typical case',
+  'par.allow.unused':'Not used: pension tax follows Typfallsmodellen',
+  'inc.tot.gross':'Gross',
+  'acc.name.new.after':'New After-Tax Account',
+  'acc.name.new.pins':'New Pension Account',
+  'acc.name.new.state':'New State Account',
+  'exp.iv.est.tax':'~{pct}% tax on pre-tax',
+  // ── CSV and Excel exports ──
+  'xp.year':'Year',
+  'xp.age':'Age',
+  'xp.open.at':'Opening After-Tax (SEK)',
+  'xp.contrib.at':'Contribution After-Tax (SEK)',
+  'xp.ret.at':'Return After-Tax Gross (SEK)',
+  'xp.yt.k':'Yield Tax K-Insurance (SEK)',
+  'xp.mgmt.at':'Mgmt Fee After-Tax (SEK)',
+  'xp.wd.at':'Withdrawal After-Tax Accts (SEK)',
+  'xp.close.at':'Closing After-Tax (SEK)',
+  'xp.open.pt':'Opening Pre-Tax (SEK)',
+  'xp.contrib.pt':'Contribution Pre-Tax (SEK)',
+  'xp.ret.pt':'Return Pre-Tax Gross (SEK)',
+  'xp.yt.p':'Yield Tax P-Insurance (SEK)',
+  'xp.mgmt.pt':'Mgmt Fee Pre-Tax (SEK)',
+  'xp.wd.pt':'Withdrawal Pre-Tax Accts (SEK)',
+  'xp.wd.net':'Withdrawal After Tax Net (SEK)',
+  'xp.tax.mun':'Municipal Tax (SEK)',
+  'xp.tax.state':'State Tax (SEK)',
+  'xp.close.pt':'Closing Pre-Tax (SEK)',
+  'xp.earn.pre':'Earned Income Before Tax (SEK)',
+  'xp.tax.salary':'Salary Tax (SEK)',
+  'xp.tax.mun.all':'Municipal Tax All Years (SEK)',
+  'xp.tax.state.all':'State Tax All Years (SEK)',
+  'xp.fee.ps':'Public Service Fee (SEK)',
+  'xp.tax.cap':'Capital Tax (SEK)',
+  'xp.tax.total':'Total Tax (SEK)',
+  'xp.earn.post':'Earned Income After Tax (SEK)',
+  'xp.inc.port':'After-Tax Income Portfolio (SEK)',
+  'xp.inc.at':'After-Tax Income (SEK)',
+  'xp.exp':'Expenses (SEK)',
+  'xp.ratio':'Inc/Exp Ratio',
+  'xp.eq':'Equity %',
+  'xp.wd.rate':'Withdrawal Rate %',
+  'xp.goal':'Goal Fulfillment %',
+  'pv.badge.after':'After-Tax',
+  'pv.badge.pins':'P-Insurance',
+  'pv.badge.state':'State',
 },
 sv:{
   'nav.dashboard':'Översikt','nav.personal':'Personuppgifter','nav.expenses':'Utgifter',
@@ -2743,7 +2847,7 @@ sv:{
   'wd.active':'Aktiv','wd.split':'Uttagsfördelning (%)','wd.split.wd':'Uttag/år (SEK)',
 
   // ── Personal tab extras ──
-  'pers.sub':'Grundläggande livssparametrar för prognosen',
+  'pers.sub':'Grundläggande livsparametrar för prognosen',
   'pers.life.career':'Liv & Karriär',
   'pers.birth':'Födelseår',
   'pers.ret.lbl':'Pensionsår',
@@ -3060,13 +3164,13 @@ sv:{
   'mc.sims':'Simuleringar','mc.mu':'Realavkastning μ (%/år)',
   'mc.sigma':'Volatilitet σ (%/år)','mc.inflation':'Inflation (%/år)',
   'mc.run':'Kör simulering',
-  'mc.chart.hdr':'Portföljfandiaagram',
+  'mc.chart.hdr':'Solfjäderdiagram för portföljen',
   'mc.chart.sub':'Percentilband över alla simuleringar',
   'mc.chart.yaxis':'Portföljvärde (SEK)',
   'mc.median':'median',
-  'mc.table.hdr':'Persentiltabell (SEK)',
+  'mc.table.hdr':'Percentiltabell (SEK)',
   'mc.kpi.success':'Framgångsgrad','mc.kpi.success.sub':'Simuleringar där portföljen överlever',
-  'mc.kpi.median':'Medianslutval','mc.kpi.median.sub':'P50 vid pensionsslut',
+  'mc.kpi.median':'Medianslutvärde','mc.kpi.median.sub':'P50 vid pensionsslut',
   'mc.kpi.p10':'Sämsta fall (P10)','mc.kpi.p10.sub':'P10 vid pensionsslut',
   'mc.kpi.sims':'Körda simuleringar',
 
@@ -3150,6 +3254,110 @@ sv:{
 
 
 
+  // ── Header, save and load, messages (texts that were in English only) ──
+  'hdr.title':'Pensionsplaneraren',
+  'hdr.badge':'Alla belopp i kronor',
+  'hdr.save':'Spara',
+  'hdr.save.tip':'Spara planen i webbläsaren',
+  'hdr.restore':'Återställ',
+  'hdr.restore.tip':'Hämta den senast sparade planen',
+  'hdr.export':'Exportera ↓',
+  'hdr.export.tip':'Spara planen som en JSON-fil',
+  'hdr.import':'Importera ↑',
+  'hdr.import.tip':'Läs in en plan från en JSON-fil',
+  'toast.incompatible':'Filen kan inte läsas (fel version)',
+  'toast.saved':'Planen sparades {time}',
+  'toast.save.failed':'Kunde inte spara: {msg}',
+  'toast.nosaved':'Ingen sparad plan i den här webbläsaren',
+  'toast.restored':'Planen är återställd',
+  'toast.restore.failed':'Kunde inte återställa: {msg}',
+  'toast.exported':'Exporterade {file}',
+  'toast.imported':'Inläst: {file}',
+  'toast.import.failed':'Kunde inte läsa in: {msg}',
+  'toast.autorestored':'Den sparade planen är inläst (sparad {date})',
+  'alert.life.after.ret':'Livslängdsåret måste vara efter pensionsåret.',
+  'alert.run.first':'Gör en beräkning först.',
+  'alert.xlsx.loading':'Excel-funktionen är inte laddad än. Försök igen om en stund.',
+  'alert.xlsx.missing':'Excel-export går inte just nu – använd CSV i stället.',
+  'alert.run.projection':'Gör en prognos först.',
+  'proj.tag.ret.short':'Pension',
+  'exp.add':'+ Lägg till kategori',
+  'exp.new':'Ny kategori',
+  'sc.card.port':'Portfölj vid pension',
+  'mc.bd.short':'Obl',
+  'mc.at.start':'Vid startålder',
+  'wd.col.wdyr':'Uttag/år',
+  'wd.col.wdyr.net':'Uttag/år (netto)',
+  'unit.per.mth':'/mån',
+  'unit.per.yr':'/år',
+  // ── Phone tab bar, tips, new accounts (texts that were in English only) ──
+  'mqn.dashboard':'ÖVERSIKT',
+  'mqn.personal':'PERSON',
+  'mqn.accounts':'TILLGÅNGAR',
+  'mqn.withdrawals':'UTTAG',
+  'mqn.projection':'PROGNOS',
+  'mc.tax.treat.tip':'Före skatt: bruttouttag. Efter skatt: en årlig skattebelastning dras från portföljen.',
+  'mc.ret.eq.tip':'Från Parametrar-fliken. Vägs samman med obligationsavkastningen efter aktieandelen i varje åldersintervall.',
+  'mc.ret.bd.tip':'Från Parametrar-fliken.',
+  'mc.sigma.eq.tip':'Portföljens σ = √(eq²·σ_eq² + bd²·σ_bd²), ρ = 0',
+  'mc.sigma.bd.tip':'Antar ingen korrelation med aktier.',
+  'mc.inflation.tip':'Sätt till 0 % när avkastningen är real (inflationsjusterad).',
+  'exp.rename':'Byt namn',
+  'exp.delete':'Ta bort kategorin',
+  'acc.remove':'Ta bort kontot',
+  'grp.expand':'Fäll ut gruppen',
+  'grp.collapse':'Fäll ihop gruppen',
+  'pgb.remove':'Ta bort',
+  'wd.dt.own.tip':'Eget delningstal – årligt uttag = saldo ÷ detta tal',
+  'wd.manual.wd.tip':'Ange uttaget själv i stället',
+  'wd.year1':'År 1',
+  'wd.use.dt.tip':'Använd Pensionsmyndighetens delningstal (PFS 2024:2 / PP 2026) i stället för manuellt uttag',
+  'wd.optimize.tip':'Sätter varje kontos årliga uttag så att tillgångarna vid pensionsslut blir ≈ 0',
+  'preset.tip':'Börja en ny plan eller läs in ett typfall',
+  'par.allow.unused':'Används inte: pensionsskatten följer Typfallsmodellen',
+  'inc.tot.gross':'Brutto',
+  'acc.name.new.after':'Nytt beskattat konto',
+  'acc.name.new.pins':'Nytt pensionskonto',
+  'acc.name.new.state':'Ny statlig pension',
+  'exp.iv.est.tax':'~{pct} % skatt på uttag från P-försäkring',
+  // ── CSV and Excel exports ──
+  'xp.year':'År',
+  'xp.age':'Ålder',
+  'xp.open.at':'Ingående saldo efter skatt (SEK)',
+  'xp.contrib.at':'Insättning beskattade konton (SEK)',
+  'xp.ret.at':'Avkastning portfölj efter skatt, brutto (SEK)',
+  'xp.yt.k':'Avkastningsskatt K-försäkring (SEK)',
+  'xp.mgmt.at':'Förvaltningsavgift efter skatt (SEK)',
+  'xp.wd.at':'Uttag från beskattade konton (SEK)',
+  'xp.close.at':'Utgående saldo efter skatt (SEK)',
+  'xp.open.pt':'Ingående saldo före skatt (SEK)',
+  'xp.contrib.pt':'Insättning konton före skatt (SEK)',
+  'xp.ret.pt':'Avkastning portfölj före skatt, brutto (SEK)',
+  'xp.yt.p':'Avkastningsskatt P-försäkring (SEK)',
+  'xp.mgmt.pt':'Förvaltningsavgift före skatt (SEK)',
+  'xp.wd.pt':'Uttag från konton före skatt (SEK)',
+  'xp.wd.net':'Uttag efter skatt, netto (SEK)',
+  'xp.tax.mun':'Kommunalskatt (SEK)',
+  'xp.tax.state':'Statlig skatt (SEK)',
+  'xp.close.pt':'Utgående saldo före skatt (SEK)',
+  'xp.earn.pre':'Förvärvsinkomst före skatt (SEK)',
+  'xp.tax.salary':'Skatt på lön (SEK)',
+  'xp.tax.mun.all':'Kommunalskatt alla år (SEK)',
+  'xp.tax.state.all':'Statlig skatt alla år (SEK)',
+  'xp.fee.ps':'Public service-avgift (SEK)',
+  'xp.tax.cap':'Kapitalskatt (SEK)',
+  'xp.tax.total':'Total skatt (SEK)',
+  'xp.earn.post':'Förvärvsinkomst efter skatt (SEK)',
+  'xp.inc.port':'Portföljinkomst efter skatt (SEK)',
+  'xp.inc.at':'Inkomst efter skatt (SEK)',
+  'xp.exp':'Utgifter (SEK)',
+  'xp.ratio':'Ink/Utg-kvot',
+  'xp.eq':'Aktieandel %',
+  'xp.wd.rate':'Uttagsgrad %',
+  'xp.goal':'Måluppfyllelse %',
+  'pv.badge.after':'Beskattat',
+  'pv.badge.pins':'P-försäkring',
+  'pv.badge.state':'Statlig',
 }};
 
 function t(key,vars){
@@ -4747,7 +4955,7 @@ function buildExpenseRows(){
   expContainer.innerHTML = '';
   const canDelete = expenses.length > 1;
   expenses.forEach((e,i)=>{
-    const displayName = t('exp.'+e.name)||e.name;
+    const displayName = expName(e.name);
     const div=document.createElement('div');
     div.className='input-row';
     div.style.cssText='position:relative;';
@@ -4758,7 +4966,7 @@ function buildExpenseRows(){
     labelDiv.style.cssText='display:flex;align-items:center;gap:4px;flex:1;min-width:0;margin-right:10px;';
     labelDiv.innerHTML=
       '<span id="exp-name-'+i+'" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+displayName+'</span>'
-      +'<button onclick="startExpenseNameEdit('+i+')" title="Rename"'
+      +'<button onclick="startExpenseNameEdit('+i+')" title="'+t('exp.rename')+'"'
         +' style="background:none;border:none;cursor:pointer;padding:1px 3px;flex-shrink:0;'
         +'color:var(--muted);font-size:11px;line-height:1;opacity:0;transition:opacity .15s"'
         +' class="exp-rename-btn">✎</button>';
@@ -4772,7 +4980,7 @@ function buildExpenseRows(){
         +' onchange="expenses['+i+'].val=parseInt(this.value.replace(/[^0-9]/g,\'\'))||0;'
           +'this.value=Math.round(expenses['+i+'].val).toLocaleString(\'sv-SE\');recalc();buildExpPersona()">'
       +(canDelete
-        ? '<button onclick="deleteExpense('+i+')" title="Delete category"'
+        ? '<button onclick="deleteExpense('+i+')" title="'+t('exp.delete')+'"'
             +' style="background:none;border:none;cursor:pointer;padding:2px 4px;'
             +'color:var(--muted);font-size:16px;line-height:1;border-radius:4px;'
             +'transition:color .15s,background .15s" class="exp-delete-btn">&times;</button>'
@@ -4808,13 +5016,19 @@ function buildExpenseRows(){
       +'transition:border-color .15s,color .15s"'
       +' onmouseover="this.style.borderColor=\'var(--accent)\';this.style.color=\'var(--text)\'"'
       +' onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--muted)\'">'
-      +'+ Add category'
+      +t('exp.add')
     +'</button>';
   expContainer.appendChild(addRow);
 }
 
+// The name of an expense category: the translation of a built-in one, or the name the user gave it.
+function expName(name){
+  var key = 'exp.' + name, text = t(key);
+  return text === key ? name : text;
+}
+
 function addExpense(){
-  expenses.push({name:'New Category', val:0});
+  expenses.push({name:t('exp.new'), val:0});
   buildExpenseRows();
   recalc();
   // Immediately open the name editor on the new row
@@ -4854,7 +5068,7 @@ function saveExpenseName(i){
   var labelDiv=inp.parentElement;
   labelDiv.innerHTML=
     '<span id="exp-name-'+i+'" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+newName+'</span>'
-    +'<button onclick="startExpenseNameEdit('+i+')" title="Rename"'
+    +'<button onclick="startExpenseNameEdit('+i+')" title="'+t('exp.rename')+'"'
       +' style="background:none;border:none;cursor:pointer;padding:1px 3px;flex-shrink:0;'
       +'color:var(--muted);font-size:11px;line-height:1;opacity:0;transition:opacity .15s"'
       +' class="exp-rename-btn">✎</button>';
@@ -5348,7 +5562,7 @@ function toggleWdGroup(type){
   var btn = document.getElementById('wd-grp-btn-'+type);
   if(btn){
     btn.innerHTML = collapsed ? '&#9658;' : '&#9660;';
-    btn.title     = collapsed ? 'Expand group' : 'Collapse group';
+    btn.title     = t(collapsed ? 'grp.expand' : 'grp.collapse');
   }
 }
 
@@ -5366,7 +5580,7 @@ function toggleAccGroup(type){
   var btn = document.getElementById('acc-grp-btn-'+type);
   if(btn){
     btn.textContent = collapsed ? '\u25B6' : '\u25BC';
-    btn.title = collapsed ? 'Expand group' : 'Collapse group';
+    btn.title = t(collapsed ? 'grp.expand' : 'grp.collapse');
   }
 }
 
@@ -5634,7 +5848,7 @@ function buildAccountsTable(){
     // Group header with toggle button
     const gr=document.createElement('tr');
     gr.innerHTML=`<td colspan="11" class="acc-group-hdr" style="user-select:none">
-      <button onclick="toggleAccGroup('${g.type}')" title="${collapsed?'Expand':'Collapse'} group"
+      <button onclick="toggleAccGroup('${g.type}')" title="${t(collapsed?'grp.expand':'grp.collapse')}"
         style="background:none;border:none;cursor:pointer;color:${grpColor};font-size:11px;
                margin-right:6px;padding:0 4px;line-height:1;vertical-align:middle;
                opacity:.75;transition:opacity .15s" onmouseenter="this.style.opacity=1"
@@ -5661,7 +5875,7 @@ function buildAccountsTable(){
           + col(i,'mgmt',a.mgmt,0.01,60)
           + col(i,'yt',a.yt,0.01,60)
           + col(i,'fixedRet',a.fixedRet,0.1,60))}
-        <td style="padding:0 4px">${a.workRow ? '<span title="'+t('pers.work.title')+'" style="font-size:10px;color:var(--muted)">auto</span>' : ''}${a.workRow ? '' : `<button onclick="removeAccount(${i})" title="Remove account" style="width:26px;height:26px;border-radius:50%;background:rgba(156,68,56,.12);border:1px solid rgba(156,68,56,.3);color:#9C4438;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`}</td>
+        <td style="padding:0 4px">${a.workRow ? '<span title="'+t('pers.work.title')+'" style="font-size:10px;color:var(--muted)">auto</span>' : ''}${a.workRow ? '' : `<button onclick="removeAccount(${i})" class="acc-remove-btn" title="${t('acc.remove')}" style="width:26px;height:26px;border-radius:50%;background:rgba(156,68,56,.12);border:1px solid rgba(156,68,56,.3);color:#9C4438;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -6555,6 +6769,10 @@ function initCharts(){
 var _lastPortData = null;
 // Axis helpers: MSEK with one decimal and no unit (4.0 / 4,0), kronor with a thousand separator (10 000)
 function fmtMsekTick(v){ var x = (v/1e6).toFixed(1); return _lang === 'sv' ? x.replace('.', ',') : x; }
+// A number from toFixed with a decimal comma in Swedish, as fmtMsekTick: "1,90" / "1.90"
+function decSv(s){ return _lang === 'sv' ? String(s).replace('.', ',') : String(s); }
+// Millions of kronor: "9,20 Mkr" in Swedish, "9.20 Mkr" in English
+function fmtMkr(v, decimals){ return decSv((v/1e6).toFixed(decimals)) + ' Mkr'; }
 function fmtKrTick(v){ return Math.round(v).toLocaleString('sv-SE'); }
 
 function updatePortfolioChart(pData){
@@ -6724,7 +6942,7 @@ function updateCharts(data){
       grid: GRID,
       ticks: {...TICKS,
         callback: function(v) {
-          if (Math.abs(v) >= 1e6) return (v/1e6).toFixed(2)+'M';
+          if (Math.abs(v) >= 1e6) return decSv((v/1e6).toFixed(2))+'M';
           if (Math.abs(v) >= 1e3) return (v/1e3).toFixed(0)+'K';
           return v;
         }
@@ -7061,7 +7279,7 @@ function updateCharts(data){
             if (tooltip.opacity === 0) { el.style.opacity='0'; return; }
             var idx = tooltip.dataPoints[0].dataIndex;
             var yr = years[idx]; if (!yr) return;
-            var eq = (yr.eqPct*100).toFixed(1), bd = ((1-yr.eqPct)*100).toFixed(1);
+            var eq = decSv((yr.eqPct*100).toFixed(1)), bd = decSv(((1-yr.eqPct)*100).toFixed(1));
             el.innerHTML =
               '<div style="font-size:11px;color:#545f6c;margin-bottom:6px">'+t('wd.chart.tooltip.age')+' '+yr.age+' · '+yr.yr+'</div>'
               + '<div style="display:flex;justify-content:space-between;gap:20px"><span style="color:#545f6c">'+t('chart.tt.equities')+'</span><span style="color:#22507B;font-weight:500">' + eq + '%</span></div>'
@@ -7146,6 +7364,8 @@ function fmt(n,decimals=0){
   if(n===null||n===undefined||isNaN(n)) return '—';
   return n.toLocaleString('sv-SE',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
 }
+// An amount in kronor as the language writes it: "SEK 41 140" in English, "41 140 kr" in Swedish
+function fmtKr(n){ return _lang === 'sv' ? fmt(n) + ' kr' : 'SEK ' + fmt(n); }
 function fmtPct(v){ return isNaN(v)?'—':((v*100).toFixed(1).replace('.',','))+'%'; }
 function fmtX(v){ return isNaN(v)?'—':v.toFixed(2).replace('.',',')+'×'; }
 
@@ -7237,7 +7457,7 @@ function buildPhaseTiles(data){
     var has = !!(phases && isFinite(ph.monthly));
     return {
       label: t('tile.phasePension', {from: has?ph.from:'\u2014', to: has?ph.to:'\u2014'}),
-      val:   has ? 'SEK '+fmt(ph.monthly) : '\u2014',
+      val:   has ? fmtKr(ph.monthly) : '\u2014',
       sub:   t('tile.phase.'+PHASE_KEYS[i]) + ' \u00b7 ' + taxLbl,
       // green when the after-tax pension covers the expenses of the period, red when it does not
       cls:   (has && ph.hasRows && ph.exp > 0) ? (ph.net >= ph.exp ? 'good' : 'bad') : '',
@@ -7298,8 +7518,8 @@ function updateDashboard(data){
 const _multTxt = (Math.round(mult*10)/10).toFixed(1); const _multFmt = _lang==='sv' ? _multTxt.replace('.', ',') : _multTxt;
 const _retAge  = params.retirementYear - params.birthYear;
 const top = [
-    {label:t('tile.goalTarget'),val:'SEK '+fmt(savingGoal),sub:t('tile.goalTarget.sub',{mult:_multFmt}),cls:'good',tile:'',tip:t('tip.goalTarget')},
-    {label:t('tile.portRet'),val:'SEK '+fmt(taxAdjPort),sub:t('tile.portRet.sub',{age:_retAge}),cls:taxAdjPort>=savingGoal?'good':'warn',tile:'emerald',tip:t('tip.portRet')},
+    {label:t('tile.goalTarget'),val:fmtKr(savingGoal),sub:t('tile.goalTarget.sub',{mult:_multFmt}),cls:'good',tile:'',tip:t('tip.goalTarget')},
+    {label:t('tile.portRet'),val:fmtKr(taxAdjPort),sub:t('tile.portRet.sub',{age:_retAge}),cls:taxAdjPort>=savingGoal?'good':'warn',tile:'emerald',tip:t('tip.portRet')},
     {label:t('tile.goalFulfil'),val:fmtPct(taxAdjGoalFul),sub:t('tile.goalFulfil.sub',{mult:mult}),cls:taxAdjGoalFul>=1?'good':'warn',tile:'',
      tip:t('tip.goalFulfil')},
     {label:t('tile.repRate'),val:fmtPct(repRate),sub:t('tile.repRate.sub',{net:fmtPct(repRateNet)}),cls:repRate>=0.7?'good':repRate>=0.5?'warn':'bad',tile:'emerald',tip:t('tip.repRate')},
@@ -7341,7 +7561,7 @@ function updateProjectionTable(data){
     const portClass  = y.totalPort>0?'':'bad';
 
     tr.innerHTML=`
-      <td${isRet?' style="background:#fbf6e8"':''}>${y.yr}${isRet?' <span style="font-size:10px;color:var(--pl-gold-ink);margin-left:4px">★ Ret</span>':''}</td>
+      <td${isRet?' style="background:#fbf6e8"':''}>${y.yr}${isRet?' <span style="font-size:10px;color:var(--pl-gold-ink);margin-left:4px">★ '+t('proj.tag.ret.short')+'</span>':''}</td>
       <td style="color:var(--muted)${isRet?';background:#fbf6e8':''}">${y.age}</td>
       <td style="background:rgba(123,176,171,.06);color:#0C2A49">${fmt(y.openAfterTax)}</td>
       <td style="background:rgba(123,176,171,.06);color:#0C2A49">${fmt(y.contribAfterTax)}</td>
@@ -7579,14 +7799,14 @@ function maximizeWithdrawals(){
   const n = lifeYr - retYr;
 
   if(n <= 0){
-    alert('Life Expectancy Year must be after Retirement Year.');
+    alert(t('alert.life.after.ret'));
     return;
   }
 
   // Get per-account closing balances at the retirement year
   const retYrRow = _projYears.find(y => y.yr === retYr);
   if(!retYrRow || !retYrRow.accClosing){
-    alert('Run a calculation first.'); return;
+    alert(t('alert.run.first')); return;
   }
 
   const eqRet = getParam('eqReturn') / 100;
@@ -7640,12 +7860,12 @@ function maximizeExpIntervals(){
   const retYr  = getParam('retirementYear');
   const lifeYr = getParam('lifeYear');
   if(lifeYr <= retYr){
-    alert('Life Expectancy Year must be after Retirement Year.');
+    alert(t('alert.life.after.ret'));
     return;
   }
   const retYrRow = _projYears.find(y => y.yr === retYr);
   if(!retYrRow){
-    alert('Run a calculation first.'); return;
+    alert(t('alert.run.first')); return;
   }
 
   var baseAmt = expAgeIntervals.map(function(iv){ return iv.amount||0; });
@@ -7696,20 +7916,18 @@ function maximizeExpIntervals(){
 }
 
 // ── PROJECTION EXPORT ─────────────────────────────────────────────────────
-const EXPORT_HEADERS = [
+// Column headers of the CSV and Excel files, in the chosen language (English as before: LANG.en 'xp.*')
+const EXPORT_HEADER_KEYS = [
   // Year / Age
-  'Year','Age',
+  'xp.year','xp.age',
   // After-Tax Portfolio
-  'Opening After-Tax (SEK)','Contribution After-Tax (SEK)','Return After-Tax Gross (SEK)',
-  'Yield Tax K-Insurance (SEK)','Mgmt Fee After-Tax (SEK)','Withdrawal After-Tax Accts (SEK)','Closing After-Tax (SEK)',
+  'xp.open.at','xp.contrib.at','xp.ret.at','xp.yt.k','xp.mgmt.at','xp.wd.at','xp.close.at',
   // Pre-Tax Portfolio
-  'Opening Pre-Tax (SEK)','Contribution Pre-Tax (SEK)','Return Pre-Tax Gross (SEK)',
-  'Yield Tax P-Insurance (SEK)','Mgmt Fee Pre-Tax (SEK)','Withdrawal Pre-Tax Accts (SEK)',
-  'Withdrawal After Tax Net (SEK)','Municipal Tax (SEK)','State Tax (SEK)','Closing Pre-Tax (SEK)',
+  'xp.open.pt','xp.contrib.pt','xp.ret.pt','xp.yt.p','xp.mgmt.pt','xp.wd.pt','xp.wd.net','xp.tax.mun','xp.tax.state','xp.close.pt',
   // Metrics
-  'Earned Income Before Tax (SEK)','Salary Tax (SEK)','Municipal Tax All Years (SEK)','State Tax All Years (SEK)','Public Service Fee (SEK)','Capital Tax (SEK)','Total Tax (SEK)','Earned Income After Tax (SEK)','After-Tax Income Portfolio (SEK)','After-Tax Income (SEK)','Expenses (SEK)','Inc/Exp Ratio','Equity %',
-  'Withdrawal Rate %','Goal Fulfillment %'
+  'xp.earn.pre','xp.tax.salary','xp.tax.mun.all','xp.tax.state.all','xp.fee.ps','xp.tax.cap','xp.tax.total','xp.earn.post','xp.inc.port','xp.inc.at','xp.exp','xp.ratio','xp.eq','xp.wd.rate','xp.goal'
 ];
+function exportHeaders(){ return EXPORT_HEADER_KEYS.map(function(k){ return t(k); }); }
 
 function exportRows(){
   return _projYears.map(y=>[
@@ -7731,7 +7949,7 @@ function exportRows(){
 
 function downloadProjCSV(){
   const rows = exportRows();
-  const lines = [EXPORT_HEADERS.join(';'), ...rows.map(r=>r.join(';'))];
+  const lines = [exportHeaders().join(';'), ...rows.map(r=>r.join(';'))];
   const blob = new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
   const url  = URL.createObjectURL(blob);
   const a    = Object.assign(document.createElement('a'),{href:url,download:'retirement_projection.csv'});
@@ -7739,10 +7957,10 @@ function downloadProjCSV(){
 }
 
 function downloadProjExcel(){
-  if(typeof XLSX==='undefined'){ alert('Excel library not loaded yet, try again in a moment.'); return; }
-  const ws = XLSX.utils.aoa_to_sheet([EXPORT_HEADERS, ...exportRows()]);
+  if(typeof XLSX==='undefined'){ alert(t('alert.xlsx.loading')); return; }
+  const ws = XLSX.utils.aoa_to_sheet([exportHeaders(), ...exportRows()]);
   // Column widths
-  ws['!cols'] = EXPORT_HEADERS.map((_,i)=>({wch:i<2?6:22}));
+  ws['!cols'] = EXPORT_HEADER_KEYS.map((_,i)=>({wch:i<2?6:22}));
   // Bold header row
   const range = XLSX.utils.decode_range(ws['!ref']);
   for(let c=range.s.c; c<=range.e.c; c++){
@@ -7750,7 +7968,7 @@ function downloadProjExcel(){
     if(cell) cell.s = {font:{bold:true},fill:{fgColor:{rgb:'1F3864'}},font:{color:{rgb:'FFFFFF'},bold:true}};
   }
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Projection');
+  XLSX.utils.book_append_sheet(wb, ws, t('nav.proj'));
   XLSX.writeFile(wb,'retirement_projection.xlsx');
 }
 
@@ -8215,7 +8433,7 @@ function updateSavingGoalRef(){
   var me=document.getElementById('savingMultiplier');
   if(me) me.value=String(Math.round(mult*10)/10).replace('.',',');
   var re2=document.getElementById('sg-ret-years');
-  if(re2) re2.textContent=yrs+' years';
+  if(re2) re2.textContent=yrs+' '+t('exp.years');
   SG_REF.forEach(function(r){
     var tr=document.getElementById('sg-ref-'+r.y); if(!tr) return;
     var active=(yrs>=r.y-2&&yrs<=r.y+2)||(r.y===SG_REF[0].y&&yrs<r.y)||(r.y===SG_REF[SG_REF.length-1].y&&yrs>r.y);
@@ -8265,7 +8483,7 @@ function estimateGrossWithdrawal(i){
   if(wdEl) wdEl.value=total.toLocaleString('sv-SE');
   var effRate=grossPreTax>0?(1-preTaxNet/grossPreTax)*100:0;
   var infoEl=document.getElementById('exp-iv-est-info-'+i);
-  if(infoEl){infoEl.textContent='~'+effRate.toFixed(0)+'% tax on pre-tax';infoEl.style.display='';}
+  if(infoEl){infoEl.textContent=t('exp.iv.est.tax',{pct:effRate.toFixed(0)});infoEl.style.display='';}
   refreshIvSEK(i);
 }
 
@@ -8501,7 +8719,7 @@ function buildWdTable(){
   function groupRow(label, color, type){
     var collapsed = !!(window._wdGroupCollapsed && window._wdGroupCollapsed[type]);
     var chevron   = collapsed ? '&#9658;' : '&#9660;';
-    var btn = '<button onclick="toggleWdGroup(\''+type+'\')" id="wd-grp-btn-'+type+'" title="'+(collapsed?'Expand':'Collapse')+' group" '
+    var btn = '<button onclick="toggleWdGroup(\''+type+'\')" id="wd-grp-btn-'+type+'" title="'+t(collapsed?'grp.expand':'grp.collapse')+'" '
       +'style="background:none;border:none;cursor:pointer;color:'+color+';font-size:11px;'
       +'margin-right:6px;padding:0 3px;line-height:1;vertical-align:middle;opacity:.75" '
       +'onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=\'.75\'">'+chevron+'</button>';
@@ -8613,7 +8831,7 @@ function buildWdTable(){
             +'style="width:48px;background:var(--s3);border:1px solid var(--border);'
             +'border-radius:3px;color:var(--pl-gold-ink);text-align:right;padding:1px 4px;'
             +'font-size:10px;font-family:var(--font-m);margin-top:2px" '
-            +'title="Your own divisor — annual wd = balance ÷ this number">';
+            +'title="'+t('wd.dt.own.tip')+'">';
         }
         // Utbetalningsgrad (withdrawal share): Swedish state-pension partial
         // pension options. Default 100% = full pension.
@@ -8652,11 +8870,11 @@ function buildWdTable(){
             +'style="background:transparent;border:1px solid rgba(240,199,94,.4);color:#0C2A49;'
             +'border-radius:3px;padding:1px 5px;font-size:8px;font-weight:600;letter-spacing:.04em;'
             +'text-transform:uppercase;cursor:pointer;font-family:var(--font-b);margin-top:1px" '
-            +'title="Switch to manual withdrawal entry">'+t('wd.manual.wd')+'</button>'
+            +'title="'+t('wd.manual.wd.tip')+'">'+t('wd.manual.wd')+'</button>'
           : '';
         var _badge = '<div style="display:inline-flex;flex-direction:column;align-items:flex-end;gap:2px">'
           +'<span style="font-size:11px;font-family:var(--font-m);color:var(--navy)" '
-            +'title="Year 1: '+fmtN(estVal(a))+' kr ÷ '
+            +'title="'+t('wd.year1')+': '+fmtN(estVal(a))+' kr ÷ '
             +(_dt0?_dt0.toString().replace(".",","):"–")
             +' × '+Math.round(_share*100)+'% '
             +' = '+fmtN(Math.round(_est0*wdTaxFactor(a)))+' kr">'
@@ -8684,7 +8902,7 @@ function buildWdTable(){
             +'style="background:transparent;border:1px solid var(--border);color:var(--muted);'
             +'border-radius:3px;padding:1px 4px;font-size:8px;font-weight:600;letter-spacing:.04em;'
             +'text-transform:uppercase;cursor:pointer;font-family:var(--font-b)" '
-            +'title="Use Pensionsmyndighetens delningstal (PFS 2024:2 / PP 2026) instead of manual wd">'
+            +'title="'+t('wd.use.dt.tip')+'">'
             +t('wd.use.dt')+'</button></div>';
         }
         tr+='</td>';
@@ -9142,7 +9360,7 @@ function buildPortfolioTab(){
   var PV_RET_BG = '#fbf6e8';
   function pvRet(y){ return y.yr === _retYr; }
   function retBg(y){ return pvRet(y) ? 'background:'+PV_RET_BG+';' : ''; }
-  function retYearCell(y){ return y.yr + (pvRet(y) ? ' <span style="font-size:10px;color:var(--pl-gold-ink);margin-left:4px">\u2605 Ret</span>' : ''); }
+  function retYearCell(y){ return y.yr + (pvRet(y) ? ' <span style="font-size:10px;color:var(--pl-gold-ink);margin-left:4px">\u2605 ' + t('proj.tag.ret.short') + '</span>' : ''); }
   var TH = 'style="padding:5px 10px;font-size:11px;font-weight:600;color:var(--muted);text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--s1);position:sticky;top:0;z-index:1"';
   var TH_L = TH.replace('text-align:right','text-align:left');
   var TD = 'style="padding:4px 10px;text-align:right;font-family:var(--font-m);font-size:12px;border-bottom:1px solid rgba(15,32,52,0.05);white-space:nowrap"';
@@ -9197,7 +9415,7 @@ function buildPortfolioTab(){
     var ds_mf2=mk('mgmtFee').map(function(v){return -Math.abs(v);});
     setTimeout(function(){
       if(chartTitle) chartTitle.textContent=t('pv.chart.title');
-      var fmtK=function(v){return Math.abs(v)>=1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'K';};
+      var fmtK=function(v){return Math.abs(v)>=1e6?decSv((v/1e6).toFixed(1))+'M':(v/1e3).toFixed(0)+'K';};
       var tipFmt=function(ctx){return ' '+ctx.dataset.label+': '+Math.abs(Math.round(ctx.raw)).toLocaleString('sv-SE')+' kr';};
       // ── Stacked column: each account's closing balance ──────────────────
       var acctColors=['#18625C','#7BB0AB','#3A7F79',
@@ -9303,7 +9521,7 @@ function buildPortfolioTab(){
     var ds_yt       = years.map(function(y){ var d=y.accDetail&&y.accDetail[cai]; return d?-Math.round((d.yieldTax||0)*_tf):0; });
     var ds_mf       = years.map(function(y){ var d=y.accDetail&&y.accDetail[cai]; return d?-Math.round((d.mgmtFee||0)*_tf):0; });
     var ds_closing  = years.map(function(y){ var d=y.accDetail&&y.accDetail[cai]; return d?Math.round((d.close||0)*_tf):0; });
-    var fmtK = function(v){ return Math.abs(v)>=1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'K'; };
+    var fmtK = function(v){ return Math.abs(v)>=1e6?decSv((v/1e6).toFixed(1))+'M':(v/1e3).toFixed(0)+'K'; };
     var tipFmt = function(ctx){ return ' '+ctx.dataset.label+': '+Math.abs(Math.round(ctx.raw)).toLocaleString('sv-SE')+' kr'; };
     var tickFmt = { color:'#545f6c', maxRotation:45, callback:function(v, idx){ return retTick(years, idx); } };
     var gridFmt = { color:'rgba(255,255,255,.05)' };
@@ -9434,7 +9652,7 @@ function pvGetTableData(){
       });
       return {label:label, values:values};
     });
-    result.push({accountName:a.name, type:a.type, years:years.map(function(y){return y.yr;}), rows:rows});
+    result.push({accountName:accDisplayName(a), type:a.type, years:years.map(function(y){return y.yr;}), rows:rows});
   });
   return result;
 }
@@ -9443,14 +9661,14 @@ function exportPortfolioCSV(){
   var data = pvGetTableData();
   var lines = [];
   data.forEach(function(acc){
-    lines.push(acc.accountName + ' (' + (acc.type==='after'?'After-Tax':acc.type==='p-ins'?'P-Insurance':'State') + ')');
-    lines.push(['Item'].concat(acc.years).join(';'));
+    lines.push(acc.accountName + ' (' + t(acc.type==='after'?'pv.badge.after':acc.type==='p-ins'?'pv.badge.pins':'pv.badge.state') + ')');
+    lines.push([t('pv.col.item')].concat(acc.years).join(';'));
     acc.rows.forEach(function(row){
       lines.push([row.label].concat(row.values).join(';'));
     });
     lines.push('');
   });
-  var blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  var blob = new Blob(['\uFEFF'+lines.join('\n')], {type:'text/csv;charset=utf-8'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'portfolio_value.csv';
@@ -9458,14 +9676,14 @@ function exportPortfolioCSV(){
 }
 
 function exportPortfolioExcel(){
-  if(typeof XLSX==='undefined'){ alert('Excel export not available — use CSV instead.'); return; }
+  if(typeof XLSX==='undefined'){ alert(t('alert.xlsx.missing')); return; }
   var wb = XLSX.utils.book_new();
   var data = pvGetTableData();
   data.forEach(function(acc){
     var wsData = [];
-    var badge = acc.type==='after'?'After-Tax':acc.type==='p-ins'?'P-Insurance':'State';
+    var badge = t(acc.type==='after'?'pv.badge.after':acc.type==='p-ins'?'pv.badge.pins':'pv.badge.state');
     wsData.push([acc.accountName+' ('+badge+')']);
-    wsData.push(['Item'].concat(acc.years));
+    wsData.push([t('pv.col.item')].concat(acc.years));
     acc.rows.forEach(function(row){
       wsData.push([row.label].concat(row.values));
     });
@@ -9501,8 +9719,9 @@ function addAccount(type, scheme){
   if(type === 'p-ins' && scheme && OCC_SCHEMES[scheme]) return addOccScheme(scheme);
   var yr = START_YEAR || new Date().getFullYear();
   var ytDef = type==='after'?0.0105:type==='p-ins'?0.00375:0.000;
+  var newKey = type==='after'?'acc.name.new.after':type==='p-ins'?'acc.name.new.pins':'acc.name.new.state';
   var newA = {
-    name: type==='after'?'New After-Tax Account':type==='p-ins'?'New Pension Account':'New State Account',
+    name: t(newKey), nameKey: newKey,
     type:type, opening:0, contrib:0, cs:_csFor(null, Math.round(getParam('birthYear')), workStartAge()), ce:defaultCe(), ceAuto: type!=='after',
     wd:0, ws:9999, we: type==='state' ? 9998 : 9999,   // state pensions are lifelong
     eq1:0.6, eq2:0.4, eq3:0.3, mgmt:0.002, yt:ytDef,
@@ -9706,7 +9925,7 @@ function buildPgbSection(){
     else det = lbl('pgb.f.agefrom') + inp(i, 'from', it.from, 40) + lbl('pgb.f.ageto') + inp(i, 'to', it.to, 40) + lbl('pgb.f.amount') + inp(i, 'amount', fmt(it.amount || 0), 90);
     rows += '<tr><td style="padding:6px 8px;font-weight:600;white-space:nowrap">'+name+'</td><td style="padding:6px 8px">'+det+'</td>'
       + '<td id="pgb-res-'+i+'" style="padding:6px 8px;font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink)"></td>'
-      + '<td style="padding:0 4px"><button onclick="removePgbItem('+i+')" title="Remove" style="width:26px;height:26px;border-radius:50%;background:rgba(156,68,56,.12);border:1px solid rgba(156,68,56,.3);color:#9C4438;font-size:14px;line-height:1;cursor:pointer">✕</button></td></tr>';
+      + '<td style="padding:0 4px"><button onclick="removePgbItem('+i+')" title="'+t('pgb.remove')+'" style="width:26px;height:26px;border-radius:50%;background:rgba(156,68,56,.12);border:1px solid rgba(156,68,56,.3);color:#9C4438;font-size:14px;line-height:1;cursor:pointer">✕</button></td></tr>';
   });
   host.innerHTML = pgbItems.length
     ? '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em"><th style="padding:4px 8px">'+t('pgb.col.type')+'</th><th style="padding:4px 8px">'+t('pgb.col.details')+'</th><th style="padding:4px 8px">'+t('pgb.col.result')+'</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'
@@ -9789,7 +10008,7 @@ function buildExpenseChart(){
     '#82A9D1','#ACD4D0','#F0C75E','#CF8073','#DFCBA6','#3A7F79'
   ];
 
-  var labels  = items.map(function(e){ return (typeof t==='function'?t('exp.'+e.name):'')||e.name; });
+  var labels  = items.map(function(e){ return expName(e.name); });
   var values  = items.map(function(e){ return e.val||0; });
   var colors  = items.map(function(_,i){ return COLORS[i % COLORS.length]; });
 
@@ -9834,7 +10053,7 @@ function buildExpenseChart(){
           padding:10, cornerRadius:6, displayColors:false,
           callbacks: {
             label: function(ctx) {
-              var pct = ((ctx.raw / total) * 100).toFixed(1);
+              var pct = decSv(((ctx.raw / total) * 100).toFixed(1));
               return ' ' + ctx.label + ': ' + Math.round(ctx.raw).toLocaleString('sv-SE') + ' kr (' + pct + '%)';
             }
           }
@@ -9848,10 +10067,10 @@ function buildExpenseChart(){
   var totalFmt = Math.round(total).toLocaleString('sv-SE');
   // Custom legend
   legendEl.innerHTML = items.map(function(e,i){
-    var pct = ((e.val/total)*100).toFixed(1);
+    var pct = decSv(((e.val/total)*100).toFixed(1));
     return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0">'
       + '<span style="width:10px;height:10px;border-radius:2px;flex-shrink:0;background:'+colors[i]+'"></span>'
-      + '<span style="color:var(--muted);min-width:110px">' + ((typeof t==='function'?t('exp.'+e.name):'')||e.name) + '</span>'
+      + '<span style="color:var(--muted);min-width:110px">' + expName(e.name) + '</span>'
       + '<span style="font-family:var(--font-m);color:var(--text);margin-left:auto;padding-left:10px">'
         + Math.round(e.val).toLocaleString('sv-SE') + ' kr</span>'
       + '<span style="color:var(--muted);width:42px;text-align:right">' + pct + '%</span>'
@@ -9957,7 +10176,7 @@ function optimizeWithdrawals(){
     var btnE = document.getElementById('wd-optimize-btn');
     if(btnE){ btnE.textContent='Unavailable when intervals active'; btnE.style.color='#9C4438'; }
     setTimeout(function(){ var b=document.getElementById('wd-optimize-btn');
-      if(b){ b.textContent='\u26a1 Optimize to Zero'; b.style.color='#22507B'; } }, 2500);
+      if(b){ b.innerHTML='\u26a1 <span data-i18n="wd.optimize">'+t('wd.optimize')+'</span>'; b.style.color='#22507B'; } }, 2500);
     return;
   }
 
@@ -10036,7 +10255,7 @@ function optimizeWithdrawals(){
     btn.style.color = changed ? '#0C2A49' : 'var(--muted)';
     setTimeout(function(){
       var b = document.getElementById('wd-optimize-btn');
-      if(b){ b.textContent='\u26a1 Optimize to Zero'; b.style.color='#22507B'; }
+      if(b){ b.innerHTML='\u26a1 <span data-i18n="wd.optimize">'+t('wd.optimize')+'</span>'; b.style.color='#22507B'; }
     }, 2500);
   }
 }
@@ -10090,12 +10309,12 @@ function downloadWdChartCSV(){
   a.click(); URL.revokeObjectURL(url);
 }
 function downloadWdChartExcel(){
-  if(typeof XLSX === 'undefined'){ alert('Excel library not loaded yet, try again in a moment.'); return; }
+  if(typeof XLSX === 'undefined'){ alert(t('alert.xlsx.loading')); return; }
   var r = _wdChartRows();
   var ws = XLSX.utils.aoa_to_sheet([r.head].concat(r.rows));
   ws['!cols'] = r.head.map(function(_, i){ return {wch: i < 2 ? 7 : 22}; });
   var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Withdrawals');
+  XLSX.utils.book_append_sheet(wb, ws, t('nav.withdrawals'));
   XLSX.writeFile(wb, r.name + '.xlsx');
 }
 
@@ -10254,7 +10473,7 @@ function setWdTaxMode(mode){
   buildWithdrawalChart();
   buildWdSummary();
   var hdr=document.getElementById('wd-col-hdr');
-  if(hdr) hdr.textContent = mode==='net' ? 'Withdrawal/yr (net)' : 'Withdrawal/yr';
+  if(hdr) hdr.textContent = mode==='net' ? t('wd.col.wdyr.net') : t('wd.col.wdyr');
 }
 function wdTaxFactor(a, y){
   if(_wdTaxMode==='gross' || a.type==='after') return 1;
@@ -10299,7 +10518,7 @@ function updateIncomeChart(){
   charts.income.data.datasets[0].data = years.map(function(y){ return Math.round((y.totalAfterTaxIncome||0)/div); });
   charts.income.data.datasets[1].data = years.map(function(y){ return Math.round((y.expenses||0)/div); });
   charts.income.options.plugins.tooltip.callbacks.label = function(ctx){
-    return ' '+ctx.dataset.label+': '+Math.round(ctx.raw).toLocaleString('sv-SE')+' kr'+(_incExpMode==='monthly'?'/mth':'/yr');
+    return ' '+ctx.dataset.label+': '+Math.round(ctx.raw).toLocaleString('sv-SE')+' kr'+(_incExpMode==='monthly'?t('unit.per.mth'):t('unit.per.yr'));
   };
   charts.income.update();
 }
@@ -10399,7 +10618,7 @@ function buildScenarioCards(){
   var baseRetYr  = getParam('retirementYear') || '';
   var baseLifeYr = getParam('lifeYear')       || '';
 
-  function fmtM(v){ return v>=1e6?(v/1e6).toFixed(2)+'M kr':Math.round(v).toLocaleString('sv-SE')+' kr'; }
+  function fmtM(v){ return v>=1e6?decSv((v/1e6).toFixed(2))+'M kr':Math.round(v).toLocaleString('sv-SE')+' kr'; }
 
   wrap.innerHTML = _scenarios.map(function(sc,i){
     var res = runScenario(sc);
@@ -10433,10 +10652,10 @@ function buildScenarioCards(){
       )
       // Results
       +(res ? '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--muted)">Port. at retirement</span><span style="color:var(--text);font-family:var(--font-m)">'+fmtM(res.portAtRet)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--muted)">'+t('sc.card.port')+'</span><span style="color:var(--text);font-family:var(--font-m)">'+fmtM(res.portAtRet)+'</span></div>'
         +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--muted)">'+t('sc.annual.wd')+'</span><span style="color:var(--text);font-family:var(--font-m)">'+fmtM(res.annualWd)+'</span></div>'
         +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--muted)">'+t('sc.depletion')+'</span><span style="color:'+(res.depletionYr?'#9C4438':'#0C2A49')+';font-family:var(--font-m)">'+(res.depletionYr||t('sc.never'))+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--muted)">'+t('sc.funded')+'</span><span style="color:'+(res.funded&&res.funded>=1?'#0C2A49':'#9C4438')+';font-family:var(--font-m)">'+(res.funded?res.funded.toFixed(2)+'x':'—')+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--muted)">'+t('sc.funded')+'</span><span style="color:'+(res.funded&&res.funded>=1?'#0C2A49':'#9C4438')+';font-family:var(--font-m)">'+(res.funded?decSv(res.funded.toFixed(2))+'x':'—')+'</span></div>'
         +'</div>' : '')
       +'</div>';
   }).join('');
@@ -10473,7 +10692,7 @@ function buildScenarioTable(){
   if(!tbl||!_projYears||!_projYears.length) return;
   var results = _scenarios.map(function(sc){ return runScenario(sc); });
   var fmtN = function(v){ return Math.round(v).toLocaleString('sv-SE'); };
-  var fmtM = function(v){ return v>=1e6?(v/1e6).toFixed(2)+'M':fmtN(v); };
+  var fmtM = function(v){ return v>=1e6?decSv((v/1e6).toFixed(2))+'M':fmtN(v); };
   var TH = 'style="padding:6px 10px;text-align:right;font-size:11px;font-weight:600;border-bottom:2px solid var(--border)"';
   var TD = 'style="padding:6px 10px;text-align:right;font-size:12px;border-bottom:1px solid rgba(15,32,52,0.07);font-family:var(--font-m)"';
   var rows = [
@@ -10487,7 +10706,7 @@ function buildScenarioTable(){
     [t('sc.port.at.end'),      function(r){ return r?fmtM(r.portAtEnd)+' kr':'—'; }],
     [t('sc.total.wd'),         function(r){ return r?fmtM(r.totalWd)+' kr':'—'; }],
     [t('sc.depletion'),        function(r){ return r?(r.depletionYr||t('sc.never')):'—'; }],
-    [t('sc.funded'),           function(r){ return r&&r.funded?r.funded.toFixed(2)+'×':'—'; }],
+    [t('sc.funded'),           function(r){ return r&&r.funded?decSv(r.funded.toFixed(2))+'×':'—'; }],
   ];
   var hdr = '<thead><tr><th style="padding:6px 10px;text-align:left;font-size:11px;font-weight:600;border-bottom:2px solid var(--border)">'+t('sc.metric')+'</th>'
     + _scenarios.map(function(sc,i){
@@ -10527,7 +10746,7 @@ function buildScenarioChart(){
       spanGaps: true
     };
   }).filter(Boolean);
-  var fmtK = function(v){ return Math.abs(v)>=1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'K'; };
+  var fmtK = function(v){ return Math.abs(v)>=1e6?decSv((v/1e6).toFixed(1))+'M':(v/1e3).toFixed(0)+'K'; };
   // Retirement age of every scenario (each may have its own) marked on the x axis
   var _scBy2 = Math.round(getParam('birthYear')||1971);
   var scMarks = [], scSeen = {};
@@ -10594,7 +10813,7 @@ var _mcSurvChart = null;
 var _mcHistChart = null;
 
 function runMonteCarlo(){
-  if(!_projYears||!_projYears.length){ alert('Please run a projection first.'); return; }
+  if(!_projYears||!_projYears.length){ alert(t('alert.run.projection')); return; }
 
   var _simsSel = document.getElementById('mc-sims-mode');
   var _simsVal = (_simsSel && _simsSel.value!=='custom')
@@ -10773,12 +10992,12 @@ function runMonteCarlo(){
   var kpiEl = document.getElementById('mc-kpis');
   kpiEl.style.display = 'grid';
   var fmtM = function(v){
-    if(Math.abs(v)>=1e6) return (v/1e6).toFixed(2)+' Mkr';
+    if(Math.abs(v)>=1e6) return fmtMkr(v, 2);
     return Math.round(v).toLocaleString('sv-SE')+' kr';
   };
   var srClass = parseFloat(successRate)>=90?'good':parseFloat(successRate)>=70?'warn':'bad';
   kpiEl.innerHTML = [
-    ['<span class="'+srClass+'">'+successRate+'%</span>', t('mc.kpi.success'), t('mc.kpi.success.sub')],
+    ['<span class="'+srClass+'">'+decSv(successRate)+'%</span>', t('mc.kpi.success'), t('mc.kpi.success.sub')],
     [fmtM(medianFinal), t('mc.kpi.median'), t('mc.kpi.median.sub')],
     [fmtM(p10Final),    t('mc.kpi.p10'),    t('mc.kpi.p10.sub')],
     [N.toLocaleString('sv-SE'), t('mc.kpi.sims'), ''],
@@ -10825,14 +11044,14 @@ function runMonteCarlo(){
           title:function(items){ return t('wd.chart.tooltip.age')+' '+items[0].label; },
           label:function(ctx){
             var v=ctx.raw;
-            return ' '+ctx.dataset.label+': '+(v>=1e6?(v/1e6).toFixed(2)+'M':Math.round(v).toLocaleString('sv-SE'))+' kr';
+            return ' '+ctx.dataset.label+': '+(v>=1e6?decSv((v/1e6).toFixed(2))+'M':Math.round(v).toLocaleString('sv-SE'))+' kr';
           }
         }}
       },
       scales:{
         x:{ ticks:{color:'#545f6c',callback:function(v){ return this.getLabelForValue(v); }}, grid:{color:'rgba(15,32,52,0.05)'},
             title:{display:true,text:t('wd.chart.age'),color:'#545f6c',font:{size:10}} },
-        y:{ ticks:{color:'#545f6c',callback:function(v){return v>=1e6?(v/1e6).toFixed(1)+'M':Math.round(v/1e3)+'K';}},
+        y:{ ticks:{color:'#545f6c',callback:function(v){return v>=1e6?decSv((v/1e6).toFixed(1))+'M':Math.round(v/1e3)+'K';}},
             grid:{color:'rgba(15,32,52,0.05)'},
             title:{display:true,text:t('mc.chart.yaxis'),color:'#545f6c',font:{size:10}} }
       }
@@ -10887,7 +11106,7 @@ function runMonteCarlo(){
           legend:{ display:false },
           tooltip:{ callbacks:{
             title: function(items){ return t('wd.chart.tooltip.age')+' '+items[0].label; },
-            label: function(ctx){ return ' '+t('mc.surv.tooltip')+': '+ctx.raw.toFixed(1)+'%'; }
+            label: function(ctx){ return ' '+t('mc.surv.tooltip')+': '+decSv(ctx.raw.toFixed(1))+'%'; }
           }}
         },
         scales:{
@@ -10931,7 +11150,7 @@ function runMonteCarlo(){
 
     // Build x-axis labels (mid-point of each bin)
     var fmtK = function(v){
-      if(v>=1e6) return (v/1e6).toFixed(1)+' Mkr';
+      if(v>=1e6) return fmtMkr(v, 1);
       if(v>=1e3) return Math.round(v/1e3)+'K';
       return Math.round(v);
     };
@@ -10965,7 +11184,7 @@ function runMonteCarlo(){
               return fmtK(bi*binSize)+' – '+fmtK((bi+1)*binSize);
             },
             label: function(ctx){
-              return ' '+t('mc.hist.freq')+': '+ctx.raw+' ('+((ctx.raw/N)*100).toFixed(1)+'%)';
+              return ' '+t('mc.hist.freq')+': '+ctx.raw+' ('+decSv(((ctx.raw/N)*100).toFixed(1))+'%)';
             }
           }}
         },
@@ -11035,14 +11254,14 @@ function runMonteCarlo(){
     ];
 
     function fmtCell(v,fmt){
-      if(fmt==='pct') return (v*100).toFixed(2)+(v<0?' %':'%');
-      if(fmt==='num') return v.toFixed(2);
+      if(fmt==='pct') return decSv((v*100).toFixed(2))+(v<0?' %':'%');
+      if(fmt==='num') return decSv(v.toFixed(2));
       if(fmt==='kr'){
         var abs=Math.abs(Math.round(v));
-        var s=abs>=1e6?(abs/1e6).toFixed(2)+" Mkr":abs.toLocaleString("sv-SE")+" kr";
+        var s=abs>=1e6?fmtMkr(abs, 2):abs.toLocaleString("sv-SE")+" kr";
         return (v<0?"-":"")+s;
       }
-      return v.toFixed(2);
+      return decSv(v.toFixed(2));
     }
 
     var TH="padding:7px 10px;font-size:10px;font-weight:600;color:var(--muted);border-bottom:2px solid var(--border);text-align:right;white-space:nowrap";
@@ -11074,7 +11293,7 @@ function runMonteCarlo(){
     // Survival line
     var survLine=document.getElementById('mc-survival-line');
     if(survLine){
-      var pct100=((N-ruinCount)/N*100).toFixed(1);
+      var pct100=decSv(((N-ruinCount)/N*100).toFixed(1));
       survLine.innerHTML='<span style="color:var(--pl-gold-ink);font-weight:700">'+(N-ruinCount).toLocaleString("sv-SE")+'</span> '+t('mc.perf.survival.a')+' <span style="font-weight:700">'+(N).toLocaleString("sv-SE")+'</span> '+t('mc.perf.survival.b')+' <span style="color:var(--pl-gold-ink);font-weight:700">('+pct100+'%)</span> '+t('mc.perf.survival.c');
     }
   })();
@@ -11089,7 +11308,7 @@ function runMonteCarlo(){
     + ['P10','P25','P50','P75','P90'].map(function(p){ return '<th style="'+TH+'">'+p+'</th>'; }).join('')+'</tr>';
   var rows = showAges.map(function(age){
     var ai = ages.indexOf(age);
-    var fmt2 = function(v){ return v<=0?'<span style="color:var(--bad)">0</span>':(v>=1e6?(v/1e6).toFixed(1)+'M':Math.round(v/1e3)+'K'); };
+    var fmt2 = function(v){ return v<=0?'<span style="color:var(--bad)">0</span>':(v>=1e6?decSv((v/1e6).toFixed(1))+'M':Math.round(v/1e3)+'K'); };
     return '<tr><td style="'+TD+';text-align:left;color:var(--muted)">'+age+'</td>'
       +[10,25,50,75,90].map(function(p){
         return '<td style="'+TD+(p===50?';font-weight:700;color:var(--pl-gold-ink)':'')+'">'+fmt2(bands[p][ai])+'</td>';
@@ -11153,7 +11372,7 @@ function populateMCPortValue(){
   var val     = mode==='aftertax' ? aftertax : pretax;
   var disp    = document.getElementById('mc-port-display');
   var hint    = document.getElementById('mc-port-hint');
-  var fmt     = function(v){return v>=1e6?(v/1e6).toFixed(2)+' Mkr':Math.round(v).toLocaleString('sv-SE')+' kr';};
+  var fmt     = function(v){return v>=1e6?fmtMkr(v, 2):Math.round(v).toLocaleString('sv-SE')+' kr';};
   if(disp) disp.textContent = fmt(val);
   if(hint) hint.textContent = (mode==='aftertax'?t('mc.port.aftertax'):t('mc.port.pretax'))+' · '+t('mc.port.hint.at.age')+' '+retAge;
   // Store computed value so runMonteCarlo can read it
@@ -11222,8 +11441,8 @@ function updateMCMuDisplay(){
     var mu  = eq*eqRet + bd*bdRet;
     // Portfolio σ: √(eq²·σ_eq² + bd²·σ_bd²)  [ρ=0 between eq and bd]
     var sig = Math.sqrt(eq*eq*sigEq*sigEq + bd*bd*sigBd*sigBd)*100;
-    if(bdEl)  bdEl.textContent  = bdPct+'% Bd · μ = '+mu.toFixed(2)+'%';
-    if(sigEl) sigEl.textContent = 'σ = '+sig.toFixed(1)+'%';
+    if(bdEl)  bdEl.textContent  = bdPct+'% '+t('mc.bd.short')+' · μ = '+decSv(mu.toFixed(2))+'%';
+    if(sigEl) sigEl.textContent = 'σ = '+decSv(sig.toFixed(1))+'%';
   });
   // Blended μ and σ at start age
   var startEq = startAge <= brT1 ? parseFloat((document.getElementById('mc-eq1')||{}).value||0)
@@ -11233,7 +11452,7 @@ function updateMCMuDisplay(){
   var muStart  = eq0*eqRet + bd0*bdRet;
   var sigStart = Math.sqrt(eq0*eq0*sigEq*sigEq + bd0*bd0*sigBd*sigBd)*100;
   var disp = document.getElementById('mc-mu-display');
-  if(disp) disp.textContent = 'At start age: μ = '+muStart.toFixed(2)+'%  ·  σ = '+sigStart.toFixed(1)+'%';
+  if(disp) disp.textContent = t('mc.at.start')+': μ = '+decSv(muStart.toFixed(2))+'%  ·  σ = '+decSv(sigStart.toFixed(1))+'%';
 }
 
 // ── Live update of simulation period display ─────────────────────────────────
@@ -11446,7 +11665,7 @@ function collectPlanState(){
 
 function applyPlanState(state){
   if(!state || !state.version || state.version < 3){
-    showPlanToast('⚠ Incompatible save file (version mismatch)', true);
+    showPlanToast('⚠ ' + t('toast.incompatible'), true);
     return false;
   }
 
@@ -11544,22 +11763,22 @@ function planSave(){
   var state = collectPlanState();
   try {
     localStorage.setItem('retirementPlan_v3', JSON.stringify(state));
-    var ts = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    showPlanToast('\u2713 Plan saved at ' + ts);
+    var ts = new Date().toLocaleTimeString(_lang === 'sv' ? 'sv-SE' : [], {hour:'2-digit', minute:'2-digit'});
+    showPlanToast('\u2713 ' + t('toast.saved', {time: ts}));
   } catch(e) {
-    showPlanToast('\u26a0 Save failed: ' + e.message, true);
+    showPlanToast('\u26a0 ' + t('toast.save.failed', {msg: e.message}), true);
   }
 }
 
 function planLoad(){
   var raw;
   try { raw = localStorage.getItem('retirementPlan_v3'); } catch(e) {}
-  if(!raw){ showPlanToast('No saved plan found in this browser', true); return; }
+  if(!raw){ showPlanToast(t('toast.nosaved'), true); return; }
   try {
     var ok = applyPlanState(JSON.parse(raw));
-    if(ok) showPlanToast('\u2713 Plan restored');
+    if(ok) showPlanToast('\u2713 ' + t('toast.restored'));
   } catch(e) {
-    showPlanToast('\u26a0 Restore failed: ' + e.message, true);
+    showPlanToast('\u26a0 ' + t('toast.restore.failed', {msg: e.message}), true);
   }
 }
 
@@ -11573,7 +11792,7 @@ function planExport(){
   a.href = url; a.download = 'retirement-plan-' + date + '.json';
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
-  showPlanToast('\u2713 Exported retirement-plan-' + date + '.json');
+  showPlanToast('\u2713 ' + t('toast.exported', {file: 'retirement-plan-' + date + '.json'}));
 }
 
 function planImport(){
@@ -11587,9 +11806,9 @@ function planImport(){
     reader.onload = function(e){
       try {
         var ok = applyPlanState(JSON.parse(e.target.result));
-        if(ok) showPlanToast('\u2713 Imported: ' + file.name);
+        if(ok) showPlanToast('\u2713 ' + t('toast.imported', {file: file.name}));
       } catch(err) {
-        showPlanToast('\u26a0 Import failed: ' + err.message, true);
+        showPlanToast('\u26a0 ' + t('toast.import.failed', {msg: err.message}), true);
       }
     };
     reader.readAsText(file);
@@ -11753,8 +11972,8 @@ function showPlanToast(msg, isError){
     var state = JSON.parse(raw);
     if(state && state.version === 3){
       applyPlanState(state);
-      var ts = new Date(state.savedAt).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'});
-      showPlanToast('\u21ba Plan auto-restored (saved ' + ts + ')');
+      var ts = new Date(state.savedAt).toLocaleDateString(_lang === 'sv' ? 'sv-SE' : [], {day:'numeric',month:'short',year:'numeric'});
+      showPlanToast('\u21ba ' + t('toast.autorestored', {date: ts}));
     }
   } catch(e) {}
 })();
@@ -11769,27 +11988,27 @@ function showPlanToast(msg, isError){
   <button onclick="switchTab('dashboard')" class="mqn-btn" data-tab="dashboard"
     style="background:none;border:none;color:var(--muted);cursor:pointer;padding:6px 2px;
     display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:600;letter-spacing:.04em">
-    <span style="font-size:18px">📊</span>DASHBOARD
+    <span style="font-size:18px">📊</span><span data-i18n="mqn.dashboard">DASHBOARD</span>
   </button>
   <button onclick="switchTab('personal')" class="mqn-btn" data-tab="personal"
     style="background:none;border:none;color:var(--muted);cursor:pointer;padding:6px 2px;
     display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:600;letter-spacing:.04em">
-    <span style="font-size:18px">👤</span>PERSONAL
+    <span style="font-size:18px">👤</span><span data-i18n="mqn.personal">PERSONAL</span>
   </button>
   <button onclick="switchTab('accounts')" class="mqn-btn" data-tab="accounts"
     style="background:none;border:none;color:var(--muted);cursor:pointer;padding:6px 2px;
     display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:600;letter-spacing:.04em">
-    <span style="font-size:18px">🏦</span>ACCOUNTS
+    <span style="font-size:18px">🏦</span><span data-i18n="mqn.accounts">ACCOUNTS</span>
   </button>
   <button onclick="switchTab('withdrawals')" class="mqn-btn" data-tab="withdrawals"
     style="background:none;border:none;color:var(--muted);cursor:pointer;padding:6px 2px;
     display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:600;letter-spacing:.04em">
-    <span style="font-size:18px">💰</span>WITHDRAW
+    <span style="font-size:18px">💰</span><span data-i18n="mqn.withdrawals">WITHDRAW</span>
   </button>
   <button onclick="switchTab('projection')" class="mqn-btn" data-tab="projection"
     style="background:none;border:none;color:var(--muted);cursor:pointer;padding:6px 2px;
     display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;font-weight:600;letter-spacing:.04em">
-    <span style="font-size:18px">📈</span>PROJECTION
+    <span style="font-size:18px">📈</span><span data-i18n="mqn.projection">PROJECTION</span>
   </button>
 </nav>
 
