@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Calculator,
+  Compass,
   FileText,
   Flame,
   LineChart,
@@ -26,6 +27,13 @@ export interface NavGroup {
   title: string;
   items: NavItem[];
 }
+
+const planner: NavItem = {
+  href: "/pensionsplaneraren",
+  title: "Pensionsplaneraren",
+  description: "Planera hela pensionen: tillgångar, utgifter, uttag och scenarier år för år.",
+  icon: Compass,
+};
 
 const pension: NavItem = {
   href: "/pensionskalkylator",
@@ -70,14 +78,14 @@ const fire: NavItem = {
 };
 
 export const calculatorGroups: NavGroup[] = [
-  { title: "Pension", items: [pension, typfall, lonevaxling] },
+  { title: "Pension", items: [planner, pension, typfall, lonevaxling] },
   { title: "Lön och sparande", items: [nettolon, compound, fire] },
 ];
 
 export const calculators: NavItem[] = calculatorGroups.flatMap((group) => group.items);
 
 /** The calculator shown in the "Utvalt" box of the Kalkylatorer menu: the newest one. */
-export const featuredCalculator: NavItem = nettolon;
+export const featuredCalculator: NavItem = planner;
 
 export const insights: NavItem[] = [
   {

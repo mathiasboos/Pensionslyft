@@ -1,0 +1,313 @@
+/*
+ * The look of the Pensionsplaneraren on pensionslyft.se.
+ *
+ * The app (Retirement_Planner.html in github.com/mathiasboos/Calculators) has its own palette, a navy header and IBM
+ * Plex fonts. On this site it gets the site's palette, fonts and the style of the other calculators. The sync script
+ * (scripts/sync-pensionsplaneraren.mjs) puts this file into the app after the app's own style, and replaces the colours
+ * the app writes into its code (scripts/pensionsplaneraren-colors.mjs). Only variables and the app's main parts are set
+ * here, by their class names; if the app renames one, that part keeps the app's own look and nothing breaks.
+ *
+ * Site tokens (src/styles/global.css): navy #0c2a49, ink #0f2034, primary-soft #22507b, muted-foreground #545f6c,
+ * border #e7e5e0, input #d9d6cf, muted #f5f4f1, sand #ece0ca, highlight #f0c75e, destructive #cc2827, gold #a18142,
+ * steel #4675a4, teal #72b3a6, dark teal #2f6f73, brick #9c4438.
+ */
+:root {
+  color-scheme: light;
+  --bg: #f5f4f1;
+  --s1: #ffffff;
+  --s2: #f5f4f1;
+  --s3: #fbfaf8;
+  --s4: #e7e5e0;
+  --border: #e7e5e0;
+  /* The app's green is its colour for buttons, toggles and bars: the site's gold highlight, with navy text on it. */
+  --gold: #f0c75e;
+  --gold2: #f5d78c;
+  /* Where the app writes its green as text (figures), the sync script makes it read this one. */
+  --pl-gold-ink: #0c2a49;
+  /* --emerald marks "good": a bar or frame in dark teal, a figure in navy. */
+  --emerald: #2f6f73;
+  --pl-emerald-ink: #0c2a49;
+  --rose: #9c4438;
+  --sky: #4675a4;
+  --navy: #0c2a49;
+  --navy2: #22507b;
+  --navy3: #2c5a87;
+  --amber: #f0c75e;
+  --pl-amber-ink: #795f28;
+  --text: #0f2034;
+  --muted: #545f6c;
+  --muted2: #3e4752;
+  /* Variables the app uses but never sets. */
+  --accent: #22507b;
+  --sub: #545f6c;
+  --good: #2f6f73;
+  --warn: #795f28;
+  --bad: #9c4438;
+  --font-h: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-b: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* The app sets its figures in a monospaced font; the site uses Inter with figures of equal width. */
+  --font-m: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --r: 12px;
+}
+
+body {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Until the site script has switched the app to Swedish, nothing is shown, so the English texts do not flash. */
+html:not(.pl-ready) body {
+  visibility: hidden;
+}
+
+/* ── Header: a light bar, as the site's own header ── */
+header {
+  background: #ffffff;
+  border-bottom: 1px solid #e7e5e0;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.logo h1 {
+  color: #0c2a49;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+}
+.logo span {
+  color: #545f6c;
+  letter-spacing: 0.06em;
+}
+.logo-icon {
+  background: #0c2a49;
+  color: #ffffff;
+  border-radius: 10px;
+}
+.header-badge {
+  background: #f5f4f1;
+  color: #545f6c;
+  border: 1px solid #e7e5e0;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+/* ── Tabs: plain words, the chosen one in navy with a navy line under it ── */
+.tabs-bar {
+  background: #ffffff;
+  border-bottom: 1px solid #e7e5e0;
+}
+.tab-btn {
+  color: #545f6c;
+  opacity: 1;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  border-bottom-width: 2px;
+}
+.tab-btn:hover {
+  color: #0c2a49;
+  opacity: 1;
+}
+.tab-btn.active {
+  color: #0c2a49;
+  font-weight: 600;
+  border-bottom-color: #0c2a49;
+  border-bottom-width: 2px;
+}
+
+/* ── Titles: as the headings of the site's calculator pages ── */
+.section-title {
+  font-family: var(--font-h);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  color: #0f2034;
+}
+.section-sub {
+  color: #545f6c;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.card-header {
+  color: #545f6c;
+  font-weight: 600;
+}
+/* A chart's title is a heading, as on the site's calculators, not a label in capitals. */
+.chart-title {
+  font-family: var(--font-h);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: #0f2034;
+}
+/* The app's coloured mark before every card title; the site's titles have none. */
+.card-header::before {
+  display: none;
+}
+
+/* ── Cards, tiles and charts: white, a light border, round corners ── */
+.card,
+.chart-wrap,
+.metric-tile {
+  border-color: #e7e5e0;
+  box-shadow: none;
+}
+.metric-tile:hover {
+  transform: none;
+  border-color: #d9d6cf;
+}
+/* The bar on top of a tile only shows a status (good, warning, bad), as in the site's figure tiles otherwise none. */
+.metric-tile::before {
+  display: none;
+}
+.metric-tile.st-good::before,
+.metric-tile.st-warn::before,
+.metric-tile.st-bad::before {
+  display: block;
+  height: 3px;
+}
+.metric-tile.st-good,
+.metric-tile.st-good:hover,
+.metric-tile.st-warn,
+.metric-tile.st-warn:hover,
+.metric-tile.st-bad,
+.metric-tile.st-bad:hover {
+  border-color: #e7e5e0;
+}
+.tile-label {
+  color: #545f6c;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+.tile-value {
+  font-family: var(--font-h);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  color: #0f2034;
+}
+/* A figure that is fine is in ink, as on the site; one that needs attention keeps the warning or bad colour. */
+.tile-value.good {
+  color: #0f2034;
+}
+.tile-value.warn {
+  color: #795f28;
+}
+.tile-value.bad {
+  color: #9c4438;
+}
+
+/* ── Inputs: white with the site's input border, the figures in navy ── */
+.inp,
+.acc-table input {
+  background: #ffffff;
+  border-color: #d9d6cf;
+  color: #0c2a49;
+  font-weight: 500;
+}
+.inp:focus,
+.acc-table input:focus {
+  border-color: #22507b;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(34, 80, 123, 0.15);
+}
+.input-label {
+  color: #0f2034;
+  font-weight: 500;
+}
+
+/* ── Buttons: the main one in the site's gold with navy text ── */
+.btn {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  border-radius: 8px;
+}
+.btn-primary {
+  background: #f0c75e;
+  color: #0c2a49;
+}
+.btn-primary:hover {
+  background: #f5d78c;
+}
+
+/* ── Tables: a light head as in the site's year tables ── */
+.acc-table th,
+.yr-table th {
+  background: #f5f4f1;
+  color: #545f6c;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-bottom-color: #e7e5e0;
+}
+.yr-table td {
+  border-bottom-color: #efede8;
+}
+.yr-table td:first-child {
+  color: #0c2a49;
+}
+.yr-table tr:hover td,
+.acc-table tr:hover td {
+  background: #f5f4f1;
+}
+.acc-group-hdr {
+  color: #22507b;
+}
+
+/* ── Tooltips: white cards, as the site's charts ── */
+#tip-box,
+[id^="tt-"] {
+  background: #ffffff !important;
+  color: #0f2034 !important;
+  border: 1px solid #e7e5e0 !important;
+  box-shadow: 0 12px 32px -12px rgba(12, 42, 73, 0.28) !important;
+  font-family: var(--font-b) !important;
+}
+
+/*
+ * ── Phones: a compact header that scrolls away ──
+ * The app's own phone rule for the title (`header h1`) loses to its `.logo h1`, so the title stays large, and the plan
+ * menu sticks out on the right. Here the header is two short rows: the name with the plan menu under it, then the
+ * buttons. It does not stick to the top, so the screen is left to the tabs.
+ */
+@media (max-width: 767px) {
+  header {
+    position: static;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .logo {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+  .logo h1 {
+    font-size: 1.15rem;
+  }
+  .logo span {
+    font-size: 10px;
+  }
+  #plan-preset {
+    flex: 1 1 100%;
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    font-size: 13px !important;
+    padding: 8px 10px !important;
+  }
+  header > div:last-child {
+    justify-content: flex-start !important;
+    gap: 8px !important;
+  }
+  .header-badge {
+    display: none;
+  }
+  .tab-btn {
+    font-size: 13px;
+  }
+}
