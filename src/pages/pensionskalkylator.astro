@@ -4,16 +4,17 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
-  title="Pensionskalkylator – räkna ut ditt pensionskapital"
-  description="Räkna ut ditt framtida pensionskapital utifrån sparande, avkastning och avgifter – och se vad det blir per månad."
+  title="Pensionskalkylator – räcker pensionen och sparandet?"
+  description="Se om din pension och ditt sparande räcker till livet som pensionär: allmän pension och tjänstepension enligt Typfallsmodellen, skatt, budget och hur mycket mer du behöver spara."
   ogTitle="Pensionskalkylator – Pensionslyft"
-  ogDescription="Se ditt framtida pensionskapital och månadsbelopp efter avgifter."
+  ogDescription="Räcker pensionen och sparandet? Se din prognos och hur mycket mer du behöver spara."
 >
   <div class="mx-auto max-w-7xl px-4 py-14">
     <h1 class="font-display text-4xl font-semibold">Pensionskalkylator</h1>
     <p class="mt-3 max-w-2xl text-muted-foreground">
-      Fyll i ditt nuvarande pensionskapital och ditt månadssparande. Kalkylatorn räknar fram kapitalet
-      vid pension och en uppskattad månadsutbetalning.
+      Berätta lite om din ekonomi i dag. Kalkylatorn räknar ut din allmänna pension och tjänstepension, drar skatten
+      och visar om pensionen och ditt sparande räcker till den budget du vill ha som pensionär – och hur mycket mer du
+      i så fall behöver spara.
     </p>
     <div class="mt-10">
       <PensionCalculator client:load />

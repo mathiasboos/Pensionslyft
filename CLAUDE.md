@@ -45,8 +45,16 @@ look at on the preview.
   and commit the new file. The script also puts the site's colours into the app
   (`scripts/typfallsmodellen-theme.css`, which sets the app's colour and font variables and turns off its dark
   mode, plus the Google Fonts link of the site), so that the page looks like the other calculators; change
-  colours and fonts there, never in the HTML. The old React
-  port (`src/lib/typfall/`) is in git history up to commit a4c6971.
+  colours and fonts there, never in the HTML. The engine of the old React port is back in `src/lib/typfall/`
+  (with `src/data/typfall.json` and its tests `tests/typfall*.test.ts`), but only as the pension engine of the
+  Pensionskalkylatorn; its UI is in git history up to commit a4c6971.
+- **Pensionskalkylatorn** (`src/lib/pensionskalkylator.ts`, `PensionCalculator.tsx`), after Wealthsimple's retirement
+  calculator: the public pension and the tjänstepension come from `runTypfall` (or amounts the user enters), are
+  taxed with `calcNettolon` (2026 rules, förhöjt grundavdrag from `xage`), and the budget's gap (minPension's
+  Bas/Medel/Plus or an own amount) is taken from an ISK followed month by month. Everything is shown in today's
+  money. "Det du behöver" is the capital at the retirement age that lasts to the life expectancy (bisection), and
+  the forecast box compares it with what the user will have. `tests/pensionskalkylator.test.ts` pins the default
+  and the Plus case. `calculatePension` in `src/lib/pension.ts` is still used by the home page.
 - **Pensionsplaneraren is not ported either, and it updates itself.** `/pensionsplaneraren` shows
   `Retirement_Planner.html` of `github.com/mathiasboos/Calculators` (11 tabs, Chart.js and SheetJS inline, EN/SV)
   in a same-origin iframe like Typfallsmodellen. The owner develops it there and wants every change, a parameter or a
