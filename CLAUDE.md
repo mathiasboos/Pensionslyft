@@ -56,7 +56,7 @@ look at on the preview.
   at the retirement age that lasts to the life expectancy (bisection), and the forecast box compares it with what the
   user will have. `tests/pensionsoversikt.test.ts` pins the default and the Plus case.
   The chart and the tiles show **all capital**: the private savings and the *capital value* of inkomstpension,
-  premiepension, garantipension/tillägg, tjänstepension and other income (the present value of what each pays after tax
+  premiepension, tjänstepension and other income (garantipension is not counted as capital: with no real wage growth it comes only late in life; it stays in the monthly income and the forecast) (the present value of what each pays after tax
   to the life expectancy), against the capital that funds the whole budget. One discount rate is calibrated so that the
   budget's present value equals what the month-by-month savings run (fee, ISK tax) says funds the whole budget; then the
   capital view and the forecast box agree (`discount`, `capital`, `capitalDiff`, `monthlyDiff` in `kalkylera`).

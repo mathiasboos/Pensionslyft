@@ -134,8 +134,21 @@ describe("allt kapital", () => {
 
   it("delar kapitalet på källor som summerar till totalen", () => {
     for (const c of kalkylera(base).capital) {
-      expect(c.total).toBeCloseTo(c.savings + c.ip + c.pp + c.gpTillagg + c.tjp + c.other, 6);
+      expect(c.total).toBeCloseTo(c.savings + c.ip + c.pp + c.tjp + c.other, 6);
     }
+  });
+
+  it("räknar inte garantipensionen som kapital, men har med den i inkomsten", () => {
+    // Med lika stor löneökning som inflation minskar inkomstpensionen i fasta priser, och garantipension kommer sent i livet.
+    const p = modelPension(base);
+    expect(p.byAge.get(80)!.gpTillagg).toBeGreaterThan(0);
+    const r = kalkylera(base);
+    const at80 = r.capital.find((c) => c.age === 80)!;
+    expect("gpTillagg" in at80).toBe(false);
+    expect(at80.total).toBeCloseTo(at80.savings + at80.ip + at80.pp + at80.tjp + at80.other, 6);
+    const row80 = r.rows.find((y) => y.age === 80)!;
+    expect(row80.allmanNet).toBeGreaterThan(0);
+    expect(r.used.allman).toBeGreaterThan(0);
   });
 
   it("ger ett överskott när pensionen räcker till budgeten, och månadsbeloppet följer pensionen", () => {
@@ -151,9 +164,10 @@ describe("allt kapital", () => {
     const plus = kalkylera({ ...base, budget: 27300, savings: 0, monthlySaving: 0 });
     expect(plus.surplus).toBe(false);
     expect(plus.capitalDiff).toBeLessThan(0);
-    // The rate is calibrated on the savings run, so the capital view and the savings run agree on the size.
-    expect(-plus.capitalDiff).toBeGreaterThan(plus.shortfall * 0.9);
-    expect(-plus.capitalDiff).toBeLessThan(plus.shortfall * 1.1);
+    // The rate is calibrated on the savings run, so the capital view and the savings run agree on the size. The capital
+    // view is a little larger: it does not count the garantipension that the forecast has in the income.
+    expect(-plus.capitalDiff).toBeGreaterThan(plus.shortfall * 0.95);
+    expect(-plus.capitalDiff).toBeLessThan(plus.shortfall * 1.15);
     expect(plus.monthlyDiff).toBeGreaterThan(0);
   });
 

@@ -65,7 +65,6 @@ const CAPITAL_SERIES = [
   { key: "ip", name: "Inkomstpension", color: "var(--color-chart-1)" },
   { key: "pp", name: "Premiepension", color: "var(--color-chart-3)" },
   { key: "tjp", name: "Tjänstepension", color: "var(--color-chart-4)" },
-  { key: "gp", name: "Garantipension och tillägg", color: "#e6d5b7" },
   { key: "other", name: "Annan inkomst", color: "#a9b8c9" },
 ] as const;
 
@@ -225,8 +224,8 @@ export default function PensionsoversiktCalculator() {
 
   // All capital at the start of each year: the private savings and the capital value of the pensions, against the need.
   const chartData = [
-    ...result.capital.map((c) => ({ age: c.age, savings: c.savings, ip: c.ip, pp: c.pp, tjp: c.tjp, gp: c.gpTillagg, other: c.other, need: c.need })),
-    { age: safe.lifeAge, savings: Math.max(rows.at(-1)?.closing ?? 0, 0), ip: 0, pp: 0, tjp: 0, gp: 0, other: 0, need: 0 },
+    ...result.capital.map((c) => ({ age: c.age, savings: c.savings, ip: c.ip, pp: c.pp, tjp: c.tjp, other: c.other, need: c.need })),
+    { age: safe.lifeAge, savings: Math.max(rows.at(-1)?.closing ?? 0, 0), ip: 0, pp: 0, tjp: 0, other: 0, need: 0 },
   ];
   const shownSeries = CAPITAL_SERIES.filter((s) => chartData.some((d) => d[s.key] > 0.5));
   const { surplus, retireEstimate } = result;
@@ -578,6 +577,11 @@ export default function PensionsoversiktCalculator() {
             skatt under resten av livet, i dagens penningvärde. Samma ränta används för behovet, så kapitalet och det du
             behöver går att jämföra. Den är avkastningen efter avgift och ISK-skatt som sparandet ger. Det gröna är sajtens
             turkos.
+          </li>
+          <li>
+            Garantipension räknas inte som kapital. Den betalas bara ut om inkomstpensionen blir låg. Med lika stor
+            löneökning som inflation, som i antagandena här, minskar inkomstpensionen i fasta priser, och då kan
+            garantipensionen komma först sent i livet. Den finns med i inkomsten per månad och i prognosen.
           </li>
           <li>
             Din tidigaste pensionsålder är den lägsta ålder där kapitalet räcker till budgeten, och där sparandet bär

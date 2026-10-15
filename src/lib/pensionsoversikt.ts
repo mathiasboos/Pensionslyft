@@ -210,13 +210,14 @@ export interface KalkylYear {
  * All capital at the start of a year, in today's money. The private savings are the ISK that is followed month by month.
  * The pensions have no balance in Typfallsmodellen, so their capital value is the present value of what they pay after
  * tax from then to the life expectancy, discounted at `KalkylResult.discount`. `need` is the same for the whole budget.
+ * Garantipension is not counted as capital: it is a safety net that is paid only if the inkomstpension is low (with no real
+ * wage growth that is late in life), so it is in the monthly income and the forecast but not in this capital.
  */
 export interface CapitalYear {
   age: number;
   savings: number;
   ip: number;
   pp: number;
-  gpTillagg: number;
   tjp: number;
   other: number;
   total: number;
@@ -413,6 +414,9 @@ function presentValue(a: number, from: number, lifeAge: number, d: number, amoun
   return sum;
 }
 
+/** The pensions and income that count as capital (not garantipension). */
+const CAPITAL_SOURCES = ["ip", "pp", "tjp", "other"] as const;
+
 const NO_NET: Net = { total: 0, allman: 0, ip: 0, pp: 0, gpTillagg: 0, tjp: 0, other: 0 };
 const NO_PENSION: Flow = { gross: () => ({ allman: 0, ip: 0, pp: 0, gpTillagg: 0, tjp: 0, other: 0 }), net: () => NO_NET };
 
@@ -478,14 +482,13 @@ export function kalkylera(input: KalkylInput): KalkylResult {
   const capital: CapitalYear[] = have.rows.map((r) => {
     const ip = pv(r.age, (t) => flow.net(t).ip * 12);
     const pp = pv(r.age, (t) => flow.net(t).pp * 12);
-    const gpTillagg = pv(r.age, (t) => flow.net(t).gpTillagg * 12);
     const tjp = pv(r.age, (t) => flow.net(t).tjp * 12);
     const other = pv(r.age, (t) => flow.net(t).other * 12);
     const savings = Math.max(r.opening, 0);
-    return { age: r.age, savings, ip, pp, gpTillagg, tjp, other, total: savings + ip + pp + gpTillagg + tjp + other, need: pv(r.age, budgetAt) };
+    return { age: r.age, savings, ip, pp, tjp, other, total: savings + ip + pp + tjp + other, need: pv(r.age, budgetAt) };
   });
   const needTotal = pv(R, budgetAt);
-  const capitalAtRetirement = have.atRetirement + (["ip", "pp", "gpTillagg", "tjp", "other"] as const).reduce((sum, k) => sum + pv(R, (t) => flow.net(t)[k] * 12), 0);
+  const capitalAtRetirement = have.atRetirement + CAPITAL_SOURCES.reduce((sum, k) => sum + pv(R, (t) => flow.net(t)[k] * 12), 0);
   const capitalDiff = capitalAtRetirement - needTotal;
   const annuity = pv(R, () => 1); // the present value of 1 kr a year over the retirement years
   const monthlyDiff = annuity > 0 ? Math.abs(capitalDiff) / annuity / 12 : 0;
@@ -500,7 +503,7 @@ export function kalkylera(input: KalkylInput): KalkylResult {
     const trial = { ...input, retireAge: age };
     const trialPension = age === R ? pension : modelPension(trial);
     const trialFlow = age === R ? flow : flows(trial, trialPension);
-    const pensions = (["ip", "pp", "gpTillagg", "tjp", "other"] as const).reduce(
+    const pensions = CAPITAL_SOURCES.reduce(
       (sum, k) => sum + presentValue(age, age, life, discount, (t) => trialFlow.net(t)[k] * 12),
       0,
     );
