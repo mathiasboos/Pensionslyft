@@ -86,7 +86,7 @@ const fire: NavItem = {
 };
 
 export const calculatorGroups: NavGroup[] = [
-  { title: "Pension", items: [planner, pension, overview, typfall, lonevaxling] },
+  { title: "Pension", items: [pension, lonevaxling, overview, planner, typfall] },
   { title: "Lön och sparande", items: [nettolon, compound, fire] },
 ];
 
