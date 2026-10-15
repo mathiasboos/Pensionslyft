@@ -137,3 +137,86 @@ body {
     transition: none;
   }
 }
+
+/*
+ * The minus and plus buttons of the number fields (scripts/typfallsmodellen-site.js), the same look as StepButton in
+ * src/components/calculators/fields.tsx: a 36 px square with a thin border and a navy fill on hover. The field's grid
+ * (label and hint, then the field) gets a button on each side of the field. On a phone the buttons are 44 px, the
+ * smallest target a thumb hits reliably.
+ */
+.field.pl-has-step {
+  grid-template-columns: minmax(0, 1fr) 36px 96px 36px;
+  column-gap: 6px;
+}
+.field.pl-has-step > .pl-step-minus {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.field.pl-has-step > input {
+  grid-column: 3;
+  text-align: center;
+}
+.field.pl-has-step > .pl-step-plus {
+  grid-column: 4;
+  grid-row: 1 / span 2;
+}
+/* The buttons replace the browser's own spin arrows, which show on a focused field on a computer. */
+.field.pl-has-step > input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.field.pl-has-step > input[type="number"]::-webkit-inner-spin-button,
+.field.pl-has-step > input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.pl-step {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--surface, #ffffff);
+  color: var(--text-primary);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.pl-step:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+.pl-step:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.pl-step:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+@media (pointer: coarse) {
+  .field.pl-has-step {
+    grid-template-columns: minmax(0, 1fr) 44px 80px 44px;
+    column-gap: 4px;
+  }
+  .pl-step {
+    width: 44px;
+    height: 44px;
+  }
+  .field.pl-has-step > input {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-step {
+    transition: none;
+  }
+}
