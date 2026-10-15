@@ -56,6 +56,10 @@ look at on the preview.
   at the retirement age that lasts to the life expectancy (bisection), and the forecast box compares it with what the
   user will have. `tests/pensionsoversikt.test.ts` pins the default and the Plus case. `calculatePension` in
   `src/lib/pension.ts` is still used by the Sparkalkylatorn and the home page.
+- **Sparkalkylatorn's payout** (`calculatePayout` in `src/lib/pension.ts`, next to the untouched `calculatePension`):
+  the saving phase is `calculatePension`'s; the payout is either "monthly" (the same annuity over `payoutYears`, the
+  capital growing at half the net return meanwhile, followed year by year) or "lump" (everything at the retirement).
+  The chart shows the capital falling to 0 and the payouts as bars; the table has a column "Utbetalning". Before tax.
 - **Pensionsplaneraren is not ported either, and it updates itself.** `/pensionsplaneraren` shows
   `Retirement_Planner.html` of `github.com/mathiasboos/Calculators` (11 tabs, Chart.js and SheetJS inline, EN/SV)
   in a same-origin iframe like Typfallsmodellen. The owner develops it there and wants every change, a parameter or a
