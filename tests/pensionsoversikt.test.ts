@@ -110,3 +110,95 @@ describe("kalkylera", () => {
     expect(Math.round(plus.extraMonthlySaving)).toBe(915);
   });
 });
+
+describe("allt kapital", () => {
+  const onlySalary = { ...base, savings: 0, monthlySaving: 0 };
+
+  it("fyller diagrammet när bara lönen är ifylld", () => {
+    const r = kalkylera(onlySalary);
+    expect(r.haveAtRetirement).toBe(0);
+    expect(r.capitalAtRetirement).toBeGreaterThan(0);
+    expect(r.capital.length).toBe(r.rows.length);
+    const atRet = r.capital.find((c) => c.age === onlySalary.retireAge)!;
+    expect(atRet.savings).toBe(0);
+    expect(atRet.ip).toBeGreaterThan(0);
+    expect(atRet.pp).toBeGreaterThan(0);
+    expect(atRet.tjp).toBeGreaterThan(0);
+    expect(atRet.total).toBeCloseTo(r.capitalAtRetirement, 0);
+    // Capital grows to the retirement age and is then paid out.
+    const first = r.capital[0]!;
+    expect(first.total).toBeGreaterThan(0);
+    expect(first.total).toBeLessThan(atRet.total);
+    expect(r.capital.at(-1)!.total).toBeLessThan(atRet.total);
+  });
+
+  it("delar kapitalet på källor som summerar till totalen", () => {
+    for (const c of kalkylera(base).capital) {
+      expect(c.total).toBeCloseTo(c.savings + c.ip + c.pp + c.gpTillagg + c.tjp + c.other, 6);
+    }
+  });
+
+  it("ger ett överskott när pensionen räcker till budgeten, och månadsbeloppet följer pensionen", () => {
+    const r = kalkylera(onlySalary);
+    expect(r.surplus).toBe(true);
+    expect(r.capitalDiff).toBeGreaterThan(0);
+    // Nettopensionen i det första året är 19 396 mot budgeten 18 400; över livet är den högre (förhöjt grundavdrag).
+    expect(r.monthlyDiff).toBeGreaterThan(r.netPension - onlySalary.budget - 100);
+    expect(r.monthlyDiff).toBeLessThan(3000);
+  });
+
+  it("ger ett underskott för pluspensionären, i nivå med modellens egen brist", () => {
+    const plus = kalkylera({ ...base, budget: 27300, savings: 0, monthlySaving: 0 });
+    expect(plus.surplus).toBe(false);
+    expect(plus.capitalDiff).toBeLessThan(0);
+    // The rate is calibrated on the savings run, so the capital view and the savings run agree on the size.
+    expect(-plus.capitalDiff).toBeGreaterThan(plus.shortfall * 0.9);
+    expect(-plus.capitalDiff).toBeLessThan(plus.shortfall * 1.1);
+    expect(plus.monthlyDiff).toBeGreaterThan(0);
+  });
+
+  it("behovet är nuvärdet av budgeten och minskar mot livslängden", () => {
+    const r = kalkylera(base);
+    const need = r.capital.map((c) => c.need);
+    expect(r.needTotal).toBeCloseTo(need[base.retireAge - base.age]!, 0);
+    expect(need[base.retireAge - base.age]!).toBeGreaterThan(need[0]!);
+    expect(need.at(-1)!).toBeLessThan(need[base.retireAge - base.age]!);
+  });
+});
+
+describe("tidigaste pensionsålder", () => {
+  it("är tidigare än vald ålder vid överskott och senare vid underskott", () => {
+    const surplus = kalkylera(base);
+    expect(surplus.surplus).toBe(true);
+    expect(surplus.retireEstimate.age).not.toBeNull();
+    expect(surplus.retireEstimate.age!).toBeLessThan(base.retireAge);
+
+    const deficit = kalkylera({ ...base, budget: 27300, savings: 0, monthlySaving: 0 });
+    expect(deficit.surplus).toBe(false);
+    expect(deficit.retireEstimate.age).not.toBeNull();
+    expect(deficit.retireEstimate.age!).toBeGreaterThan(base.retireAge);
+  });
+
+  it("räknar ut åldern så att kapitalet precis räcker: ett år senare har inte överskott, valet av den åldern har det", () => {
+    const deficit = { ...base, budget: 27300, savings: 0, monthlySaving: 0 };
+    const age = kalkylera(deficit).retireEstimate.age!;
+    expect(kalkylera({ ...deficit, retireAge: age }).surplus).toBe(true);
+    expect(kalkylera({ ...deficit, retireAge: age - 1 }).surplus).toBe(false);
+  });
+
+  it("väntar på att pensionen börjar: utan sparande går man inte i pension före lägsta åldern", () => {
+    const r = kalkylera({ ...base, savings: 0, monthlySaving: 0 });
+    expect(r.retireEstimate.age!).toBeGreaterThanOrEqual(r.pension.lowestAge);
+  });
+
+  it("blir tidigare ju mer man har sparat", () => {
+    const ages = [0, 300_000, 1_000_000].map((savings) => kalkylera({ ...base, budget: 27300, savings, monthlySaving: 0 }).retireEstimate.age!);
+    expect(ages[0]!).toBeGreaterThanOrEqual(ages[1]!);
+    expect(ages[1]!).toBeGreaterThanOrEqual(ages[2]!);
+  });
+
+  it("ger null när inte ens 75 år räcker", () => {
+    const r = kalkylera({ ...base, budget: 90_000, savings: 0, monthlySaving: 0 });
+    expect(r.retireEstimate.age).toBeNull();
+  });
+});

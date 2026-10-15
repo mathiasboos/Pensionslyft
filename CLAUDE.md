@@ -54,7 +54,15 @@ look at on the preview.
   (2026 rules, förhöjt grundavdrag from `xage`), and the budget's gap (minPension's Bas/Medel/Plus or an own amount)
   is taken from an ISK followed month by month. Everything is shown in today's money. "Det du behöver" is the capital
   at the retirement age that lasts to the life expectancy (bisection), and the forecast box compares it with what the
-  user will have. `tests/pensionsoversikt.test.ts` pins the default and the Plus case. `calculatePension` in
+  user will have. `tests/pensionsoversikt.test.ts` pins the default and the Plus case.
+  The chart and the tiles show **all capital**: the private savings and the *capital value* of inkomstpension,
+  premiepension, garantipension/tillägg, tjänstepension and other income (the present value of what each pays after tax
+  to the life expectancy), against the capital that funds the whole budget. One discount rate is calibrated so that the
+  budget's present value equals what the month-by-month savings run (fee, ISK tax) says funds the whole budget; then the
+  capital view and the forecast box agree (`discount`, `capital`, `capitalDiff`, `monthlyDiff` in `kalkylera`).
+  Surplus (`capitalDiff >= 0`): green "Kapitalöverskott", "Budgetöverskott" and "Du kan uppskattningsvis gå i pension
+  vid YY"; deficit: red "Behövs", "Budgetunderskott" and "Du behöver uppskattningsvis jobba till YY" (`retireEstimate`,
+  the earliest age 55–75 at which the capital reaches the need and the savings carry the budget until the pensions start). `calculatePension` in
   `src/lib/pension.ts` is still used by the Sparkalkylatorn and the home page.
 - **Sparkalkylatorn's payout** (`calculatePayout` in `src/lib/pension.ts`, next to the untouched `calculatePension`):
   the saving phase is `calculatePension`'s; the payout is either "monthly" (the same annuity over `payoutYears`, the

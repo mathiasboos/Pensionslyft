@@ -38,26 +38,39 @@ export function Choice<T extends string>({
   );
 }
 
+/** The site's colour for "good": the turquoise of the forecast "Du ligger rätt till". Bad is the destructive red. */
+const TONE_GOOD = "#2f6f73";
+
 export function Stat({
   label,
   value,
   highlight,
   note,
+  tone,
 }: {
   label: string;
   value: string;
   highlight?: boolean;
   /** a line under the value */
   note?: ReactNode;
+  /** colours the label and the value: green for a surplus, red for a deficit */
+  tone?: "good" | "bad";
 }) {
+  const toneStyle = tone === "good" ? { color: TONE_GOOD } : undefined;
+  const toneClass = tone === "bad" ? "text-destructive" : undefined;
   return (
     <div
       className={`rounded-xl border border-border p-5 ${highlight ? "bg-primary text-primary-foreground" : "bg-card"}`}
     >
-      <p className={`text-xs tracking-wider uppercase ${highlight ? "opacity-75" : "text-muted-foreground"}`}>
+      <p
+        className={cn("text-xs tracking-wider uppercase", highlight ? "opacity-75" : tone ? undefined : "text-muted-foreground", toneClass)}
+        style={toneStyle}
+      >
         {label}
       </p>
-      <p className="mt-2 font-display text-2xl font-semibold">{value}</p>
+      <p className={cn("mt-2 font-display text-2xl font-semibold", toneClass)} style={toneStyle}>
+        {value}
+      </p>
       {note && <p className={`mt-1 text-xs ${highlight ? "opacity-75" : "text-muted-foreground"}`}>{note}</p>}
     </div>
   );

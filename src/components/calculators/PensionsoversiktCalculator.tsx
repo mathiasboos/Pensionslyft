@@ -18,6 +18,7 @@ import {
   AVTAL,
   BUDGETS,
   DEFAULT_INPUT,
+  HIGHEST_ESTIMATE_AGE,
   type KalkylInput,
   type KalkylYear,
   kalkylera,
@@ -48,6 +49,7 @@ const COLUMNS: ExportColumn<KalkylYear>[] = [
   { label: "Ålder", value: (r) => r.age, plain: true },
   { label: "År", value: (r) => r.year, plain: true },
   { label: "Sparat vid årets början", value: (r) => r.opening },
+  { label: "Pensionernas kapitalvärde", value: (r) => r.pensionCapital },
   { label: "Insättningar", value: (r) => r.saving },
   { label: "Avkastning efter avgift och skatt", value: (r) => r.growth },
   { label: "Pension och inkomst efter skatt", value: (r) => r.pensionNet },
@@ -56,6 +58,24 @@ const COLUMNS: ExportColumn<KalkylYear>[] = [
   { label: "Saknas", value: (r) => r.shortfall },
   { label: "Sparat vid årets slut", value: (r) => r.closing },
 ];
+
+/** The capital by source, bottom to top in the chart. */
+const CAPITAL_SERIES = [
+  { key: "savings", name: "Privat sparande", color: "var(--color-chart-2)" },
+  { key: "ip", name: "Inkomstpension", color: "var(--color-chart-1)" },
+  { key: "pp", name: "Premiepension", color: "var(--color-chart-3)" },
+  { key: "tjp", name: "Tjänstepension", color: "var(--color-chart-4)" },
+  { key: "gp", name: "Garantipension och tillägg", color: "#e6d5b7" },
+  { key: "other", name: "Annan inkomst", color: "#a9b8c9" },
+] as const;
+
+/** Rounds up to 1, 2, 2.5, 5 or 10 times a power of ten, so that the axis ends on a round number. */
+function niceCeil(v: number): number {
+  if (v <= 0) return 1;
+  const pow = Math.pow(10, Math.floor(Math.log10(v)));
+  const m = v / pow;
+  return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * pow;
+}
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
 const kr = (v: number) => formatSek(v);
@@ -203,10 +223,14 @@ export default function PensionsoversiktCalculator() {
     if (kommunName && Math.abs((RATES[kommunName] ?? 0) - v) > 0.001) setKommunName("");
   };
 
+  // All capital at the start of each year: the private savings and the capital value of the pensions, against the need.
   const chartData = [
-    ...rows.map((r) => ({ age: r.age, have: Math.max(r.opening, 0), need: r.needCapital })),
-    { age: safe.lifeAge, have: rows.at(-1)?.closing ?? 0, need: 0 },
+    ...result.capital.map((c) => ({ age: c.age, savings: c.savings, ip: c.ip, pp: c.pp, tjp: c.tjp, gp: c.gpTillagg, other: c.other, need: c.need })),
+    { age: safe.lifeAge, savings: Math.max(rows.at(-1)?.closing ?? 0, 0), ip: 0, pp: 0, tjp: 0, gp: 0, other: 0, need: 0 },
   ];
+  const shownSeries = CAPITAL_SERIES.filter((s) => chartData.some((d) => d[s.key] > 0.5));
+  const { surplus, retireEstimate } = result;
+  const estimateAge = retireEstimate.age;
   const incomeData = rows
     .filter((r) => r.age >= safe.retireAge)
     .map((r) => ({
@@ -312,19 +336,23 @@ export default function PensionsoversiktCalculator() {
       {/* ── The forecast ── */}
       <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-display text-xl font-semibold">Ditt sparande fram till {safe.lifeAge} år</h2>
-          <ul className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-            <li className="flex items-center gap-2">
-              <span className="h-2.5 w-4 rounded-sm bg-chart-2/70" aria-hidden="true" />
-              Det du kommer att ha
-            </li>
+          <h2 className="font-display text-xl font-semibold">Ditt kapital fram till {safe.lifeAge} år</h2>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {shownSeries.map((l) => (
+              <li key={l.key} className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-sm" style={{ background: l.color }} aria-hidden="true" />
+                {l.name}
+              </li>
+            ))}
             <li className="flex items-center gap-2">
               <span className="w-4 border-t-2 border-dashed border-chart-1" aria-hidden="true" />
               Det du behöver
             </li>
           </ul>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">I dagens penningvärde.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Sparande och pensionernas kapitalvärde, i dagens penningvärde.
+        </p>
         <div className="relative mt-4 grid gap-4 lg:block">
           <div className="lg:absolute lg:top-2 lg:left-24 lg:z-10">
             <Forecast result={result} />
@@ -332,22 +360,18 @@ export default function PensionsoversiktCalculator() {
           <div className="h-80 lg:h-[26rem]">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 24, right: 8 }}>
-                <defs>
-                  <linearGradient id="pk-have" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-chart-2)" stopOpacity={0.75} />
-                    <stop offset="100%" stopColor="var(--color-chart-2)" stopOpacity={0.12} />
-                  </linearGradient>
-                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                 <XAxis dataKey="age" tickLine={false} axisLine={false} fontSize={12} minTickGap={16} />
-                <YAxis tickFormatter={formatSekShort} tickLine={false} axisLine={false} fontSize={12} width={80} />
+                <YAxis domain={[0, (max: number) => niceCeil(max * 1.3)]} tickFormatter={formatSekShort} tickLine={false} axisLine={false} fontSize={12} width={80} />
                 <Tooltip
                   formatter={(v: number) => formatSek(v)}
                   labelFormatter={(age) => `Vid ${age} år`}
                   separator=": "
                   itemStyle={{ color: "var(--color-foreground)" }}
                 />
-                <Area type="linear" dataKey="have" name="Det du kommer att ha" stroke="var(--color-chart-2)" strokeWidth={2} fill="url(#pk-have)" />
+                {shownSeries.map((l) => (
+                  <Area key={l.key} type="linear" dataKey={l.key} name={l.name} stackId="kapital" stroke={l.color} strokeWidth={1} fill={l.color} fillOpacity={0.85} />
+                ))}
                 <Line type="linear" dataKey="need" name="Det du behöver" stroke="var(--color-chart-1)" strokeWidth={1.5} strokeDasharray="5 4" dot={false} />
                 <ReferenceLine
                   x={safe.retireAge}
@@ -360,10 +384,46 @@ export default function PensionsoversiktCalculator() {
           </div>
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label={`Sparat vid ${safe.retireAge} år`} value={kr(result.haveAtRetirement)} note="det du kommer att ha" />
-          <Stat label={`Behövs vid ${safe.retireAge} år`} value={kr(result.needAtRetirement)} note={`för att räcka till ${safe.lifeAge} år`} />
+          <Stat
+            label={`Kapital vid ${safe.retireAge} år`}
+            value={kr(result.capitalAtRetirement)}
+            note="sparande och pensionernas kapitalvärde"
+          />
+          {surplus ? (
+            <Stat
+              label={`Kapitalöverskott vid ${safe.retireAge} år`}
+              value={kr(result.capitalDiff)}
+              tone="good"
+              note={`utöver det som behövs till ${safe.lifeAge} år`}
+            />
+          ) : (
+            <Stat
+              label={`Behövs vid ${safe.retireAge} år`}
+              value={kr(result.needTotal)}
+              tone="bad"
+              note={`för att räcka till ${safe.lifeAge} år`}
+            />
+          )}
           <Stat label="Pension efter skatt" value={krMonth(result.netPension)} note={`första hela året, vid ${fullAge} år`} />
-          <Stat label="Glapp mot budgeten" value={krMonth(result.gap)} note={result.gap > 0 ? "tas ur sparandet" : "pensionen täcker budgeten"} />
+          {surplus ? (
+            <Stat label="Budgetöverskott" value={krMonth(result.monthlyDiff)} tone="good" note="mer än budgeten varje månad" />
+          ) : (
+            <Stat label="Budgetunderskott" value={krMonth(result.monthlyDiff)} tone="bad" note="av budgeten som inte täcks" />
+          )}
+          <div className="sm:col-span-2 lg:col-span-4">
+            <Stat
+              label={surplus ? "Du kan uppskattningsvis gå i pension vid" : "Du behöver uppskattningsvis jobba till"}
+              value={estimateAge !== null ? `${estimateAge} år` : `längre än ${HIGHEST_ESTIMATE_AGE} år`}
+              tone={surplus ? "good" : "bad"}
+              note={
+                surplus
+                  ? estimateAge !== null && estimateAge <= retireEstimate.floor
+                    ? `tidigare än ${retireEstimate.floor} år räknar vi inte med`
+                    : "med samma budget, sparande och avkastning"
+                  : "innan pension, med samma budget, sparande och avkastning"
+              }
+            />
+          </div>
         </div>
       </div>
 
@@ -513,6 +573,16 @@ export default function PensionsoversiktCalculator() {
             den lägsta pensionsåldern.
           </li>
           <li>Pensionen beskattas med 2026 års regler och din kommunalskatt, med förhöjt grundavdrag från den ålder lagen anger.</li>
+          <li>
+            Pensionerna har inget saldo i Typfallsmodellen. Deras kapitalvärde är nuvärdet av det de betalar ut efter
+            skatt under resten av livet, i dagens penningvärde. Samma ränta används för behovet, så kapitalet och det du
+            behöver går att jämföra. Den är avkastningen efter avgift och ISK-skatt som sparandet ger. Det gröna är sajtens
+            turkos.
+          </li>
+          <li>
+            Din tidigaste pensionsålder är den lägsta ålder där kapitalet räcker till budgeten, och där sparandet bär
+            budgeten tills pensionerna börjar.
+          </li>
           <li>
             Det som pensionen efter skatt inte täcker av budgeten tas ur sparandet, som antas ligga på ett ISK. Avgift och
             schablonskatt dras varje år.

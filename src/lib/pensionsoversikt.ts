@@ -202,6 +202,33 @@ export interface KalkylYear {
   closing: number;
   /** The capital that is needed, along the same ages ("Det du behöver"). */
   needCapital: number;
+  /** The capital value of the pensions and other income at the start of the year (see CapitalYear). */
+  pensionCapital: number;
+}
+
+/**
+ * All capital at the start of a year, in today's money. The private savings are the ISK that is followed month by month.
+ * The pensions have no balance in Typfallsmodellen, so their capital value is the present value of what they pay after
+ * tax from then to the life expectancy, discounted at `KalkylResult.discount`. `need` is the same for the whole budget.
+ */
+export interface CapitalYear {
+  age: number;
+  savings: number;
+  ip: number;
+  pp: number;
+  gpTillagg: number;
+  tjp: number;
+  other: number;
+  total: number;
+  need: number;
+}
+
+/** When the pensions could start so that the capital reaches the need (the earliest age that works). */
+export interface RetireEstimate {
+  /** null when not even the highest age that is tried (75) is enough. */
+  age: number | null;
+  /** The lowest age that is tried. */
+  floor: number;
 }
 
 export type Status = "rattTill" | "nastanDar" | "paVag" | "forbattras";
@@ -237,12 +264,27 @@ export interface KalkylResult {
   shortfall: number; // need − have at the retirement age, at least 0
   extraMonthlySaving: number; // more a month (today's money) that closes the shortfall
   depletedAge: number | null; // the age the savings run out, if before the life expectancy
+  /** The real rate the capital values are discounted at: the return after fee and ISK tax, as the savings run says. */
+  discount: number;
+  capital: CapitalYear[];
+  /** All capital at the retirement age: the savings and the capital value of the pensions. */
+  capitalAtRetirement: number;
+  /** The capital that funds the whole budget from the retirement age to the life expectancy. */
+  needTotal: number;
+  /** capitalAtRetirement − needTotal: a surplus when it is 0 or more. */
+  capitalDiff: number;
+  surplus: boolean;
+  /** The monthly budget (today's money) the surplus pays on top of the budget, or that the deficit leaves unpaid. */
+  monthlyDiff: number;
+  retireEstimate: RetireEstimate;
 }
+
+type Net = { total: number; allman: number; ip: number; pp: number; gpTillagg: number; tjp: number; other: number };
 
 interface Flow {
   /** Pension and other income by age, a month in today's money. */
-  gross: (age: number) => { allman: number; tjp: number; other: number };
-  net: (age: number) => { total: number; allman: number; tjp: number; other: number };
+  gross: (age: number) => { allman: number; ip: number; pp: number; gpTillagg: number; tjp: number; other: number };
+  net: (age: number) => Net;
 }
 
 function flows(input: KalkylInput, pension: ModelPension): Flow {
@@ -250,9 +292,9 @@ function flows(input: KalkylInput, pension: ModelPension): Flow {
   const rikt = pension.available ? pension.riktalder : 67;
   const scale = (own: number | null, model: number, first: number) => (own === null ? model : first > 0 ? (own * model) / first : own);
   const gross = (age: number) => {
-    if (age < input.retireAge) return { allman: 0, tjp: 0, other: 0 };
+    if (age < input.retireAge) return { allman: 0, ip: 0, pp: 0, gpTillagg: 0, tjp: 0, other: 0 };
     const other = input.otherIncome;
-    if (age < pension.startAge) return { allman: 0, tjp: 0, other };
+    if (age < pension.startAge) return { allman: 0, ip: 0, pp: 0, gpTillagg: 0, tjp: 0, other };
     const p = pension.byAge.get(age) ?? pension.byAge.get(Math.max(...pension.byAge.keys(), pension.startAge)) ?? ZERO;
     const f = pension.first;
     // An own amount follows the model's path over the years (the inkomstpension falls a little in real terms);
@@ -260,21 +302,21 @@ function flows(input: KalkylInput, pension: ModelPension): Flow {
     const ip = scale(input.ownIp, p.ip, f.ip);
     const pp = scale(input.ownPp, p.pp, f.pp);
     const tjp = scale(input.ownTjp, p.tjp, f.tjp);
-    return { allman: ip + pp + p.gpTillagg, tjp, other };
+    return { allman: ip + pp + p.gpTillagg, ip, pp, gpTillagg: p.gpTillagg, tjp, other };
   };
   // The tax is the same in every run of the savings, so it is computed once per age.
-  const cache = new Map<number, ReturnType<Flow["net"]>>();
+  const cache = new Map<number, Net>();
   const net = (age: number) => {
     const hit = cache.get(age);
     if (hit) return hit;
     const g = gross(age);
     const total = g.allman + g.tjp + g.other;
-    let value = { total: 0, allman: 0, tjp: 0, other: 0 };
+    let value: Net = { total: 0, allman: 0, ip: 0, pp: 0, gpTillagg: 0, tjp: 0, other: 0 };
     if (total > 0) {
       const over = age >= xage(born + age, rikt);
       const n = pensionNet(total, over, input.kommunPct, input.begrPct);
       const k = n / total;
-      value = { total: n, allman: g.allman * k, tjp: g.tjp * k, other: g.other * k };
+      value = { total: n, allman: g.allman * k, ip: g.ip * k, pp: g.pp * k, gpTillagg: g.gpTillagg * k, tjp: g.tjp * k, other: g.other * k };
     }
     cache.set(age, value);
     return value;
@@ -283,7 +325,7 @@ function flows(input: KalkylInput, pension: ModelPension): Flow {
 }
 
 interface Run {
-  rows: Omit<KalkylYear, "needCapital">[];
+  rows: Omit<KalkylYear, "needCapital" | "pensionCapital">[];
   atRetirement: number; // real
   final: number; // real, at the life expectancy
   depletedAge: number | null;
@@ -364,6 +406,20 @@ function solve(ok: (x: number) => boolean, lo: number, hi: number): number {
   return hi;
 }
 
+/** The present value at age `a` of a yearly amount paid in the years from max(a, from) to the life age, paid mid-year. */
+function presentValue(a: number, from: number, lifeAge: number, d: number, amountAt: (age: number) => number): number {
+  let sum = 0;
+  for (let t = Math.max(a, from); t < lifeAge; t++) sum += amountAt(t) * Math.pow(1 + d, -(t - a + 0.5));
+  return sum;
+}
+
+const NO_NET: Net = { total: 0, allman: 0, ip: 0, pp: 0, gpTillagg: 0, tjp: 0, other: 0 };
+const NO_PENSION: Flow = { gross: () => ({ allman: 0, ip: 0, pp: 0, gpTillagg: 0, tjp: 0, other: 0 }), net: () => NO_NET };
+
+/** The lowest retirement age that is tried for the estimate: tjänstepension can start at 55. */
+const LOWEST_ESTIMATE_AGE = 55;
+export const HIGHEST_ESTIMATE_AGE = 75;
+
 export function kalkylera(input: KalkylInput): KalkylResult {
   const pension = modelPension(input);
   const flow = flows(input, pension);
@@ -403,13 +459,67 @@ export function kalkylera(input: KalkylInput): KalkylResult {
   for (const r of needPath.rows) if (r.age < input.retireAge) needByAge.set(r.age, r.opening * k);
   for (const r of retirementRun(needAtRetirement).rows) needByAge.set(r.age, r.opening);
 
-  const rows: KalkylYear[] = have.rows.map((r) => ({
+  // ── All capital: the savings and the capital value of the pensions ──
+  // One rate for everything: the rate at which the budget's present value is the capital that the month-by-month savings
+  // run says funds the whole budget (it has the fee and the ISK tax in it). Then the pensions' capital value and the
+  // need add up with the savings, and a surplus or deficit here is the same as in the forecast.
+  const R = input.retireAge;
+  const life = input.lifeAge;
+  const budgetYear = input.budget * 12;
+  const fallbackRate = realRate(input.returnPct - input.feePct, input.inflationPct);
+  let discount = fallbackRate;
+  if (R < life && budgetYear > 0) {
+    const noPension = (capital: number) => simulate(input, NO_PENSION, 0, capital, R);
+    const needFull = solve((c) => noPension(c).rows.every((r) => r.shortfall < 1), 0, 1e6);
+    discount = solve((d) => presentValue(R, R, life, d, () => budgetYear) <= needFull, -0.3, 0.5);
+  }
+  const pv = (a: number, amountAt: (age: number) => number, from = R) => presentValue(a, from, life, discount, amountAt);
+  const budgetAt = () => budgetYear;
+  const capital: CapitalYear[] = have.rows.map((r) => {
+    const ip = pv(r.age, (t) => flow.net(t).ip * 12);
+    const pp = pv(r.age, (t) => flow.net(t).pp * 12);
+    const gpTillagg = pv(r.age, (t) => flow.net(t).gpTillagg * 12);
+    const tjp = pv(r.age, (t) => flow.net(t).tjp * 12);
+    const other = pv(r.age, (t) => flow.net(t).other * 12);
+    const savings = Math.max(r.opening, 0);
+    return { age: r.age, savings, ip, pp, gpTillagg, tjp, other, total: savings + ip + pp + gpTillagg + tjp + other, need: pv(r.age, budgetAt) };
+  });
+  const needTotal = pv(R, budgetAt);
+  const capitalAtRetirement = have.atRetirement + (["ip", "pp", "gpTillagg", "tjp", "other"] as const).reduce((sum, k) => sum + pv(R, (t) => flow.net(t)[k] * 12), 0);
+  const capitalDiff = capitalAtRetirement - needTotal;
+  const annuity = pv(R, () => 1); // the present value of 1 kr a year over the retirement years
+  const monthlyDiff = annuity > 0 ? Math.abs(capitalDiff) / annuity / 12 : 0;
+
+  // The earliest retirement age at which the capital reaches the need, with the same rate. The savings before the
+  // retirement do not depend on the age, so one run gives them for every age.
+  const accumulation = simulate({ ...input, retireAge: life }, flow, input.monthlySaving, input.savings, input.age);
+  const savingsAt = (age: number) => accumulation.rows.find((r) => r.age === age)?.opening ?? 0;
+  const floor = Math.max(input.age + 1, LOWEST_ESTIMATE_AGE);
+  let estimate: number | null = null;
+  for (let age = floor; age <= HIGHEST_ESTIMATE_AGE && age < life; age++) {
+    const trial = { ...input, retireAge: age };
+    const trialPension = age === R ? pension : modelPension(trial);
+    const trialFlow = age === R ? flow : flows(trial, trialPension);
+    const pensions = (["ip", "pp", "gpTillagg", "tjp", "other"] as const).reduce(
+      (sum, k) => sum + presentValue(age, age, life, discount, (t) => trialFlow.net(t)[k] * 12),
+      0,
+    );
+    // The pensions cannot be drawn before they start: the savings have to carry the budget until then.
+    const bridge = presentValue(age, age, trialPension.startAge, discount, (t) => Math.max(budgetYear - trialFlow.net(t).total * 12, 0));
+    if (savingsAt(age) >= bridge - 1 && savingsAt(age) + pensions >= presentValue(age, age, life, discount, budgetAt) - 1) {
+      estimate = age;
+      break;
+    }
+  }
+
+  const rows: KalkylYear[] = have.rows.map((r, i) => ({
     ...r,
     pensionGross: (() => {
       const x = flow.gross(r.age);
       return (x.allman + x.tjp + x.other) * 12;
     })(),
     needCapital: needByAge.get(r.age) ?? 0,
+    pensionCapital: capital[i]!.total - capital[i]!.savings,
   }));
 
   return {
@@ -427,5 +537,13 @@ export function kalkylera(input: KalkylInput): KalkylResult {
     shortfall: Math.max(needAtRetirement - have.atRetirement, 0),
     extraMonthlySaving,
     depletedAge: have.depletedAge,
+    discount,
+    capital,
+    capitalAtRetirement,
+    needTotal,
+    capitalDiff,
+    surplus: capitalDiff >= 0,
+    monthlyDiff,
+    retireEstimate: { age: estimate, floor },
   };
 }
