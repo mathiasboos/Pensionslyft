@@ -4,6 +4,7 @@ import {
   Compass,
   FileText,
   Flame,
+  Gauge,
   LineChart,
   PiggyBank,
   Receipt,
@@ -42,6 +43,13 @@ const pension: NavItem = {
   icon: Calculator,
 };
 
+const overview: NavItem = {
+  href: "/pensionsoversikt",
+  title: "Pensionsöversikten",
+  description: "Räcker pensionen och sparandet? Se din prognos och hur mycket mer du behöver spara.",
+  icon: Gauge,
+};
+
 const typfall: NavItem = {
   href: "/typfallsmodellen",
   title: "Typfallsmodellen",
@@ -78,14 +86,14 @@ const fire: NavItem = {
 };
 
 export const calculatorGroups: NavGroup[] = [
-  { title: "Pension", items: [planner, pension, typfall, lonevaxling] },
+  { title: "Pension", items: [planner, pension, overview, typfall, lonevaxling] },
   { title: "Lön och sparande", items: [nettolon, compound, fire] },
 ];
 
 export const calculators: NavItem[] = calculatorGroups.flatMap((group) => group.items);
 
 /** The calculator shown in the "Utvalt" box of the Kalkylatorer menu: the newest one. */
-export const featuredCalculator: NavItem = planner;
+export const featuredCalculator: NavItem = overview;
 
 export const insights: NavItem[] = [
   {

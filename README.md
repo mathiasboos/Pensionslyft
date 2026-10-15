@@ -28,6 +28,7 @@ visual editor (Framer, Lovable) is needed.
 | Articles | `/artiklar` | `src/pages/artiklar/index.astro` |
 | One article | `/artiklar/<slug>` | `src/pages/artiklar/[slug].astro` + `src/content/articles/<slug>.md` |
 | Pension calculator | `/pensionskalkylator` | `src/pages/pensionskalkylator.astro` + `src/components/calculators/PensionCalculator.tsx` |
+| Pensionsöversikt | `/pensionsoversikt` | `src/pages/pensionsoversikt.astro` + `src/components/calculators/PensionsoversiktCalculator.tsx` (model `src/lib/pensionsoversikt.ts`, pensions from `src/lib/typfall/`) |
 | Compound interest | `/ranta-pa-ranta` | `src/pages/ranta-pa-ranta.astro` + `src/components/calculators/CompoundCalculator.tsx` |
 | FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
 | Pensionsplaneraren | `/pensionsplaneraren` | `src/pages/pensionsplaneraren.astro` (shows `public/pensionsplaneraren-app.html`, fetched from GitHub every hour by `.github/workflows/pensionsplaneraren.yml` with `scripts/sync-pensionsplaneraren.mjs`) |
