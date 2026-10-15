@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "df4182a208bd8da2570b9924da24e58ec79d0bc1",
-  "committedAt": "2026-10-13T12:18:59Z",
-  "subject": "Swedish column headers and names in the CSV and Excel exports"
+  "commit": "cd6d9be2a422d47daebd022622883452169ae0e9",
+  "committedAt": "2026-10-15T14:01:46Z",
+  "subject": "Guiden går att fälla ihop på mobil"
 }

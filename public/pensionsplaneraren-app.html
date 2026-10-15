@@ -673,7 +673,17 @@ input[type="number"]::-webkit-outer-spin-button {
 #guide-panel .g-next{background:var(--gold);color:#0c2a49;border:none}
 #guide-panel .g-back{background:transparent;color:var(--muted);border:1px solid var(--border)}
 #guide-panel .g-x{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--muted);font-size:14px;padding:2px 4px}
-@media(max-width:767px){#guide-panel{left:16px;right:16px;width:auto;bottom:76px}}
+#guide-panel .g-min{display:none;position:absolute;top:8px;right:36px;background:none;border:none;color:var(--muted);font-size:14px;padding:2px 6px;line-height:1}
+#guide-panel .g-step,#guide-panel .g-title{padding-right:28px}
+@media(max-width:767px){
+  #guide-panel{left:16px;right:16px;width:auto;bottom:76px}
+  #guide-panel .g-min{display:block}
+  #guide-panel .g-step,#guide-panel .g-title{padding-right:58px}
+  /* Folded in on a phone: only the step, the title and the buttons, so that the page stays in view. */
+  #guide-panel.g-collapsed{padding:10px 14px}
+  #guide-panel.g-collapsed ul{display:none}
+  #guide-panel.g-collapsed .g-title{margin-bottom:8px}
+}
 </style>
 <!-- pensionslyft:begin -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -2171,7 +2181,7 @@ en:{
   'preset.clear':'Clear all input data',
   'preset.confirm':'This replaces the data in the current plan (personal, assets, expenses, withdrawals) and resets the model assumptions to the Typfallsmodellen defaults. A plan saved in the browser is kept until you press Save. Continue?',
   'preset.cleared':'✓ All input data cleared','preset.loaded':'✓ Typical case loaded: ITP1, born 1980, salary 40 000 kr/month',
-  'guide.step':'Step {n} of {m}','guide.back':'Back','guide.next':'Next','guide.finish':'Finish','guide.close':'Close guide',
+  'guide.step':'Step {n} of {m}','guide.back':'Back','guide.next':'Next','guide.finish':'Finish','guide.close':'Close guide','guide.min':'Minimize guide','guide.max':'Show guide',
   'guide.t1':'Personal','guide.t2':'Assets','guide.t3':'Withdrawals','guide.t4':'Expenses',
   'guide.b1':'<li>Enter your <b>birth year</b> and the <b>age you began working</b>.</li><li><b>Retirement age</b>: tick <b>Target retirement age</b> to use your riktålder, or untick it and enter your own age.</li><li>Enter <b>life expectancy age</b>, for example 95.</li><li>Enter your <b>gross monthly salary</b>; the net salary fills in automatically. Set the yearly salary increase above inflation.</li>',
   'guide.b2':'<li><b>After-tax</b>: add savings such as ISK, endowment insurance and cash with today\'s balance and monthly saving.</li><li><b>P-Insurance</b>: pick your occupational pension scheme (e.g. ITP 1). Leave Opening empty to calculate the balance from your salary history.</li><li><b>State</b>: add Inkomstpension and Premiepension (Opening empty = automatic), and Garantipension / Inkomstpensionstillägg if relevant.</li><li><b>PGB</b>: add child years, conscription, studies or sickness compensation.</li>',
@@ -2793,7 +2803,7 @@ sv:{
   'preset.clear':'Rensa all indata',
   'preset.confirm':'Detta ersätter uppgifterna i den aktuella planen (personligt, tillgångar, utgifter, uttag) och återställer modellantagandena till Typfallsmodellens standardvärden. En plan sparad i webbläsaren finns kvar tills du trycker Spara. Fortsätta?',
   'preset.cleared':'✓ All indata rensad','preset.loaded':'✓ Typfall laddat: ITP1, född 1980, lön 40 000 kr/mån',
-  'guide.step':'Steg {n} av {m}','guide.back':'Tillbaka','guide.next':'Nästa','guide.finish':'Klar','guide.close':'Stäng guiden',
+  'guide.step':'Steg {n} av {m}','guide.back':'Tillbaka','guide.next':'Nästa','guide.finish':'Klar','guide.close':'Stäng guiden','guide.min':'Minska guiden','guide.max':'Visa guiden',
   'guide.t1':'Personligt','guide.t2':'Tillgångar','guide.t3':'Uttag','guide.t4':'Utgifter',
   'guide.b1':'<li>Ange ditt <b>födelseår</b> och <b>åldern då du började arbeta</b>.</li><li><b>Pensionsålder</b>: kryssa i <b>Riktålder</b> för att använda din riktålder, eller ta bort krysset och ange egen ålder.</li><li>Ange <b>förväntad livslängd</b> som ålder, t.ex. 95.</li><li>Ange din <b>bruttolön per månad</b>; nettolönen fylls i automatiskt. Ange årlig löneökning utöver inflationen.</li>',
   'guide.b2':'<li><b>Efter skatt</b>: lägg till sparande som ISK, kapitalförsäkring och kontanter med dagens saldo och månadssparande.</li><li><b>P-försäkring</b>: välj ditt tjänstepensionsavtal (t.ex. ITP 1). Lämna Ingående tomt så beräknas saldot från din lönehistorik.</li><li><b>Statlig</b>: lägg till Inkomstpension och Premiepension (tomt Ingående = automatiskt), samt Garantipension / Inkomstpensionstillägg vid behov.</li><li><b>PGB</b>: lägg till barnår, värnplikt, studier eller sjukersättning.</li>',
@@ -11903,8 +11913,11 @@ var GUIDE_STEPS = [
 ];
 var _guideStep = -1;
 function guideStart(){ _guideStep = 0; guideShow(); }
+var _guideMin = false;  // folded in (a phone only: the button is hidden on a wide screen)
+function guideToggleMin(){ _guideMin = !_guideMin; guideRender(); }
 function guideClose(){
   _guideStep = -1;
+  _guideMin = false;
   document.querySelectorAll('.guide-hl').forEach(function(el){ el.classList.remove('guide-hl'); });
   var p = document.getElementById('guide-panel'); if(p) p.remove();
 }
@@ -11927,7 +11940,9 @@ function guideRender(){
   var n = _guideStep + 1, m = GUIDE_STEPS.length;
   var p = document.getElementById('guide-panel');
   if(!p){ p = document.createElement('div'); p.id = 'guide-panel'; document.body.appendChild(p); }
+  p.className = _guideMin ? 'g-collapsed' : '';
   p.innerHTML = '<button class="g-x" onclick="guideClose()" title="'+t('guide.close')+'">✕</button>'
+    + '<button class="g-min" onclick="guideToggleMin()" aria-expanded="'+(!_guideMin)+'" title="'+t(_guideMin ? 'guide.max' : 'guide.min')+'" aria-label="'+t(_guideMin ? 'guide.max' : 'guide.min')+'">'+(_guideMin ? '▴' : '▾')+'</button>'
     + '<div class="g-step">'+t('guide.step',{n:n, m:m})+'</div>'
     + '<div class="g-title">'+t('guide.t'+n)+'</div>'
     + '<ul>'+t('guide.b'+n)+'</ul>'
