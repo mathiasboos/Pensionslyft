@@ -86,6 +86,87 @@ export function calculatePension(input: PensionInput): PensionResult {
   };
 }
 
+export type PayoutMethod = "monthly" | "lump";
+
+export type PayoutYear = {
+  /** Years from today, as in `series`: the retirement is year `yearsToRetirement`. */
+  year: number;
+  /** The capital at the start of the year. */
+  opening: number;
+  /** Interest after the fee during the year (the part of the return that is kept in the payout phase). */
+  growth: number;
+  /** What is paid out during the year. */
+  paid: number;
+  /** The capital at the end of the year. */
+  closing: number;
+  /** Everything paid out up to and including this year. */
+  cumulativePaid: number;
+};
+
+export type PayoutResult = PensionResult & {
+  method: PayoutMethod;
+  /** The payout year by year, after the retirement: `payoutYears` years for a monthly payout, one year for a lump sum. */
+  payouts: PayoutYear[];
+  /** Everything that is paid out. */
+  totalPaid: number;
+  /** What is paid out every month; the whole capital for a lump sum (paid once, in the first month). */
+  payment: number;
+};
+
+/**
+ * The saving phase of `calculatePension` followed by the payout phase, year by year.
+ *
+ * - "monthly": the same payout as `calculatePension` (an annuity over `payoutYears` years, the capital growing at half
+ *   the net return meanwhile), followed month by month so that the chart can show the capital falling to 0 and what is
+ *   paid out every year.
+ * - "lump": the whole capital is paid out at the retirement and nothing is left to grow.
+ *
+ * The amounts are before tax, like the rest of the calculator.
+ */
+export function calculatePayout(input: PensionInput & { method: PayoutMethod }): PayoutResult {
+  const base = calculatePension(input);
+  const retirement = input.yearsToRetirement;
+  const payouts: PayoutYear[] = [];
+
+  if (input.method === "lump") {
+    payouts.push({
+      year: retirement + 1,
+      opening: base.finalCapital,
+      growth: 0,
+      paid: base.finalCapital,
+      closing: 0,
+      cumulativePaid: base.finalCapital,
+    });
+    return { ...base, method: input.method, payouts, totalPaid: base.finalCapital, payment: base.finalCapital };
+  }
+
+  const netReturn = input.annualReturn - input.annualFee;
+  const payoutRate = Math.pow(1 + Math.max(netReturn, 0) / 200, 1 / 12) - 1;
+  const years = Math.max(Math.round(input.payoutYears), 1);
+  let capital = base.finalCapital;
+  let cumulativePaid = 0;
+  for (let k = 1; k <= years; k++) {
+    const opening = capital;
+    let paid = 0;
+    for (let month = 0; month < 12; month++) {
+      capital = capital * (1 + payoutRate) - base.monthlyPension;
+      paid += base.monthlyPension;
+    }
+    cumulativePaid += paid;
+    // The annuity ends at 0 up to rounding; a tiny rest is not shown as a negative capital.
+    const closing = Math.abs(capital) < 0.5 ? 0 : capital;
+    payouts.push({
+      year: retirement + k,
+      opening,
+      growth: closing + paid - opening,
+      paid,
+      closing,
+      cumulativePaid,
+    });
+  }
+  return { ...base, method: input.method, payouts, totalPaid: cumulativePaid, payment: base.monthlyPension };
+}
+
 export type CompoundInput = {
   startCapital: number;
   monthlyDeposit: number;

@@ -2,7 +2,7 @@
  * The colours of the Typfallsmodellen app on pensionslyft.se.
  *
  * The app on GitHub has its own palette (SEB's green and yellow, and a dark mode). On this site it is shown in the
- * site's palette, the one of the Pensionskalkylatorn (src/styles/global.css). scripts/sync-typfallsmodellen.mjs puts
+ * site's palette, the one of the Sparkalkylatorn (src/styles/global.css). scripts/sync-typfallsmodellen.mjs puts
  * this file into the built app, after the app's own style, and sets data-theme="light" on <html> so that the app's
  * dark mode, which the rest of the site does not have, stays off. Only variables and a few rules for the page itself
  * are set, so the app's layout and behaviour are untouched.

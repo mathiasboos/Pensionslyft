@@ -49,13 +49,17 @@ look at on the preview.
   (with `src/data/typfall.json` and its tests `tests/typfall*.test.ts`), but only as the pension engine of the
   Pensionsöversikten; its UI is in git history up to commit a4c6971.
 - **Pensionsöversikten** (`/pensionsoversikt`, `src/lib/pensionsoversikt.ts`, `PensionsoversiktCalculator.tsx`), after
-  Wealthsimple's retirement calculator and next to the older Pensionskalkylatorn (which is unchanged): the public
+  Wealthsimple's retirement calculator and next to the older Sparkalkylatorn (the former Pensionskalkylatorn, URL `/pensionskalkylator`, unchanged): the public
   pension and the tjänstepension come from `runTypfall` (or amounts the user enters), are taxed with `calcNettolon`
   (2026 rules, förhöjt grundavdrag from `xage`), and the budget's gap (minPension's Bas/Medel/Plus or an own amount)
   is taken from an ISK followed month by month. Everything is shown in today's money. "Det du behöver" is the capital
   at the retirement age that lasts to the life expectancy (bisection), and the forecast box compares it with what the
   user will have. `tests/pensionsoversikt.test.ts` pins the default and the Plus case. `calculatePension` in
-  `src/lib/pension.ts` is still used by the Pensionskalkylatorn and the home page.
+  `src/lib/pension.ts` is still used by the Sparkalkylatorn and the home page.
+- **Sparkalkylatorn's payout** (`calculatePayout` in `src/lib/pension.ts`, next to the untouched `calculatePension`):
+  the saving phase is `calculatePension`'s; the payout is either "monthly" (the same annuity over `payoutYears`, the
+  capital growing at half the net return meanwhile, followed year by year) or "lump" (everything at the retirement).
+  The chart shows the capital falling to 0 and the payouts as bars; the table has a column "Utbetalning". Before tax.
 - **Pensionsplaneraren is not ported either, and it updates itself.** `/pensionsplaneraren` shows
   `Retirement_Planner.html` of `github.com/mathiasboos/Calculators` (11 tabs, Chart.js and SheetJS inline, EN/SV)
   in a same-origin iframe like Typfallsmodellen. The owner develops it there and wants every change, a parameter or a
@@ -79,7 +83,7 @@ look at on the preview.
   injection (`<!-- pensionslyft:begin/end -->`, the site's fonts) is `scripts/lib/embed.mjs`, also used by the
   Typfallsmodellen script.
 - **One palette and one typeface for all calculators.** The owner wants every calculator in the colours and fonts
-  of the Pensionskalkylatorn: the tokens in `src/styles/global.css` (navy, gold, sand, white; the `chart-*`
+  of the Sparkalkylatorn: the tokens in `src/styles/global.css` (navy, gold, sand, white; the `chart-*`
   colours in diagrams), Inter for text and Inter `font-display` for headings and big numbers. A
   calculator taken from GitHub keeps its calculation, texts and layout, but not its own palette or fonts: map
   them to the site's, and check diagram colours with the dataviz validator.
@@ -93,7 +97,7 @@ look at on the preview.
 - `src/lib/lonevaxling.ts` is a port of `Salary_Exchange_Consumer.html`, and `tests/lonevaxling.test.ts` compares
   the calculation with what the original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
   The page (`LonevaxlingCalculator.tsx`) keeps the original's texts and behaviour but is built like the
-  Pensionskalkylatorn, in the site's own components: inputs in a frame to the left, results and a Recharts chart to
+  Sparkalkylatorn, in the site's own components: inputs in a frame to the left, results and a Recharts chart to
   the right (`AmountSliderField` is in `fields.tsx`). There is no separate stylesheet or canvas chart any more.
 - **Ränta på ränta** (`calculateCompound` in `src/lib/pension.ts`, `CompoundCalculator.tsx`): the capital grows at the
   gross return and the tax (Avkastningsskatt, default 1,05 %) and the fee are taken each year as a share of the
@@ -107,7 +111,7 @@ look at on the preview.
   Typfallsmodellen page is its own app.
 - **Tables and fold-outs.** Every fold-out in the calculators is `Collapsible` (an arrow at the far left, then the name; closed
   from the start). A table of the result year by year is `YearTable` (a `Collapsible` with CSV and Excel buttons in its
-  header; `src/lib/export.ts` writes the files): Pensionskalkylatorn, Ränta på ränta and FIRE use it, so a new calculator with a
+  header; `src/lib/export.ts` writes the files): Sparkalkylatorn, Ränta på ränta and FIRE use it, so a new calculator with a
   table should too. The embedded Typfallsmodellen app is built from another project, so the fold-in of its table
   "Månadsinkomster" is added by `scripts/typfallsmodellen-site.js` and `scripts/typfallsmodellen-theme.css`, which the sync script
   puts into the file (`node scripts/sync-typfallsmodellen.mjs --reapply` does it again after an edit, with no build).

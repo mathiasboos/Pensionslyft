@@ -38,7 +38,7 @@ const planner: NavItem = {
 
 const pension: NavItem = {
   href: "/pensionskalkylator",
-  title: "Pensionskalkylatorn",
+  title: "Sparkalkylatorn",
   description: "Se ditt framtida pensionskapital och vad det blir per månad efter avgifter.",
   icon: Calculator,
 };
