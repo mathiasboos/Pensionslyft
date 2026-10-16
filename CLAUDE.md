@@ -129,6 +129,13 @@ look at on the preview.
   (`tests/fixtures/nettolon-web.json`). The page itself is built in the site's own components, colours and
   fonts (`AmountField`, `SelectField` and `SwitchRow` are in `fields.tsx`), not in the original's look. The rules
   are for income year 2026 and the list of municipalities is SCB's of 2025-12-15: check both every December.
+- **The dots ripple.** The dotted hero background (`.dot-grid`: home, `/kalkylatorer`, `/rapporter`) is drawn on a canvas by
+  `src/scripts/dot-ripple.ts` (loaded from `BaseLayout.astro`) so that a click or tap on a surface where nothing happens
+  sends a wave out from the click point through the dots (`rippleAt`, `dotLook`; tested in `tests/dot-ripple.test.ts`).
+  Links, buttons, fields and the like (`isInteractive`) do not ripple. Without JavaScript, and with
+  `prefers-reduced-motion: reduce`, the CSS dots (`.dot-grid::before` in `global.css`) stay as they were; the canvas has the
+  same grid, colour and mask. The animation runs only while a ripple is alive. The other dotted places (article covers)
+  are CSS only.
 - **Navigation.** `src/lib/site-nav.ts` is the one list of the site's pages (the calculators in their groups, and
   Insikter: Artiklar, Rapporter). The header, its menus, the footer, the home page and `/kalkylatorer` are built from
   it, so a new page is added there once. The header (`SiteHeader.astro`) has Ramp-style menus: on a computer a panel

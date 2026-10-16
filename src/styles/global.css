@@ -149,6 +149,29 @@
     -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 25%, transparent 80%);
     mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 25%, transparent 80%);
   }
+  /*
+   * With JavaScript (and no wish for less motion) the dots are drawn on a canvas instead, so that they can ripple when
+   * you click a surface where nothing happens (src/scripts/dot-ripple.ts). It sits where the CSS dots were and has the
+   * same fade; the CSS dots are turned off then.
+   */
+  .dot-grid[data-dots="canvas"]::before {
+    display: none;
+  }
+  .dot-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 25%, transparent 80%);
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 25%, transparent 80%);
+  }
+  @media print {
+    .dot-canvas {
+      display: none;
+    }
+  }
 }
 
 /*
