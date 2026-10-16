@@ -1,0 +1,112 @@
+# Keeps /typfallsmodellen up to date with the Typfallsmodellen project, github.com/mathiasboos/Typfallsmodellen, so that a
+# change the owner merges there reaches the site without anyone running the sync by hand.
+#
+# Every hour, and when started by hand (Actions → Typfallsmodellen → Run workflow), it looks at `main` of the project. If
+# that is a commit the site does not have yet (src/data/typfallsmodellen-source.json), it builds the app with the site's
+# look on it (scripts/sync-typfallsmodellen.mjs), checks it in a browser (scripts/check-typfallsmodellen.mjs), runs the
+# tests and the build, and commits it to main, which Cloudflare Pages then publishes. If anything fails, nothing is
+# published and the issue "Typfallsmodellen kunde inte uppdateras" is opened (or updated); it is closed again by the next
+# run that works.
+name: Typfallsmodellen
+
+on:
+  schedule:
+    - cron: "47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: typfallsmodellen
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Fetch and build the Typfallsmodellen from main
+        run: node scripts/sync-typfallsmodellen.mjs --if-changed
+
+      - name: Anything new?
+        id: diff
+        run: |
+          if git diff --quiet -- public/typfallsmodellen-app.html src/data/typfallsmodellen-source.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing new: the site already has this version of the Typfallsmodellen." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install a browser
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Check the Typfallsmodellen in a browser
+        if: steps.diff.outputs.changed == 'true'
+        run: node scripts/check-typfallsmodellen.mjs
+
+      - name: Tests and build
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm test
+          npm run build
+
+      - name: Publish
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          subject=$(node -p "require('./src/data/typfallsmodellen-source.json').subject")
+          commit=$(node -p "require('./src/data/typfallsmodellen-source.json').commit.slice(0, 7)")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/typfallsmodellen-app.html src/data/typfallsmodellen-source.json
+          git commit -m "Typfallsmodellen: ${subject} (${commit})"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "Published the Typfallsmodellen from ${commit}: ${subject}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report a failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Typfallsmodellen kunde inte uppdateras";
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "Den automatiska uppdateringen av Typfallsmodellen från github.com/mathiasboos/Typfallsmodellen misslyckades,",
+              "så sajten visar fortfarande den förra versionen. Ärendet stängs av sig självt när en körning lyckas igen.",
+              "",
+              `Senaste körningen: ${run}`,
+            ].join("\n");
+            const { owner, repo } = context.repo;
+            const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: "open", per_page: 100 });
+            const existing = open.find((issue) => issue.title === title && !issue.pull_request);
+            if (existing) await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+            else await github.rest.issues.create({ owner, repo, title, body });
+
+      - name: Close a failure report
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Typfallsmodellen kunde inte uppdateras";
+            const { owner, repo } = context.repo;
+            const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: "open", per_page: 100 });
+            for (const issue of open.filter((i) => i.title === title && !i.pull_request)) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: issue.number, body: "Uppdateringen fungerar igen." });
+              await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: "closed", state_reason: "completed" });
+            }

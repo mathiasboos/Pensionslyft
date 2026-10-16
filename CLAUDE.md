@@ -41,13 +41,30 @@ look at on the preview.
   uses `position: fixed`, a sticky input column and `100vh`, so it must not be auto-height). The app is one
   self-contained file, `public/typfallsmodellen-app.html`, built by `node scripts/sync-typfallsmodellen.mjs`
   (clones the project, builds `apps/web`, copies the file and writes `src/data/typfallsmodellen-source.json`,
-  which the page shows as the version). Never edit the HTML by hand; to update the calculator, run the script
-  and commit the new file. The script also puts the site's colours into the app
+  which the page shows as the version). Never edit the HTML by hand. It updates itself: the GitHub Action
+  `.github/workflows/typfallsmodellen.yml` runs `node scripts/sync-typfallsmodellen.mjs --if-changed` every hour, which
+  looks at `main` of the project (never its default branch, which can be another branch) and does nothing unless `main`
+  is a commit the site does not have; then it builds, `scripts/check-typfallsmodellen.mjs` opens every screen in a browser,
+  the tests and the build run, and the bot commits the new file to `main` (an issue "Typfallsmodellen kunde inte
+  uppdateras" if anything fails). By hand: the same script, or `--ref <full commit>`. The script also puts the site's colours into the app
   (`scripts/typfallsmodellen-theme.css`, which sets the app's colour and font variables and turns off its dark
   mode, plus the Google Fonts link of the site), so that the page looks like the other calculators; change
-  colours and fonts there, never in the HTML. The engine of the old React port is back in `src/lib/typfall/`
+  colours and fonts there, never in the HTML. When the app gets new CSS variables (the tab "Bästa pensionsålder" added
+  `--fig-pa-*`, `--fig-ag-*`), look at the new tab after a sync and map them in the theme too, validated with the dataviz
+  validator; otherwise they keep the app's own palette. The engine of the old React port is back in `src/lib/typfall/`
   (with `src/data/typfall.json` and its tests `tests/typfall*.test.ts`), but only as the pension engine of the
   Pensionsöversikten; its UI is in git history up to commit a4c6971.
+- **How a change on GitHub reaches the site.** The owner expects a change in `github.com/mathiasboos/Calculators` or
+  `github.com/mathiasboos/Typfallsmodellen` to show up here without anyone asking. Every calculator is in one of these groups, and a
+  new one must be put in one of them (and in this table) when it is added:
+
+  | Calculator | Kept up to date by |
+  |---|---|
+  | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
+  | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
+  | Löneväxling, Nettolön, FIRE (re-written in React from `Salary_Exchange_Consumer.html`, `Net_Salary_2026.html`, `FIRE_Calculator .html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
+  | Sparkalkylatorn, Pensionsöversikt, Ränta på ränta | the site's own: no original elsewhere |
+
 - **Pensionsöversikten** (`/pensionsoversikt`, `src/lib/pensionsoversikt.ts`, `PensionsoversiktCalculator.tsx`), after
   Wealthsimple's retirement calculator and next to the older Sparkalkylatorn (the former Pensionskalkylatorn, URL `/pensionskalkylator`, unchanged): the public
   pension and the tjänstepension come from `runTypfall` (or amounts the user enters), are taxed with `calcNettolon`
