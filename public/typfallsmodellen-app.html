@@ -35,6 +35,25 @@
  * vision (ΔE >= 12) and normal-vision (ΔE >= 15) checks between neighbours. As with the muted palette of the site
  * itself, the lightness band and chroma floor fail and teal and sand are below 3:1 against white; the relief the
  * validator asks for is in the app: a legend and a hover readout on every figure, and every plotted number in a table.
+ *
+ * "Bästa pensionsålder" has two colour sets of its own. The retirement ages (the lines of the first view, the boxes with
+ * an age in them) are a diverging scale around the reference age: the site's brick (chart-5) for ages before it, its
+ * steel blue (chart-3) for ages after it, each arm that hue and chroma stepped to OKLCH lightness 0.43, 0.54 and 0.64, so
+ * that the further an age is from the reference, the more its colour stands out from the page; the reference age itself is
+ * the ink. Both arms pass the validator as ordinal ramps (monotone lightness, steps >= 0.06 apart, one hue, lightest step
+ * 3.5:1 and 3.4:1 against white). --fig-pa-on-* is the text on a box, the site's white or ink, whichever contrasts more
+ * (>= 4.6:1).
+ *
+ * The comparison of the collective agreements needs a colour per agreement. The site's chart colours give four: steel
+ * blue (SAF-LO), brick (KAP-KL), gold (ITP-1) and teal (AKAP-KR); SAF-LO and KAP-KL, which every cohort has, take the
+ * two the site is known by. Three more muted hues of the same character fill up: plum #762e61 (ITP-2), violet #a280c8
+ * (PA16 avd 2) and jade #1b735b (PA16 avd 1). They and the way the seven are handed out were searched for against the
+ * validator's own limits, for the full list and for each of the four lists a cohort starts with (born before 1979,
+ * 1979-85, 1986-87, 1988 or later), the baseline "Saknar tjänstepension" in ink in front: between neighbours the colour
+ * vision check is ΔE >= 10.4 (8 is asked for) and the normal-vision check ΔE >= 17.1 (15), and the two colours that are
+ * most alike anywhere (steel blue and jade) are still ΔE 12.6 apart. The lightness band and chroma floor fail, and teal
+ * is 2.4:1 against white, as for the rest of this palette; the same relief applies (a legend, an end label on the lines
+ * that matter, a hover readout, and a table with every number).
  */
 :root {
   color-scheme: light;
@@ -79,44 +98,28 @@
   --fig-scenario-3: #72b3a6;
   --fig-retirement-line: #cfc9bb;
 
-  /*
-   * "Bästa pensionsålder" (the fourth tab). Two scales of its own, in the site's colours, run through the dataviz
-   * validator (scripts/validate_palette.js) like the others.
-   *
-   * The seven retirement ages are a diverging scale around the reference age: three steps of brick for the ages
-   * before it (--fig-pa-m3 earliest, darkest) and three steps of steel blue for the ages after it (--fig-pa-p1 to p3),
-   * the reference itself in plain ink. Each arm is one hue stepped in OKLCH lightness (0.565, 0.485, 0.405): monotone,
-   * every step >= 0.06 apart, the lightest step 3.9:1 (brick) and 3.7:1 (blue) against the white surface, one hue per
-   * arm. --fig-pa-on-* is the text colour for a chip filled with the step: white, which has >= 4.5:1 on every step.
-   *
-   * The eight agreements of the comparison take the site's chart colours in a fixed order (--fig-ag-1 is plain ink):
-   * ink, steel, gold, brick, light teal, plum, grey blue, dark teal. The order was searched among the site's colours
-   * (and plum, which the site has no other use for) so that neighbours are told apart: worst adjacent colour-blind
-   * Delta E 12.0 and normal-vision 15.3, against the 8 and 15 the method asks for. As with the rest of the site's
-   * muted palette, the lightness band and chroma floor fail, and light teal is below 3:1 against white; the relief is
-   * in the tab: a legend, an end label on the lines that matter, a hover readout and a table with every number.
-   */
-  --fig-pa-m3: #7f2618;
-  --fig-pa-m2: #993e2e;
-  --fig-pa-m1: #b35645;
-  --fig-pa-z: var(--text-primary);
-  --fig-pa-p1: #4e78ad;
-  --fig-pa-p2: #386094;
-  --fig-pa-p3: #214a7b;
+  /* "Bästa pensionsålder", the retirement ages: brick for ages before the reference age, steel blue for ages after it. */
+  --fig-pa-m3: #863025;
+  --fig-pa-m2: #a84f42;
+  --fig-pa-m1: #cb6e60;
+  --fig-pa-p1: #6090c1;
+  --fig-pa-p2: #4271a0;
+  --fig-pa-p3: #245380;
   --fig-pa-on-m3: #ffffff;
   --fig-pa-on-m2: #ffffff;
-  --fig-pa-on-m1: #ffffff;
-  --fig-pa-on-z: #ffffff;
-  --fig-pa-on-p1: #ffffff;
+  --fig-pa-on-m1: #0f2034;
+  --fig-pa-on-p1: #0f2034;
   --fig-pa-on-p2: #ffffff;
   --fig-pa-on-p3: #ffffff;
-  --fig-ag-2: #4675a4;
-  --fig-ag-3: #a18142;
-  --fig-ag-4: #9c4438;
-  --fig-ag-5: #72b3a6;
-  --fig-ag-6: #7a5c7a;
-  --fig-ag-7: #7f93ab;
-  --fig-ag-8: #2f6f73;
+
+  /* ... and one colour per collective agreement (--fig-ag-1, the baseline without occupational pension, is the ink). */
+  --fig-ag-2: #a18142;
+  --fig-ag-3: #762e61;
+  --fig-ag-4: #4675a4;
+  --fig-ag-5: #9c4438;
+  --fig-ag-6: #72b3a6;
+  --fig-ag-7: #a280c8;
+  --fig-ag-8: #1b735b;
 }
 
 body {
