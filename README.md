@@ -32,11 +32,16 @@ visual editor (Framer, Lovable) is needed.
 | Compound interest | `/ranta-pa-ranta` | `src/pages/ranta-pa-ranta.astro` + `src/components/calculators/CompoundCalculator.tsx` |
 | FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
 | Pensionsplaneraren | `/pensionsplaneraren` | `src/pages/pensionsplaneraren.astro` (shows `public/pensionsplaneraren-app.html`, fetched from GitHub every hour by `.github/workflows/pensionsplaneraren.yml` with `scripts/sync-pensionsplaneraren.mjs`) |
-| Typfallsmodellen | `/typfallsmodellen` | `src/pages/typfallsmodellen.astro` (shows `public/typfallsmodellen-app.html`, built from GitHub by `scripts/sync-typfallsmodellen.mjs`) |
+| Typfallsmodellen | `/typfallsmodellen` | `src/pages/typfallsmodellen.astro` (shows `public/typfallsmodellen-app.html`, built from `main` on GitHub every hour by `.github/workflows/typfallsmodellen.yml` with `scripts/sync-typfallsmodellen.mjs`) |
 | Löneväxling | `/lonevaxlingskalkylator` | `src/pages/lonevaxlingskalkylator.astro` + `src/components/calculators/LonevaxlingCalculator.tsx` + `src/lib/lonevaxling.ts` |
 | Nettolön | `/nettolonkalkylator` | `src/pages/nettolonkalkylator.astro` + `src/components/calculators/NettolonCalculator.tsx` + `src/lib/nettolon.ts` + `src/data/kommunalskatt-2026.json` |
 | Not found | any other URL | `src/pages/404.astro` |
 
+- **Changes in the source repositories.** The Pensionsplaneraren (`github.com/mathiasboos/Calculators`) and the
+  Typfallsmodellen (`github.com/mathiasboos/Typfallsmodellen`, `main`) are fetched, checked in a browser and published by
+  GitHub Actions every hour. The calculators re-written in React (Löneväxling, Nettolön, FIRE) are watched by
+  `.github/workflows/watch-calculators.yml`, which opens an issue when their original file has changed
+  (`src/data/ported-sources.json`); someone then ports the change.
 - **Articles** are Markdown files in `src/content/articles/`. Add a new file there and the
   article appears on the site, in the article list and in the sitemap.
 - **Colors and fonts** are in `src/styles/global.css`: navy on white with a gold highlight, in

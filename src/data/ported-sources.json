@@ -1,0 +1,40 @@
+{
+  "repository": "https://github.com/mathiasboos/Calculators",
+  "branch": "main",
+  "sources": [
+    {
+      "calculator": "Löneväxlingskalkylatorn",
+      "file": "Salary_Exchange_Consumer.html",
+      "page": "/lonevaxlingskalkylator",
+      "port": [
+        "src/lib/lonevaxling.ts",
+        "src/components/calculators/LonevaxlingCalculator.tsx",
+        "tests/lonevaxling.test.ts"
+      ],
+      "commit": "0506fb50f96934e62911f386ff4b91e6c7b0e465"
+    },
+    {
+      "calculator": "Nettolönkalkylatorn",
+      "file": "Net_Salary_2026.html",
+      "page": "/nettolonkalkylator",
+      "port": [
+        "src/lib/nettolon.ts",
+        "src/components/calculators/NettolonCalculator.tsx",
+        "src/data/kommunalskatt-2026.json",
+        "tests/nettolon.test.ts"
+      ],
+      "commit": "0506fb50f96934e62911f386ff4b91e6c7b0e465"
+    },
+    {
+      "calculator": "FIRE-kalkylatorn",
+      "file": "FIRE_Calculator .html",
+      "page": "/fire-kalkylator",
+      "port": [
+        "calculateFire in src/lib/pension.ts",
+        "src/components/calculators/FireCalculator.tsx",
+        "tests/pension.test.ts"
+      ],
+      "commit": "b743ac966d769cd402ab0e7306305cef2bc75b97"
+    }
+  ]
+}
