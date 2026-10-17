@@ -59,7 +59,7 @@ const snapshot = (page) =>
   }));
 
 /** Opens every screen in turn: the first one is the forecast (the app's start screen). */
-async function walk(page, label, errors, { screenshotPrefix } = {}) {
+async function walk(page, label, { screenshotPrefix } = {}) {
   const screens = await page.$$eval(".screen-toggle button[data-screen]", (buttons) => buttons.map((b) => b.getAttribute("data-screen")));
   if (screens.length < 3) problems.push(`${label}: only ${screens.length} screens found (${screens.join(", ")}), expected at least 3`);
   for (const [i, screen] of screens.entries()) {
@@ -83,13 +83,13 @@ try {
   const kpis = await page.$$eval(".kpi-value", (nodes) => nodes.map((n) => n.textContent.trim()));
   if (kpis.length === 0) problems.push("the first screen shows no KPI values");
   for (const kpi of kpis) if (!/\d/.test(kpi)) problems.push(`a KPI value on the first screen is not a number: "${kpi}"`);
-  const screens = await walk(page, "computer", errors, { screenshotPrefix: "" });
+  const screens = await walk(page, "computer", { screenshotPrefix: "" });
   problems.push(...errors);
 
   // ── a phone ──
   const phone = await browser.newContext({ ...devices["iPhone 13"] });
   const mobile = await open(phone);
-  await walk(mobile.page, "phone", mobile.errors, { screenshotPrefix: "phone-" });
+  await walk(mobile.page, "phone", { screenshotPrefix: "phone-" });
   problems.push(...mobile.errors.map((e) => `phone: ${e}`));
   console.log(`Screens opened: ${screens.join(", ")}.`);
 } finally {
