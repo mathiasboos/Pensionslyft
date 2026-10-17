@@ -50,7 +50,7 @@ look at on the preview.
   (`scripts/typfallsmodellen-theme.css`, which sets the app's colour and font variables and turns off its dark
   mode, plus the Google Fonts link of the site), so that the page looks like the other calculators; change
   colours and fonts there, never in the HTML. When the app gets new CSS variables (the tab "Bästa pensionsålder" added
-  `--fig-pa-*`, `--fig-ag-*`), look at the new tab after a sync and map them in the theme too, validated with the dataviz
+  `--fig-pa-*`, `--fig-ag-*`, the tab "Hur länge räcker pensionen?" `--fig-pu-*`), look at the new tab after a sync and map them in the theme too, validated with the dataviz
   validator; otherwise they keep the app's own palette. The engine of the old React port is back in `src/lib/typfall/`
   (with `src/data/typfall.json` and its tests `tests/typfall*.test.ts`), but only as the pension engine of the
   Pensionsöversikten; its UI is in git history up to commit a4c6971.

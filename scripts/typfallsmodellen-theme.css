@@ -40,6 +40,12 @@
  * most alike anywhere (steel blue and jade) are still ΔE 12.6 apart. The lightness band and chroma floor fail, and teal
  * is 2.4:1 against white, as for the rest of this palette; the same relief applies (a legend, an end label on the lines
  * that matter, a hover readout, and a table with every number).
+ *
+ * "Hur länge räcker pensionen?" colours the payout periods (5, 10, 15 and 20 years) as an ordered ramp of the site's gold
+ * (chart-2, OKLCH hue 83), OKLCH lightness 0.40, 0.48, 0.55 and 0.63, the shortest payout the strongest; for life, the
+ * payout that does not run out, is the ink. The ramp passes the validator's ordinal checks (monotone lightness, steps
+ * >= 0.06 apart, one hue, lightest step 3.4:1 against white). --fig-pu-on-* is the text on a box: white on the three
+ * dark steps (9.3, 6.6 and 4.9:1), the ink on the lightest (4.7:1).
  */
 :root {
   color-scheme: light;
@@ -106,6 +112,18 @@
   --fig-ag-6: #72b3a6;
   --fig-ag-7: #a280c8;
   --fig-ag-8: #1b735b;
+
+  /* "Hur länge räcker pensionen?", the payout periods (5, 10, 15, 20 years, then for life): the site's gold, stepped. */
+  --fig-pu-y5: #5d4303;
+  --fig-pu-y10: #765814;
+  --fig-pu-y15: #8b6c2c;
+  --fig-pu-y20: #a48445;
+  --fig-pu-life: #0f2034;
+  --fig-pu-on-y5: #ffffff;
+  --fig-pu-on-y10: #ffffff;
+  --fig-pu-on-y15: #ffffff;
+  --fig-pu-on-y20: #0f2034;
+  --fig-pu-on-life: #ffffff;
 }
 
 body {
@@ -255,6 +273,36 @@ body {
   .field.pl-has-step > input {
     padding-left: 4px;
     padding-right: 4px;
+  }
+}
+/*
+ * The fields of the savings inputs ("Hur länge räcker pensionen?", "Bästa pensionsålder") are stacked: the caption on top,
+ * the box under it, the hint under that, two of them side by side. A minus and a plus go on each side of the box, in the
+ * row of the box; the caption and the hint run across the whole field.
+ */
+.field.field-stack.pl-has-step {
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  column-gap: 6px;
+}
+.field.field-stack.pl-has-step > .field-label,
+.field.field-stack.pl-has-step > .field-hint {
+  grid-column: 1 / -1;
+}
+.field.field-stack.pl-has-step > .pl-step-minus {
+  grid-column: 1;
+  grid-row: 2;
+}
+.field.field-stack.pl-has-step > input {
+  grid-column: 2;
+  grid-row: 2;
+}
+.field.field-stack.pl-has-step > .pl-step-plus {
+  grid-column: 3;
+  grid-row: 2;
+}
+@media (pointer: coarse) {
+  .field.field-stack.pl-has-step {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
