@@ -18,8 +18,8 @@ Pension beskattas som inkomst. Tar du ut allmän pension, tjänstepension och pr
 
 ## En tumregel i fem steg
 
-1. Skjut upp den allmänna pensionen så länge du kan leva på annat.
-2. Ta ut tjänstepensionen över minst 15 år om du inte behöver pengarna direkt.
+1. Skjut upp den allmänna pensionen så länge du kan leva på annat. Se vad ett extra år ger i Typfallsmodellen, fliken [Bästa pensionsålder?](/typfallsmodellen#retirement).
+2. Ta ut tjänstepensionen över minst 15 år om du inte behöver pengarna direkt. Räkna på hur länge pengarna räcker i Typfallsmodellen, fliken [Hur länge räcker pensionen?](/typfallsmodellen#lasts).
 3. Ta ut inkomst (till exempel från en pensionsförsäkring) minst upp till den inkomstskattefria nivån, som är 42,3 procent av ett prisbasbelopp, 25 042 kronor år 2026.
 4. Använd ISK-kapital till toppar och engångsutgifter.
 5. Räkna om planen vart tredje år.

@@ -6,6 +6,10 @@
  * The app builds its results again on every change, which makes a new table, so the state is kept here, outside the
  * page, and put on the new table as soon as it is there. The title bar's buttons (Årsvis/Månadsvis, CSV, Excel) stay
  * when the table is folded in. The look of the arrow is in scripts/typfallsmodellen-theme.css (.pl-fold).
+ *
+ * A link can open a tab: /typfallsmodellen#retirement opens "Bästa pensionsålder?", #lasts "Hur länge räcker pensionen?"
+ * (the names after # are the app's own data-screen names). The page passes its own hash on, the app reads it from the page
+ * that holds it, or from its own address when it is opened alone.
  */
 (function () {
   var TABLE_ID = "pl-monthly-table";
@@ -186,6 +190,32 @@
     Promise.resolve().then(enhance);
   }
 
+  // The tab named in the address, opened once, as soon as the app has drawn its tab buttons.
+  function openLinkedTab() {
+    var hash = "";
+    try {
+      hash = (window.parent !== window ? window.parent.location.hash : window.location.hash) || "";
+    } catch (e) {
+      hash = window.location.hash || "";
+    }
+    var name = hash.replace(/^#/, "");
+    if (!/^[a-z]+$/.test(name)) return true;
+    var button = document.querySelector('.screen-toggle button[data-screen="' + name + '"]');
+    if (!button) return !document.querySelector(".screen-toggle button[data-screen]");
+    button.click();
+    return true;
+  }
+
+  // Not while the app is still drawing its first page: a click then is overwritten by that drawing.
+  function afterFirstDrawing(fn) {
+    function go() {
+      setTimeout(fn, 0);
+    }
+    if (document.readyState === "complete") go();
+    else window.addEventListener("load", go);
+  }
+
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
   schedule();
+  afterFirstDrawing(openLinkedTab);
 })();

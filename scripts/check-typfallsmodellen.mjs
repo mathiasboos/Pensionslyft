@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Opens public/typfallsmodellen-app.html in headless Chromium and checks that the Typfallsmodellen works with the site's
 // look on it: no script errors, every screen of the app opens and shows something, the first screen's KPI values are
-// numbers, the site's (+/−) buttons are on the number fields, and on a phone the page does not scroll sideways. The GitHub
+// numbers, the site's (+/−) buttons are on the number fields, a link with #retirement or #lasts opens that tab, and on a phone the page does not scroll sideways. The GitHub
 // Action runs it before a new version is published.
 //
 //   node scripts/check-typfallsmodellen.mjs                       the checks
@@ -85,6 +85,17 @@ try {
   for (const kpi of kpis) if (!/\d/.test(kpi)) problems.push(`a KPI value on the first screen is not a number: "${kpi}"`);
   const screens = await walk(page, "computer", { screenshotPrefix: "" });
   problems.push(...errors);
+
+  // ── a link that opens a tab (the articles link to /typfallsmodellen#retirement and #lasts) ──
+  for (const name of ["retirement", "lasts"]) {
+    const linked = await desktop.newPage();
+    await linked.goto(`${url}#${name}`, { waitUntil: "load" });
+    await linked.waitForSelector(".screen-toggle button[data-screen]", { timeout: 5000 });
+    await linked.waitForTimeout(500);
+    const opened = (await snapshot(linked)).active;
+    if (opened !== name) problems.push(`the address #${name} does not open the tab "${name}" (it opened "${opened}")`);
+    await linked.close();
+  }
 
   // ── a phone ──
   const phone = await browser.newContext({ ...devices["iPhone 13"] });
