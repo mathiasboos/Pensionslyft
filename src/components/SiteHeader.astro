@@ -211,6 +211,13 @@ const FeaturedIcon = featuredCalculator.icon;
       >
         Rapporter
       </a>
+      <a
+        href="/om-pensionslyft"
+        aria-current={isActive("/om-pensionslyft") ? "page" : undefined}
+        class:list={[plainLink, isActive("/om-pensionslyft") ? "font-medium text-primary" : "text-foreground/80"]}
+      >
+        Om Pensionslyft
+      </a>
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
@@ -325,6 +332,7 @@ const FeaturedIcon = featuredCalculator.icon;
       </details>
       <a href="/artiklar" class="block border-b border-border py-4 text-base font-medium">Artiklar</a>
       <a href="/rapporter" class="block border-b border-border py-4 text-base font-medium">Rapporter</a>
+      <a href="/om-pensionslyft" class="block border-b border-border py-4 text-base font-medium">Om Pensionslyft</a>
       <div class="mt-8 grid gap-3">
         <a href="/pensionsoversikt" class={cn(buttonVariants({ variant: "highlight", size: "lg" }))}>
           Räkna ut din pension

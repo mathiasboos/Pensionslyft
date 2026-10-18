@@ -1,0 +1,74 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const disclaimer = [
+  {
+    lead: "Inte finansiell rådgivning.",
+    text: "Innehållet och beräkningarna är allmän information. De är inte finansiell, juridisk, skattemässig eller annan rådgivning och ska inte ses som en rekommendation att göra, eller avstå från att göra, något.",
+  },
+  {
+    lead: "Prognoser, inte besked.",
+    text: "Resultaten är beräkningar under de antaganden du själv anger, till exempel inflation, tillväxt, avkastning och livslängd. De är ingen förutsägelse och ingen garanti. Verkligheten kan avvika och regler kan ändras.",
+  },
+  {
+    lead: "Förenklingar.",
+    text: "Modellerna är förenklingar av verkligheten, bland annat när det gäller skatt och privat sparande.",
+  },
+  {
+    lead: "Inofficiell.",
+    text: "Pensionslyft är inte utvecklat av, kopplat till eller godkänt av Pensionsmyndigheten. Typfallsmodellen, dess data och dess användarmanual är Pensionsmyndighetens.",
+  },
+  {
+    lead: "Eget ansvar.",
+    text: "Du använder sidan på eget ansvar. Pensionslyft ansvarar, så långt lagen tillåter, inte för beslut som fattas eller förluster som uppstår med stöd av innehållet.",
+  },
+  {
+    lead: "Kontrollera själv.",
+    text: "Jämför med din egen pensionsprognos på minPension.se och med din tjänstepensionsleverantör, och vänd dig vid behov till en oberoende rådgivare innan du fattar ett beslut.",
+  },
+  {
+    lead: "Integritet.",
+    text: "Alla beräkningar sker i din webbläsare. Det du skriver in skickas inte någonstans.",
+  },
+];
+---
+
+<BaseLayout
+  title="Om Pensionslyft – oberoende guider och kalkyler om svensk pension"
+  description="Vad Pensionslyft är till för, vad sidan inte är, och hur du kontaktar oss."
+  ogDescription="Oberoende guider och kalkyler om svensk pension."
+>
+  <div class="dot-grid">
+    <div class="mx-auto max-w-7xl px-4 pt-12 pb-6">
+      <p class="eyebrow">Pensionslyft</p>
+      <h1 class="mt-2 font-display text-4xl font-semibold sm:text-5xl">Om Pensionslyft</h1>
+      <p class="mt-3 max-w-2xl text-muted-foreground">
+        Vi vill dela med oss av kunskap, inspirera och lyfta pensionsfrågan, så att du kan fatta väl underbyggda beslut
+        som passar dig och din situation.
+      </p>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4 pb-4">
+    <section class="grid gap-4 border-t border-border py-8 lg:grid-cols-[16rem_1fr] lg:gap-10">
+      <h2 class="eyebrow pt-1">Viktigt att veta</h2>
+      <ul class="max-w-3xl space-y-4 text-sm leading-6 text-muted-foreground">
+        {
+          disclaimer.map((item) => (
+            <li>
+              <span class="font-medium text-foreground">{item.lead}</span> {item.text}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="grid gap-4 border-t border-border py-8 lg:grid-cols-[16rem_1fr] lg:gap-10">
+      <h2 class="eyebrow pt-1">Kontakt</h2>
+      <p class="max-w-3xl text-sm leading-6 text-muted-foreground">
+        Frågor, synpunkter eller felaktigheter? Skriv till{" "}
+        <a href="mailto:info@pensionslyft.se" class="text-primary underline underline-offset-2">info@pensionslyft.se</a>.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
