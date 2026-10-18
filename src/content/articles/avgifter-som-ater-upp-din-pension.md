@@ -1,10 +1,10 @@
 ---
 title: "Avgifterna som äter upp din pension"
 slug: avgifter-som-ater-upp-din-pension
-category: "Premium"
+category: "Korta pensionstips"
 excerpt: "En avgift på 1,2 procent låter lite. Över 35 år kan den kosta dig mer än en årslön."
 lead: "Avgifter är den enda faktorn i ditt pensionssparande som du vet säkert på förhand. Avkastningen kan du inte styra – men avgiften kan du."
-reading_minutes: 9
+reading_minutes: 1
 published_at: 2026-09-06
 ---
 

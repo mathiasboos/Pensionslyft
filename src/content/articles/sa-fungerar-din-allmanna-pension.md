@@ -4,7 +4,7 @@ slug: sa-fungerar-din-allmanna-pension
 category: "Grunderna"
 excerpt: "En genomgång av inkomstpension, premiepension och garantipension – och vad som faktiskt styr din slutliga utbetalning."
 lead: "Den allmänna pensionen är grunden i det svenska pensionssystemet. Varje år avsätts 18,5 procent av din pensionsgrundande inkomst, varav 16 procent går till inkomstpensionen och 2,5 procent till premiepensionen."
-reading_minutes: 7
+reading_minutes: 1
 published_at: 2026-08-23
 ---
 

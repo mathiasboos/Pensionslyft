@@ -4,7 +4,7 @@ slug: tjanstepension-det-du-bor-veta
 category: "Tjänstepension"
 excerpt: "Tjänstepensionen kan stå för en tredjedel av din pension. Här är avgifterna och valen som betyder mest."
 lead: "Ungefär nio av tio anställda i Sverige har tjänstepension. Skillnaden mellan ett bra och ett dåligt val kan handla om hundratusentals kronor över ett arbetsliv."
-reading_minutes: 6
+reading_minutes: 1
 published_at: 2026-08-31
 ---
 
