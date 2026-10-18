@@ -10,11 +10,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { calculatePayout, type PayoutMethod } from "@/lib/pension";
+import { calculatePayout } from "@/lib/pension";
 import { formatPercent, formatSek, formatSekShort } from "@/lib/format";
 import type { ExportColumn } from "@/lib/export";
 import { cn } from "@/lib/utils";
-import { Choice, NumberField, SliderField, Stat } from "./fields";
+import { NumberField, SliderField, Stat } from "./fields";
 import { YearTable } from "./YearTable";
 
 interface PensionYear {
@@ -44,7 +44,6 @@ export default function PensionCalculator() {
   const [annualReturn, setAnnualReturn] = useState(6.5);
   const [annualFee, setAnnualFee] = useState(0.6);
   const [payoutYears, setPayoutYears] = useState(20);
-  const [method, setMethod] = useState<PayoutMethod>("monthly");
 
   const result = useMemo(
     () =>
@@ -55,9 +54,8 @@ export default function PensionCalculator() {
         annualReturn,
         annualFee,
         payoutYears,
-        method,
       }),
-    [currentCapital, monthlyDeposit, yearsToRetirement, annualReturn, annualFee, payoutYears, method],
+    [currentCapital, monthlyDeposit, yearsToRetirement, annualReturn, annualFee, payoutYears],
   );
 
   // The result year by year, from the running totals of the calculation: first the saving, then the payout.
@@ -145,47 +143,33 @@ export default function PensionCalculator() {
           step={0.05}
           display={formatPercent(annualFee, 2)}
         />
-        <div>
-          <p className="mb-2 text-sm font-medium">Utbetalning</p>
-          <Choice
-            label="Utbetalning"
-            value={method}
-            onChange={setMethod}
-            options={[
-              { value: "monthly", label: "Månadsbelopp" },
-              { value: "lump", label: "Engångsbelopp" },
-            ]}
-          />
-        </div>
-        {method === "monthly" && (
-          <SliderField
-            label="Utbetalas under"
-            value={payoutYears}
-            onChange={setPayoutYears}
-            min={5}
-            max={30}
-            step={1}
-            display={`${payoutYears} år`}
-          />
-        )}
+        <SliderField
+          label="Utbetalas under"
+          value={payoutYears}
+          onChange={setPayoutYears}
+          min={5}
+          max={30}
+          step={1}
+          display={`${payoutYears} år`}
+          info={{
+            title: "Tjänstepension och privat pension:",
+            text: "Du kan välja att få din pension utbetald under en tidsbegränsad period (t.ex. 5, 10, 15 eller 20 år) eller livsvarigt (så länge du lever). Kortare tid än 5 år tillåts generellt inte av Skatteverket för att det ska räknas som en pensionsförsäkring.",
+          }}
+        />
       </div>
 
       <div className="min-w-0 space-y-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <Stat label="Kapital vid pension" value={formatSek(result.finalCapital)} highlight />
-          {method === "monthly" ? (
-            <Stat
-              label="Per månad i uttag"
-              value={formatSek(result.monthlyPension)}
-              note={`i ${payoutYears} år`}
-              highlight
-            />
-          ) : (
-            <Stat label="Engångsbelopp" value={formatSek(result.payment)} note="utbetalas vid pensionen" highlight />
-          )}
-          {method === "monthly" && <Stat label="Totalt utbetalt" value={formatSek(result.totalPaid)} />}
+          <Stat
+            label="Per månad i uttag"
+            value={formatSek(result.monthlyPension)}
+            note={`i ${payoutYears} år`}
+            highlight
+          />
+          <Stat label="Totalt utbetalt" value={formatSek(result.totalPaid)} />
           <Stat label="Egna insättningar" value={formatSek(result.totalDeposits)} />
-          <div className={method === "monthly" ? "sm:col-span-2" : undefined}>
+          <div className="sm:col-span-2">
             <Stat label="Varav avkastning" value={formatSek(result.totalGrowth)} />
           </div>
         </div>
@@ -207,9 +191,7 @@ export default function PensionCalculator() {
             </ul>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            {method === "monthly"
-              ? `Kapitalet växer till pensionen och betalas sedan ut under ${payoutYears} år. Före skatt.`
-              : "Kapitalet växer till pensionen och betalas ut på en gång. Före skatt."}
+            Kapitalet växer till pensionen och betalas sedan ut under {payoutYears} år. Före skatt.
           </p>
           <div className="mt-4 h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -268,18 +250,11 @@ export default function PensionCalculator() {
         />
 
         <div className="rounded-xl border border-border bg-secondary/50 p-6 text-sm">
-          {method === "monthly" ? (
-            <p className="mb-3">
-              Du får <strong>{formatSek(result.monthlyPension)}</strong> i månaden i {payoutYears} år, tillsammans{" "}
-              <strong>{formatSek(result.totalPaid)}</strong> före skatt. Det som står kvar under uttaget fortsätter att
-              växa, så du får ut mer än du hade sparat vid pensionen.
-            </p>
-          ) : (
-            <p className="mb-3">
-              Hela kapitalet, <strong>{formatSek(result.payment)}</strong> före skatt, betalas ut vid pensionen. Då
-              växer inget mer. Skatten på beloppet beror på hur pengarna är sparade.
-            </p>
-          )}
+          <p className="mb-3">
+            Du får <strong>{formatSek(result.monthlyPension)}</strong> i månaden i {payoutYears} år, tillsammans{" "}
+            <strong>{formatSek(result.totalPaid)}</strong> före skatt. Det som står kvar under uttaget fortsätter att
+            växa, så du får ut mer än du hade sparat vid pensionen.
+          </p>
           Avgiften på {formatPercent(annualFee, 2)} kostar dig ungefär{" "}
           <strong>{formatSek(result.feeCost)}</strong> fram till pension jämfört med ett avgiftsfritt
           sparande. Läs mer i vår artikel om{" "}

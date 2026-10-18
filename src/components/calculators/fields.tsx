@@ -163,6 +163,7 @@ export function SliderField({
   max,
   step,
   display,
+  info,
 }: {
   label: string;
   value: number;
@@ -171,15 +172,55 @@ export function SliderField({
   max: number;
   step: number;
   display: string;
+  /** A text that explains the field: shown in a small box when the label is hovered, focused or tapped. */
+  info?: { title: string; text: string };
 }) {
   const id = useId();
+  const infoId = `${id}-info`;
+  const infoRef = useRef<HTMLSpanElement>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
+  // A tap opens the text (there is no hover on a phone); a tap or press anywhere else, or Escape, closes it.
+  useEffect(() => {
+    if (!infoOpen) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !infoRef.current?.contains(e.target as Node)) setInfoOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [infoOpen]);
   const fill = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
   return (
     <div>
       <div className="flex items-center justify-between">
-        <Label htmlFor={id} className="text-sm">
-          {label}
-        </Label>
+        {info ? (
+          <span ref={infoRef} className="group relative" data-open={infoOpen}>
+            <Label
+              htmlFor={id}
+              tabIndex={0}
+              aria-describedby={infoId}
+              onClick={() => setInfoOpen((open) => !open)}
+              className="cursor-help text-sm underline decoration-dotted decoration-muted-foreground/60 underline-offset-4"
+            >
+              {label}
+            </Label>
+            <span
+              id={infoId}
+              role="tooltip"
+              className="pointer-events-none invisible absolute left-0 top-full z-20 mt-2 w-72 max-w-[calc(100vw-4rem)] rounded-lg border border-border bg-card p-3 text-xs leading-5 text-muted-foreground opacity-0 shadow-lg transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100 group-data-[open=true]:visible group-data-[open=true]:opacity-100"
+            >
+              <span className="block font-medium text-foreground">{info.title}</span>
+              {info.text}
+            </span>
+          </span>
+        ) : (
+          <Label htmlFor={id} className="text-sm">
+            {label}
+          </Label>
+        )}
         <span className="text-sm font-medium">{display}</span>
       </div>
       <input

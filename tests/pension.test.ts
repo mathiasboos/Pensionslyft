@@ -59,7 +59,7 @@ describe("calculatePayout", () => {
   const base = calculatePension(input);
 
   it("keeps the saving phase and the monthly payment of calculatePension", () => {
-    const monthly = calculatePayout({ ...input, method: "monthly" });
+    const monthly = calculatePayout(input);
     expect(monthly.series).toEqual(base.series);
     expect(monthly.finalCapital).toBe(base.finalCapital);
     expect(monthly.payment).toBe(base.monthlyPension);
@@ -67,7 +67,7 @@ describe("calculatePayout", () => {
   });
 
   it("pays a monthly amount for the payout years and ends at 0", () => {
-    const { payouts, totalPaid, payment } = calculatePayout({ ...input, method: "monthly" });
+    const { payouts, totalPaid, payment } = calculatePayout(input);
     expect(payouts).toHaveLength(20);
     expect(payouts[0]!.year).toBe(26);
     expect(payouts[19]!.year).toBe(45);
@@ -81,20 +81,11 @@ describe("calculatePayout", () => {
   });
 
   it("follows the capital year by year: opening + growth - paid = closing", () => {
-    const { payouts } = calculatePayout({ ...input, method: "monthly" });
+    const { payouts } = calculatePayout(input);
     payouts.forEach((row, i) => {
       expect(row.opening + row.growth - row.paid).toBeCloseTo(row.closing, 6);
       if (i > 0) expect(row.opening).toBeCloseTo(payouts[i - 1]!.closing, 6);
     });
-  });
-
-  it("pays the whole capital at once as a lump sum", () => {
-    const lump = calculatePayout({ ...input, method: "lump" });
-    expect(lump.payouts).toHaveLength(1);
-    expect(lump.payouts[0]).toMatchObject({ year: 26, paid: base.finalCapital, closing: 0, growth: 0 });
-    expect(lump.totalPaid).toBe(base.finalCapital);
-    expect(lump.payment).toBe(base.finalCapital);
-    expect(lump.series).toEqual(base.series);
   });
 
   it("handles zero return and a payout of one year", () => {
@@ -105,7 +96,6 @@ describe("calculatePayout", () => {
       annualReturn: 0,
       annualFee: 0,
       payoutYears: 1,
-      method: "monthly",
     });
     expect(flat.payouts).toHaveLength(1);
     expect(flat.payment).toBeCloseTo(220000 / 12, 6);
