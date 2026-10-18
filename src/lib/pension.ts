@@ -86,8 +86,6 @@ export function calculatePension(input: PensionInput): PensionResult {
   };
 }
 
-export type PayoutMethod = "monthly" | "lump";
-
 export type PayoutYear = {
   /** Years from today, as in `series`: the retirement is year `yearsToRetirement`. */
   year: number;
@@ -104,41 +102,25 @@ export type PayoutYear = {
 };
 
 export type PayoutResult = PensionResult & {
-  method: PayoutMethod;
-  /** The payout year by year, after the retirement: `payoutYears` years for a monthly payout, one year for a lump sum. */
+  /** The payout year by year, after the retirement: `payoutYears` years. */
   payouts: PayoutYear[];
   /** Everything that is paid out. */
   totalPaid: number;
-  /** What is paid out every month; the whole capital for a lump sum (paid once, in the first month). */
+  /** What is paid out every month. */
   payment: number;
 };
 
 /**
- * The saving phase of `calculatePension` followed by the payout phase, year by year.
- *
- * - "monthly": the same payout as `calculatePension` (an annuity over `payoutYears` years, the capital growing at half
- *   the net return meanwhile), followed month by month so that the chart can show the capital falling to 0 and what is
- *   paid out every year.
- * - "lump": the whole capital is paid out at the retirement and nothing is left to grow.
+ * The saving phase of `calculatePension` followed by the payout phase, year by year: the same payout as
+ * `calculatePension` (an annuity over `payoutYears` years, the capital growing at half the net return meanwhile),
+ * followed month by month so that the chart can show the capital falling to 0 and what is paid out every year.
  *
  * The amounts are before tax, like the rest of the calculator.
  */
-export function calculatePayout(input: PensionInput & { method: PayoutMethod }): PayoutResult {
+export function calculatePayout(input: PensionInput): PayoutResult {
   const base = calculatePension(input);
   const retirement = input.yearsToRetirement;
   const payouts: PayoutYear[] = [];
-
-  if (input.method === "lump") {
-    payouts.push({
-      year: retirement + 1,
-      opening: base.finalCapital,
-      growth: 0,
-      paid: base.finalCapital,
-      closing: 0,
-      cumulativePaid: base.finalCapital,
-    });
-    return { ...base, method: input.method, payouts, totalPaid: base.finalCapital, payment: base.finalCapital };
-  }
 
   const netReturn = input.annualReturn - input.annualFee;
   const payoutRate = Math.pow(1 + Math.max(netReturn, 0) / 200, 1 / 12) - 1;
@@ -164,7 +146,7 @@ export function calculatePayout(input: PensionInput & { method: PayoutMethod }):
       cumulativePaid,
     });
   }
-  return { ...base, method: input.method, payouts, totalPaid: cumulativePaid, payment: base.monthlyPension };
+  return { ...base, payouts, totalPaid: cumulativePaid, payment: base.monthlyPension };
 }
 
 export type CompoundInput = {

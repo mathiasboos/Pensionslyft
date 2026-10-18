@@ -84,8 +84,8 @@ look at on the preview.
   the earliest age 55–75 at which the capital reaches the need and the savings carry the budget until the pensions start). `calculatePension` in
   `src/lib/pension.ts` is still used by the Sparkalkylatorn and the home page.
 - **Sparkalkylatorn's payout** (`calculatePayout` in `src/lib/pension.ts`, next to the untouched `calculatePension`):
-  the saving phase is `calculatePension`'s; the payout is either "monthly" (the same annuity over `payoutYears`, the
-  capital growing at half the net return meanwhile, followed year by year) or "lump" (everything at the retirement).
+  the saving phase is `calculatePension`'s; the payout is monthly (the same annuity over `payoutYears`, at least 5 years,
+  the capital growing at half the net return meanwhile, followed year by year). There is no lump sum.
   The chart shows the capital falling to 0 and the payouts as bars; the table has a column "Utbetalning". Before tax.
 - **Pensionsplaneraren is not ported either, and it updates itself.** `/pensionsplaneraren` shows
   `Retirement_Planner.html` of `github.com/mathiasboos/Calculators` (11 tabs, Chart.js and SheetJS inline, EN/SV)
