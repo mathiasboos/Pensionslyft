@@ -1,0 +1,70 @@
+---
+import { render } from "astro:content";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate } from "@/lib/format";
+import { getNews, type NewsItem } from "@/lib/news";
+
+export async function getStaticPaths() {
+  const news = await getNews();
+  return news.map((item) => ({ params: { slug: item.id }, props: { item } }));
+}
+
+interface Props {
+  item: NewsItem;
+}
+
+const { item } = Astro.props;
+const { title, excerpt, source, source_url, published_at } = item.data;
+const { Content } = await render(item);
+---
+
+<BaseLayout
+  title={`${title} – Pensionslyft`}
+  description={excerpt}
+  ogTitle={title}
+  ogType="article"
+  jsonLd={{
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: title,
+    description: excerpt,
+    datePublished: published_at.toISOString(),
+    publisher: { "@type": "Organization", name: "Pensionslyft" },
+    inLanguage: "sv-SE",
+    isAccessibleForFree: true,
+  }}
+>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    <a href="/nyheter" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+      <ArrowLeft className="size-4" aria-hidden="true" />
+      Alla nyheter
+    </a>
+    <p class="eyebrow mt-6">
+      Nyheter ·
+      <time datetime={published_at.toISOString().slice(0, 10)}>{formatDate(published_at)}</time>
+    </p>
+    <h1 class="mt-3 font-display text-4xl leading-tight font-semibold sm:text-5xl">{title}</h1>
+    <p class="mt-4 text-lg text-muted-foreground">{excerpt}</p>
+    <p class="mt-4 text-sm text-muted-foreground">Källa: {source}</p>
+
+    <div class="article-body mt-8">
+      <Content />
+    </div>
+
+    {
+      source_url && (
+        <a
+          href={source_url}
+          target="_blank"
+          rel="noopener"
+          class="mt-10 inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
+        >
+          Läs hos {source}
+          <ArrowUpRight className="size-4" aria-hidden="true" />
+          <span class="sr-only">(öppnas i en ny flik)</span>
+        </a>
+      )
+    }
+  </article>
+</BaseLayout>
