@@ -287,6 +287,33 @@
   .article-body td {
     @apply border-t border-border px-4 py-2;
   }
+
+  /* News: a picture sits in the text, to the right, without a frame; a table has no frame either, only fine lines. */
+  .news-body img {
+    @apply float-right mt-1 mb-2 ml-6 h-auto w-28 rounded-none border-0 bg-transparent sm:w-36;
+  }
+  .news-body h2 {
+    clear: both;
+  }
+  .news-body table {
+    @apply table w-full rounded-none border-0 text-base;
+  }
+  .news-body thead {
+    @apply bg-transparent;
+  }
+  .news-body th {
+    @apply border-b border-foreground px-3 pt-2 pb-2 font-mono text-xs font-medium tracking-wide text-muted-foreground uppercase first:pl-0;
+  }
+  .news-body td {
+    @apply px-3 py-3 tabular-nums first:pl-0;
+  }
+  .news-body th:not(:first-child),
+  .news-body td:not(:first-child) {
+    @apply text-right;
+  }
+  .news-body td:first-child {
+    @apply font-medium text-foreground;
+  }
 }
 
 /* The panels of the header menus fade in, unless the reader has asked for less motion. */
