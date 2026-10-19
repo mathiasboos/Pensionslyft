@@ -2,6 +2,8 @@
 import { render } from "astro:content";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagList from "@/components/TagList.astro";
+import { articleData } from "@/lib/seo";
 import { formatDate } from "@/lib/format";
 import { getNews, type NewsItem } from "@/lib/news";
 
@@ -15,7 +17,7 @@ interface Props {
 }
 
 const { item } = Astro.props;
-const { title, excerpt, source, source_url, published_at } = item.data;
+const { title, excerpt, source, source_url, published_at, tags } = item.data;
 const { Content } = await render(item);
 ---
 
@@ -24,16 +26,21 @@ const { Content } = await render(item);
   description={excerpt}
   ogTitle={title}
   ogType="article"
-  jsonLd={{
-    "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    headline: title,
+  tags={tags}
+  publishedTime={published_at}
+  breadcrumbs={[
+    { name: "Nyheter", path: "/nyheter" },
+    { name: title, path: `/nyheter/${item.id}` },
+  ]}
+  jsonLd={articleData({
+    type: "NewsArticle",
+    title,
     description: excerpt,
-    datePublished: published_at.toISOString(),
-    publisher: { "@type": "Organization", name: "Pensionslyft" },
-    inLanguage: "sv-SE",
-    isAccessibleForFree: true,
-  }}
+    path: `/nyheter/${item.id}`,
+    published: published_at,
+    tags,
+    source: { name: source, url: source_url },
+  })}
 >
   <article class="mx-auto max-w-3xl px-4 py-12">
     <a href="/nyheter" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
@@ -44,9 +51,11 @@ const { Content } = await render(item);
       Nyheter ·
       <time datetime={published_at.toISOString().slice(0, 10)}>{formatDate(published_at)}</time>
     </p>
-    <h1 class="mt-3 font-display text-4xl leading-tight font-semibold sm:text-5xl">{title}</h1>
+    <h1 class="mt-3 font-display text-3xl leading-tight font-semibold break-words hyphens-auto sm:text-5xl">{title}</h1>
     <p class="mt-4 text-lg text-muted-foreground">{excerpt}</p>
     <p class="mt-4 text-sm text-muted-foreground">Källa: {source}</p>
+
+    <TagList tags={tags} link class="mt-4" />
 
     <div class="article-body mt-8">
       <Content />

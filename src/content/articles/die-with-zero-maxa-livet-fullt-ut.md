@@ -4,6 +4,7 @@ slug: die-with-zero-maxa-livet-fullt-ut
 category: "Livsstil"
 excerpt: "Bill Perkins bok Die with Zero är en motvikt till FIRE-rörelsens extrema sparande. Här är varför idén om att maxa livsupplevelser är både lockande och knepig."
 lead: "Tänk om livet inte handlar om att spara varje krona till pensionen, utan om att skapa oförglömliga minnen så tidigt som möjligt? Bill Perkins bok Die with Zero har satt fart på debatten i Sverige, som en motvikt till det extrema sparandet som FIRE-rörelsen förespråkar. Här är varför hans idé om att maxa livsupplevelser är både lockande och knepig – och hur du kan hitta balansen."
+tags: ["die with zero", "pensionsplanering", "livsstil", "uttag"]
 reading_minutes: 4
 published_at: 2026-10-12
 ---

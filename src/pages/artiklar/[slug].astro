@@ -4,6 +4,8 @@ import { Clock } from "lucide-react";
 import ArticleCard from "@/components/ArticleCard.astro";
 import ArticleCover from "@/components/ArticleCover.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagList from "@/components/TagList.astro";
+import { articleData } from "@/lib/seo";
 import { getArticles, type Article } from "@/lib/articles";
 import { formatDate } from "@/lib/format";
 
@@ -17,7 +19,7 @@ interface Props {
 }
 
 const { article } = Astro.props;
-const { title, excerpt, lead, category, author, published_at, reading_minutes } = article.data;
+const { title, excerpt, lead, category, author, published_at, reading_minutes, tags } = article.data;
 const { Content } = await render(article);
 
 // "Fler artiklar": the same topic first, then the newest.
@@ -33,17 +35,21 @@ const more = [
   description={excerpt}
   ogTitle={title}
   ogType="article"
-  jsonLd={{
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: title,
+  tags={tags}
+  publishedTime={published_at}
+  breadcrumbs={[
+    { name: "Artiklar", path: "/artiklar" },
+    { name: title, path: `/artiklar/${article.id}` },
+  ]}
+  jsonLd={articleData({
+    type: "Article",
+    title,
     description: excerpt,
-    datePublished: published_at.toISOString(),
-    author: { "@type": "Organization", name: author },
-    publisher: { "@type": "Organization", name: "Pensionslyft" },
-    inLanguage: "sv-SE",
-    isAccessibleForFree: true,
-  }}
+    path: `/artiklar/${article.id}`,
+    published: published_at,
+    tags,
+    author,
+  })}
 >
   <div class="fixed inset-x-0 top-[65px] z-40 h-[3px] bg-border" aria-hidden="true" data-read-progress>
     <div class="h-full origin-left bg-primary" style="transform: scaleX(0)" data-read-progress-bar></div>
@@ -71,6 +77,8 @@ const more = [
         {reading_minutes} min
       </span>
     </div>
+
+    <TagList tags={tags} class="mt-6" />
 
     <ArticleCover seed={article.id} category={category} large class="mt-8 aspect-[16/9] rounded-xl" />
 

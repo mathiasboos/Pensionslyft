@@ -4,6 +4,7 @@ slug: sa-funkar-fire-vagen-till-ekonomisk-frihet
 category: "FIRE"
 excerpt: "Jobba hårt, spara stenhårt och bli ekonomiskt fri långt före pensionsåldern. Men är det realistiskt, och vad krävs egentligen?"
 lead: "Vill du sluta jobba – långt före alla andra? Då kanske du ska kika närmare på FIRE. Det är en livsstil som lockar allt fler: jobba hårt, spara stenhårt – och bli ekonomiskt fri. Men är det realistiskt – och vad krävs egentligen?"
+tags: ["fire", "ekonomisk frihet", "sparande", "tidig pension"]
 reading_minutes: 4
 published_at: 2026-10-12
 ---

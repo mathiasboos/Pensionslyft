@@ -4,6 +4,7 @@ slug: uttagsstrategi-nar-pensionen-borjar
 category: "Korta pensionstips"
 excerpt: "Livsvarigt eller på tio år? Ordningen du tar ut din pension i påverkar skatten mer än de flesta tror."
 lead: "När sparandet är klart börjar den svåraste delen: att ta ut pengarna. Uttagstiden påverkar både skatten och hur länge pengarna räcker."
+tags: ["uttagsstrategi", "pensionsuttag", "skatt", "isk"]
 reading_minutes: 1
 published_at: 2026-09-10
 ---
