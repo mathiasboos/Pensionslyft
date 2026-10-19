@@ -13,6 +13,8 @@ const articles = defineCollection({
     excerpt: z.string(),
     lead: z.string(),
     reading_minutes: z.number().int().positive(),
+    /** Search words, shown as #hashtags and used as keywords: 2-6, lowercase. */
+    tags: z.array(z.string()).min(2).max(6),
     published_at: z.coerce.date(),
     author: z.string().default("Pensionslyft"),
     draft: z.boolean().default(false),
@@ -30,6 +32,8 @@ const news = defineCollection({
     source: z.string().default("Pensionslyft"),
     source_url: z.url().optional(),
     excerpt: z.string(),
+    /** Search words, shown as #hashtags and used as keywords: 2-6, lowercase. */
+    tags: z.array(z.string()).min(2).max(6),
     published_at: z.coerce.date(),
     draft: z.boolean().default(false),
   }),

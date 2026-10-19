@@ -1,0 +1,71 @@
+---
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagList from "@/components/TagList.astro";
+import { formatDate } from "@/lib/format";
+import { getNews, getTags } from "@/lib/news";
+import { hashtag, tagSlug } from "@/lib/tags";
+
+export async function getStaticPaths() {
+  const tags = await getTags();
+  const news = await getNews();
+  return tags.map(({ tag, slug }) => ({
+    params: { tagg: slug },
+    props: { tag, items: news.filter((item) => item.data.tags.some((t) => tagSlug(t) === slug)) },
+  }));
+}
+
+const { tag, items } = Astro.props;
+const all = await getTags();
+const path = `/nyheter/tagg/${tagSlug(tag)}`;
+---
+
+<BaseLayout
+  title={`${hashtag(tag)} – nyheter – Pensionslyft`}
+  description={`Nyheter om ${tag} inom pension, skatt och sparande från Pensionslyft: ${items.map((i) => i.data.title).join(", ")}.`.slice(0, 160)}
+  breadcrumbs={[
+    { name: "Nyheter", path: "/nyheter" },
+    { name: hashtag(tag), path },
+  ]}
+>
+  <div class="mx-auto max-w-7xl px-4 py-12">
+    <a href="/nyheter" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+      <ArrowLeft className="size-4" aria-hidden="true" />
+      Alla nyheter
+    </a>
+    <h1 class="mt-4 font-display text-4xl font-semibold sm:text-5xl">{hashtag(tag)}</h1>
+    <p class="mt-3 max-w-2xl text-muted-foreground">
+      Nyheter om {tag}, {items.length === 1 ? "en nyhet" : `${items.length} nyheter`}.
+    </p>
+
+    <ul class="mt-8 divide-y divide-border border-t border-border">
+      {
+        items.map((item) => (
+          <li>
+            <a href={`/nyheter/${item.id}`} class="group grid gap-2 py-6 lg:grid-cols-[16rem_1fr] lg:gap-10">
+              <span class="eyebrow pt-1">
+                <time datetime={item.data.published_at.toISOString().slice(0, 10)}>
+                  {formatDate(item.data.published_at)}
+                </time>
+                <span class="mt-1 block normal-case tracking-normal">{item.data.source}</span>
+              </span>
+              <span>
+                <span class="block font-display text-xl font-semibold text-foreground group-hover:text-primary group-hover:underline">
+                  {item.data.title}
+                </span>
+                <span class="mt-2 block max-w-3xl text-sm leading-6 text-muted-foreground">{item.data.excerpt}</span>
+                <span class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  Läs nyheten
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2 class="mt-10 text-sm font-medium text-muted-foreground">Fler ämnen</h2>
+    <TagList tags={all.map((t) => t.tag).filter((t) => tagSlug(t) !== tagSlug(tag))} link class="mt-3" />
+  </div>
+</BaseLayout>

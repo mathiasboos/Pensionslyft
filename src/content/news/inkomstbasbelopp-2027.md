@@ -3,6 +3,7 @@ title: "Inkomstbasbeloppet 2027 blir 86 600 kronor"
 source: "Pensionsmyndigheten"
 source_url: "https://www.pensionsmyndigheten.se/statistik-och-rapporter/rapporter/berakning-av-inkomstindex-och-inkomstbasbelopp"
 excerpt: "Pensionsmyndighetens beräkning ger en ökning med 3,84 procent. Avgiftstaket för allmän pension höjs till 58 239 kronor i månaden."
+tags: ["inkomstbasbelopp", "ibb", "balanstalet", "pensionsmyndigheten", "2027"]
 published_at: 2026-10-16
 ---
 

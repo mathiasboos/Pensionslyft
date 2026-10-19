@@ -1,0 +1,29 @@
+---
+import { hashtag, tagHref } from "@/lib/tags";
+
+interface Props {
+  tags: string[];
+  /** Link each tag to its page (news tags); articles only show them. */
+  link?: boolean;
+  class?: string;
+}
+
+const { tags, link = false, class: className = "" } = Astro.props;
+const chip = "rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground";
+---
+
+<ul class:list={["flex flex-wrap gap-2", className]} aria-label="Ämnesord">
+  {
+    tags.map((tag) => (
+      <li>
+        {link ? (
+          <a href={tagHref(tag)} class={`${chip} transition-colors hover:border-primary hover:text-primary`}>
+            {hashtag(tag)}
+          </a>
+        ) : (
+          <span class={chip}>{hashtag(tag)}</span>
+        )}
+      </li>
+    ))
+  }
+</ul>
