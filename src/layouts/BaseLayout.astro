@@ -44,12 +44,13 @@ const imageUrl = absolute(image);
 
 // Structured data: what the page sets itself, plus the home page's site data and the calculators' app data.
 const calculator = calculators.find((c) => c.href === path);
+const words = tags.length > 0 ? tags : (calculator?.keywords ?? []);
 const data = [
   ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
   ...(path === "/" ? homeData() : []),
   ...(calculator
     ? [
-        webApplication({ name: calculator.title, description, path }),
+        webApplication({ name: calculator.title, description, path, keywords: calculator.keywords }),
         breadcrumbData([
           { name: "Kalkylatorer", path: "/kalkylatorer" },
           { name: calculator.title, path },
@@ -85,7 +86,7 @@ const data = [
     <meta name="twitter:image" content={imageUrl} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
-    {tags.length > 0 && <meta name="keywords" content={tags.join(", ")} />}
+    {words.length > 0 && <meta name="keywords" content={words.join(", ")} />}
     {tags.map((tag) => <meta property="article:tag" content={tag} />)}
     <link rel="alternate" type="application/rss+xml" title="Pensionslyft – Nyheter" href="/nyheter/rss.xml" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />

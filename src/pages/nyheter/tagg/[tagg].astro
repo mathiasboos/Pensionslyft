@@ -21,8 +21,8 @@ const path = `/nyheter/tagg/${tagSlug(tag)}`;
 ---
 
 <BaseLayout
-  title={`${hashtag(tag)} – nyheter om ${tag} – Pensionslyft`}
-  description={`Nyheter om ${tag}: ${items.map((i) => i.data.title).join(", ")}.`.slice(0, 160)}
+  title={`${hashtag(tag)} – nyheter – Pensionslyft`}
+  description={`Nyheter om ${tag} inom pension, skatt och sparande från Pensionslyft: ${items.map((i) => i.data.title).join(", ")}.`.slice(0, 160)}
   breadcrumbs={[
     { name: "Nyheter", path: "/nyheter" },
     { name: hashtag(tag), path },

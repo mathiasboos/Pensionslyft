@@ -118,7 +118,8 @@ look at on the preview.
   `tests/seo.test.ts` checks every file. Structured data is in `src/lib/seo.ts`; `BaseLayout.astro` adds the home page's `WebSite`/`Organization`,
   each calculator's `WebApplication` (found by its path in `site-nav.ts`), a `BreadcrumbList` (prop `breadcrumbs`), og/twitter image
   (`public/og-default.png`, 1200x630, prop `image` overrides), `max-image-preview:large` and the RSS link. `/nyheter/rss.xml` is the news feed and the
-  sitemap carries `lastmod` from `published_at` (`astro.config.mjs`). A new calculator is picked up automatically once it is in `site-nav.ts`.
+  sitemap carries `lastmod` from `published_at` (`astro.config.mjs`). A new calculator is picked up automatically once it is in `site-nav.ts`; give it `keywords` there. After `npm run build`, `npm run check:seo` checks every built page
+  (title ≤ 65, description 50-175, canonical, og:image, one h1, valid JSON-LD, no duplicate titles/descriptions).
 - **Every calculator has a level**, `level: "Enkel" | "Medel" | "Avancerad"` on its `NavItem` in `src/lib/site-nav.ts` (a few fields and the answer at
   once / more choices / several tabs and many settings). It shows as three dots and the word (`CalculatorLevel.astro`) in the menu, on the cards
   and with a legend on `/kalkylatorer`. A new calculator must get one.

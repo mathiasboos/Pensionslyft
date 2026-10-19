@@ -34,6 +34,8 @@ export interface NavItem {
   icon: LucideIcon;
   /** The calculators say how demanding they are; the other pages do not. */
   level?: Level;
+  /** Search words for a calculator: the page's keywords and its structured data. */
+  keywords?: string[];
 }
 
 export interface NavGroup {
@@ -47,6 +49,7 @@ const planner: NavItem = {
   description: "Planera hela pensionen: tillgångar, utgifter, uttag och scenarier år för år.",
   icon: Compass,
   level: "Avancerad",
+  keywords: ["pensionsplanerare", "pensionsplanering", "uttag pension", "monte carlo", "tjänstepension"],
 };
 
 const pension: NavItem = {
@@ -55,6 +58,7 @@ const pension: NavItem = {
   description: "Se ditt framtida pensionskapital och vad det blir per månad efter avgifter.",
   icon: Calculator,
   level: "Enkel",
+  keywords: ["sparkalkylator", "pensionskapital", "pensionssparande", "ips", "avgifter"],
 };
 
 const overview: NavItem = {
@@ -63,6 +67,7 @@ const overview: NavItem = {
   description: "Räcker pensionen och sparandet? Se din prognos och hur mycket mer du behöver spara.",
   icon: Gauge,
   level: "Medel",
+  keywords: ["pensionsöversikt", "räcker pensionen", "pensionsprognos", "allmän pension", "budget pension"],
 };
 
 const typfall: NavItem = {
@@ -71,6 +76,7 @@ const typfall: NavItem = {
   description: "Allmän pension och tjänstepension år för år, enligt Pensionsmyndighetens modell.",
   icon: UsersRound,
   level: "Avancerad",
+  keywords: ["typfallsmodellen", "pensionsmyndigheten", "inkomstpension", "premiepension", "garantipension"],
 };
 
 const lonevaxling: NavItem = {
@@ -79,6 +85,7 @@ const lonevaxling: NavItem = {
   description: "Se vad löneväxling ger i extra pensionskapital och när det passar din lönenivå.",
   icon: PiggyBank,
   level: "Enkel",
+  keywords: ["löneväxling", "löneväxlingskalkylator", "tjänstepension", "särskild löneskatt"],
 };
 
 const nettolon: NavItem = {
@@ -87,6 +94,7 @@ const nettolon: NavItem = {
   description: "Se vad som blir kvar efter skatt 2026, steg för steg, med kommunalskatt, avdrag och avgifter.",
   icon: Receipt,
   level: "Medel",
+  keywords: ["nettolönkalkylator", "lön efter skatt", "kommunalskatt", "nettolön 2026"],
 };
 
 const compound: NavItem = {
@@ -95,6 +103,7 @@ const compound: NavItem = {
   description: "Jämför hur mycket som är dina insättningar och hur mycket avkastningen gör.",
   icon: LineChart,
   level: "Enkel",
+  keywords: ["ränta på ränta", "ränta på ränta kalkylator", "sparkalkylator", "månadssparande"],
 };
 
 const fire: NavItem = {
@@ -103,6 +112,7 @@ const fire: NavItem = {
   description: "Se vid vilken ålder ditt sparande räcker för att leva på avkastningen.",
   icon: Flame,
   level: "Medel",
+  keywords: ["fire kalkylator", "ekonomisk frihet", "tidig pension", "4-procentsregeln"],
 };
 
 // The simplest calculator, Ränta på ränta, comes first in the menu: "Lön och sparande" is the left column and starts with it.
