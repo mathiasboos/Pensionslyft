@@ -1,8 +1,9 @@
 ---
 import CalculatorCard from "@/components/CalculatorCard.astro";
+import CalculatorLevel from "@/components/CalculatorLevel.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { slugify } from "@/lib/format";
-import { calculatorGroups } from "@/lib/site-nav";
+import { calculatorGroups, LEVELS } from "@/lib/site-nav";
 ---
 
 <BaseLayout
@@ -18,6 +19,16 @@ import { calculatorGroups } from "@/lib/site-nav";
         Räkna på din pension, din lön och ditt sparande. Alla kalkylatorer är gratis och räknar direkt i
         webbläsaren.
       </p>
+      <ul class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+        {
+          LEVELS.map((l) => (
+            <li class="flex items-center gap-2">
+              <CalculatorLevel level={l.level} class="text-foreground" />
+              <span>{l.text}</span>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </div>
   <div class="mx-auto max-w-7xl px-4">

@@ -109,6 +109,9 @@ look at on the preview.
   Action lists them in its summary. New texts in the planner need Swedish in its own `LANG.sv`. The shared
   injection (`<!-- pensionslyft:begin/end -->`, the site's fonts) is `scripts/lib/embed.mjs`, also used by the
   Typfallsmodellen script.
+- **Every calculator has a level**, `level: "Enkel" | "Medel" | "Avancerad"` on its `NavItem` in `src/lib/site-nav.ts` (a few fields and the answer at
+  once / more choices / several tabs and many settings). It shows as three dots and the word (`CalculatorLevel.astro`) in the menu, on the cards
+  and with a legend on `/kalkylatorer`. A new calculator must get one.
 - **One palette and one typeface for all calculators.** The owner wants every calculator in the colours and fonts
   of the Sparkalkylatorn: the tokens in `src/styles/global.css` (navy, gold, sand, white; the `chart-*`
   colours in diagrams), Inter for text and Inter `font-display` for headings and big numbers. A
