@@ -1,0 +1,25 @@
+---
+import { LEVELS, type Level } from "@/lib/site-nav";
+
+interface Props {
+  level: Level;
+  class?: string;
+}
+
+const { level, class: className } = Astro.props;
+const filled = LEVELS.findIndex((l) => l.level === level) + 1;
+---
+
+<span
+  class:list={["inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground", className]}
+  title={`Svårighetsgrad: ${level}`}
+>
+  <span class="inline-flex gap-1" aria-hidden="true">
+    {
+      LEVELS.map((_, i) => (
+        <span class:list={["size-1.5 rounded-full", i < filled ? "bg-primary" : "bg-input"]} />
+      ))
+    }
+  </span>
+  <span class="sr-only">Svårighetsgrad: </span>{level}
+</span>

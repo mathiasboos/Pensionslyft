@@ -16,12 +16,23 @@ import {
  * The pages of the site, in one place. The header and its menus, the footer, the home page and /kalkylatorer
  * are all built from these lists, so a new page is added here once.
  */
+/** How demanding a calculator is to use: a few fields and an answer at once, more choices, or several tabs and many settings. */
+export type Level = "Enkel" | "Medel" | "Avancerad";
+
+export const LEVELS: readonly { level: Level; text: string }[] = [
+  { level: "Enkel", text: "några få fält och svaret direkt" },
+  { level: "Medel", text: "fler val och inställningar" },
+  { level: "Avancerad", text: "flera flikar och många inställningar för dig som vill gå på djupet" },
+];
+
 export interface NavItem {
   href: string;
   title: string;
   /** One line under the title in the menus and on the cards. */
   description: string;
   icon: LucideIcon;
+  /** The calculators say how demanding they are; the other pages do not. */
+  level?: Level;
 }
 
 export interface NavGroup {
@@ -34,6 +45,7 @@ const planner: NavItem = {
   title: "Pensionsplaneraren",
   description: "Planera hela pensionen: tillgångar, utgifter, uttag och scenarier år för år.",
   icon: Compass,
+  level: "Avancerad",
 };
 
 const pension: NavItem = {
@@ -41,6 +53,7 @@ const pension: NavItem = {
   title: "Sparkalkylatorn",
   description: "Se ditt framtida pensionskapital och vad det blir per månad efter avgifter.",
   icon: Calculator,
+  level: "Enkel",
 };
 
 const overview: NavItem = {
@@ -48,6 +61,7 @@ const overview: NavItem = {
   title: "Pensionsöversikten",
   description: "Räcker pensionen och sparandet? Se din prognos och hur mycket mer du behöver spara.",
   icon: Gauge,
+  level: "Medel",
 };
 
 const typfall: NavItem = {
@@ -55,6 +69,7 @@ const typfall: NavItem = {
   title: "Typfallsmodellen",
   description: "Allmän pension och tjänstepension år för år, enligt Pensionsmyndighetens modell.",
   icon: UsersRound,
+  level: "Avancerad",
 };
 
 const lonevaxling: NavItem = {
@@ -62,6 +77,7 @@ const lonevaxling: NavItem = {
   title: "Löneväxlingskalkylatorn",
   description: "Se vad löneväxling ger i extra pensionskapital och när det passar din lönenivå.",
   icon: PiggyBank,
+  level: "Enkel",
 };
 
 const nettolon: NavItem = {
@@ -69,6 +85,7 @@ const nettolon: NavItem = {
   title: "Nettolönkalkylatorn",
   description: "Se vad som blir kvar efter skatt 2026, steg för steg, med kommunalskatt, avdrag och avgifter.",
   icon: Receipt,
+  level: "Medel",
 };
 
 const compound: NavItem = {
@@ -76,6 +93,7 @@ const compound: NavItem = {
   title: "Ränta på ränta",
   description: "Jämför hur mycket som är dina insättningar och hur mycket avkastningen gör.",
   icon: LineChart,
+  level: "Enkel",
 };
 
 const fire: NavItem = {
@@ -83,6 +101,7 @@ const fire: NavItem = {
   title: "FIRE-kalkylatorn",
   description: "Se vid vilken ålder ditt sparande räcker för att leva på avkastningen.",
   icon: Flame,
+  level: "Medel",
 };
 
 export const calculatorGroups: NavGroup[] = [

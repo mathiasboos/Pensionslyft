@@ -18,5 +18,27 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
     <div class="mt-10">
       <PensionCalculator client:load />
     </div>
+
+    <section class="mt-16 border-t border-border pt-10">
+      <h2 class="font-display text-2xl font-semibold">Vad ingår i Sparkalkylatorn?</h2>
+      <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
+        <p>
+          Kalkylatorn gäller privat pension, IPS, tjänstepension och privat sparande, men inte allmän pension. Observera
+          att pension vanligtvis beskattas som inkomst när den betalas ut, vilket privat sparande inte gör, eftersom
+          skatten på det redan är betald.
+        </p>
+        <p>
+          Inom privat sparande spelar det också roll hur kapitalet beskattas. För ISK, kapitalförsäkring och
+          depåförsäkring betalar du en avkastningsskatt varje år. För depå, fondkonto och värdepapperskonto betalar du
+          reavinstskatt först när du säljer, om det har uppstått en vinst.
+        </p>
+        <p>
+          Den allmänna pensionen betalas alltid ut livsvarigt. Vill du räkna med den allmänna pensionen också, använd{" "}
+          <a href="/pensionsoversikt" class="text-primary underline underline-offset-2">Pensionsöversikt</a>,{" "}
+          <a href="/typfallsmodellen" class="text-primary underline underline-offset-2">Typfallsmodellen</a> eller{" "}
+          <a href="/pensionsplaneraren" class="text-primary underline underline-offset-2">Pensionsplaneraren</a>.
+        </p>
+      </div>
+    </section>
   </div>
 </BaseLayout>
