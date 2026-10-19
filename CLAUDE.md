@@ -109,6 +109,10 @@ look at on the preview.
   Action lists them in its summary. New texts in the planner need Swedish in its own `LANG.sv`. The shared
   injection (`<!-- pensionslyft:begin/end -->`, the site's fonts) is `scripts/lib/embed.mjs`, also used by the
   Typfallsmodellen script.
+- **News** are Markdown files in `src/content/news/` (collection `news` in `src/content.config.ts`: `title`, `source`, `source_url`, `excerpt`,
+  `published_at`), listed at `/nyheter` and shown at `/nyheter/<file name>`; "Nyheter" is in `insights` (the Insikter menu and the footer) and a top-level
+  header link. The owner pastes a news item (text, link, date) in the chat and Claude rewrites it in clean Swedish, checks every number, adds the file and
+  opens a PR; there is no editor. No agency logos: the source is named in text and linked.
 - **Every calculator has a level**, `level: "Enkel" | "Medel" | "Avancerad"` on its `NavItem` in `src/lib/site-nav.ts` (a few fields and the answer at
   once / more choices / several tabs and many settings). It shows as three dots and the word (`CalculatorLevel.astro`) in the menu, on the cards
   and with a legend on `/kalkylatorer`. A new calculator must get one.

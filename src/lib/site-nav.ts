@@ -6,6 +6,7 @@ import {
   Flame,
   Gauge,
   LineChart,
+  Newspaper,
   PiggyBank,
   Receipt,
   UsersRound,
@@ -104,9 +105,10 @@ const fire: NavItem = {
   level: "Medel",
 };
 
+// The simplest calculator, Ränta på ränta, comes first in the menu: "Lön och sparande" is the left column and starts with it.
 export const calculatorGroups: NavGroup[] = [
+  { title: "Lön och sparande", items: [compound, nettolon, fire] },
   { title: "Pension", items: [pension, lonevaxling, overview, planner, typfall] },
-  { title: "Lön och sparande", items: [nettolon, compound, fire] },
 ];
 
 export const calculators: NavItem[] = calculatorGroups.flatMap((group) => group.items);
@@ -126,5 +128,11 @@ export const insights: NavItem[] = [
     title: "Rapporter",
     description: "Statistik och rapporter från Pensionsmyndigheten och andra myndigheter.",
     icon: FileText,
+  },
+  {
+    href: "/nyheter",
+    title: "Nyheter",
+    description: "Nya belopp, regler och beräkningar inom pension, kortfattat och med länk till källan.",
+    icon: Newspaper,
   },
 ];
