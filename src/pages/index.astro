@@ -7,12 +7,14 @@ import kommunalskatt from "@/data/kommunalskatt-2026.json";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getArticles } from "@/lib/articles";
 import { formatPercent, formatSek } from "@/lib/format";
+import { getNews } from "@/lib/news";
 import { BRYT_OVER, BRYT_UNDER, DEFAULTS, IBB, PBB, SKIKT, nettolonView } from "@/lib/nettolon";
 import { calculatePension } from "@/lib/pension";
 import { calculatorGroups } from "@/lib/site-nav";
 import { cn } from "@/lib/utils";
 
 const latest = (await getArticles()).slice(0, 3);
+const headlines = (await getNews()).slice(0, 5);
 
 // The example on the page is what the calculators show for their own starting values.
 const pensionInput = {
@@ -46,6 +48,42 @@ const keyFigures = [
   description="Räkna ut ditt pensionskapital, se ränta-på-ränta-effekten och läs guider om allmän pension, tjänstepension och avgifter."
   ogDescription="Kalkylatorer och guider för din svenska pension."
 >
+  <section class="border-b border-border" aria-label="Nyckeltal 2026 och nyheter">
+    <div class="mx-auto flex max-w-7xl items-center gap-5 px-4">
+      <p class="eyebrow shrink-0 py-3 text-foreground">Nytt &amp; nyckeltal:</p>
+      <div class="ticker min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div class="ticker-track flex w-max">
+          {
+            [false, true].map((copy) => (
+              <dl class:list={["items-center gap-5 py-3 pr-5", copy ? "ticker-copy" : "flex"]} aria-hidden={copy ? "true" : undefined}>
+                {headlines.map((item) => (
+                  <div class="flex items-center gap-2 border-l border-border pl-5">
+                    <dt class="eyebrow">Nyhet</dt>
+                    <dd>
+                      <a
+                        href={`/nyheter/${item.id}`}
+                        tabindex={copy ? -1 : undefined}
+                        class="whitespace-nowrap text-sm font-medium text-primary hover:underline"
+                      >
+                        {item.data.title}
+                      </a>
+                    </dd>
+                  </div>
+                ))}
+                {keyFigures.map((figure) => (
+                  <div class="flex items-center gap-2 border-l border-border pl-5">
+                    <dt class="eyebrow">{figure.label}</dt>
+                    <dd class="figure-chip">{figure.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="dot-grid">
     <div class="mx-auto max-w-7xl px-4 pt-14 pb-10 sm:pt-20">
       <p class="eyebrow flex flex-wrap items-center gap-2">
@@ -160,28 +198,6 @@ const keyFigures = [
             Se hela uträkningen <ArrowRight className="size-4" aria-hidden="true" />
           </span>
         </a>
-      </div>
-    </div>
-  </section>
-
-  <section class="mt-10 border-y border-border" aria-label="Nyckeltal 2026">
-    <div class="mx-auto flex max-w-7xl items-center gap-5 px-4">
-      <p class="eyebrow shrink-0 py-4 text-foreground">Nyckeltal 2026:</p>
-      <div class="ticker min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div class="ticker-track flex w-max">
-          {
-            [false, true].map((copy) => (
-              <dl class:list={["items-center gap-5 py-4 pr-5", copy ? "ticker-copy" : "flex"]} aria-hidden={copy ? "true" : undefined}>
-                {keyFigures.map((figure) => (
-                  <div class="flex items-center gap-2 border-l border-border pl-5">
-                    <dt class="eyebrow">{figure.label}</dt>
-                    <dd class="figure-chip">{figure.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            ))
-          }
-        </div>
       </div>
     </div>
   </section>
