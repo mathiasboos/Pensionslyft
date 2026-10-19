@@ -1,13 +1,15 @@
 ---
 title: "Så mycket höjs pensionen 2027"
 source: "Pensionsmyndigheten"
-source_url: "https://www.pensionsmyndigheten.se/"
+source_url: "https://www.pensionsmyndigheten.se/nyheter-och-press/pressrum/inkomstpensionen-okar-med-2-2-procent-2027"
 excerpt: "Inkomstpensionen höjs med 2,2 procent i januari 2027 och garantipensionen med 0,7 procent. Så påverkas olika grupper av pensionärer."
-tags: ["pensionshöjning", "inkomstpension", "garantipension", "prisbasbelopp", "2027"]
+tags: ["inkomstpension", "garantipension", "pension", "pensioner", "pensionsmyndigheten"]
 published_at: 2026-10-19
 ---
 
 Inkomstpensionen höjs med **2,2 procent** i januari 2027, medan garantipensionen ökar med **0,7 procent**. Hur stor höjningen blir för dig beror på vilka pensionsdelar du har. De exakta beloppen blir tillgängliga i januari 2027.
+
+<img src="/nyheter/inkomstpension-2027.png" width="188" height="156" alt="Pyramid med texten +2,2 % på den understa nivån, som symboliserar inkomstpensionen" />
 
 ## Prisbasbelopp och inkomstbasbelopp 2027
 
