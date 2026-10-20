@@ -94,7 +94,7 @@ look at on the preview.
   `.github/workflows/pensionsplaneraren.yml` runs every hour (and on "Run workflow"):
   `node scripts/sync-pensionsplaneraren.mjs` fetches the file (a blob-less clone, no token: the repo is public)
   and writes `public/pensionsplaneraren-app.html` and `src/data/pensionsplaneraren-source.json` (the file's last
-  commit, shown on the page). If they changed, `scripts/check-pensionsplaneraren.mjs` (Playwright: no script errors,
+  commit; the page no longer shows it, at the owner's request). If they changed, `scripts/check-pensionsplaneraren.mjs` (Playwright: no script errors,
   Swedish, every tab opens, charts drawn, Monte Carlo runs), `npm test` and the build must pass. Then it commits to
   `main` and Cloudflare deploys. A failure publishes nothing and opens the issue "Pensionsplaneraren kunde inte
   uppdateras". Never edit the HTML by hand. The site's part is in `scripts/`:
