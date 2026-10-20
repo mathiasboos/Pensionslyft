@@ -123,6 +123,9 @@ look at on the preview.
   (`public/og-default.png`, 1200x630, prop `image` overrides), `max-image-preview:large` and the RSS link. `/nyheter/rss.xml` is the news feed and the
   sitemap carries `lastmod` from `published_at` (`astro.config.mjs`). A new calculator is picked up automatically once it is in `site-nav.ts`; give it `keywords` there. After `npm run build`, `npm run check:seo` checks every built page
   (title ≤ 65, description 50-175, canonical, og:image, one h1, valid JSON-LD, no duplicate titles/descriptions).
+- **The two bands at the top of the home page**: "Nytt:" (the five newest news headlines, linked) and below it "Nyckeltal <year>:" (the key figures,
+  scrolling the other way and slower). The figures are in `src/data/nyckeltal.ts` (label, value, and the bracket note = the change on last year or last
+  year's value), in the owner's order; when a new year's figures are out, change that file and `KEY_FIGURES_YEAR`.
 - **Every calculator has a level**, `level: "Enkel" | "Medel" | "Avancerad"` on its `NavItem` in `src/lib/site-nav.ts` (a few fields and the answer at
   once / more choices / several tabs and many settings). It shows as three dots and the word (`CalculatorLevel.astro`) in the menu, on the cards
   and with a legend on `/kalkylatorer`. A new calculator must get one.
