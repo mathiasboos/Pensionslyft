@@ -289,15 +289,12 @@
   }
 
   /* News: a picture sits in the text, to the right, without a frame; a table has no frame either, only fine lines. */
+  /* The width comes from the width="" of the <img> (about 144 px for a pyramid, 260 px for a wide logo); at most 45 % of the column. */
   .news-body img {
-    @apply float-right mt-1 mb-2 ml-6 h-auto w-28 rounded-none border-0 bg-transparent sm:w-36;
+    @apply float-right mt-1 mb-2 ml-6 h-auto max-w-[45%] rounded-none border-0 bg-transparent;
   }
   .news-body h2 {
     clear: both;
-  }
-  /* A wide picture (a logo with a word) stands on its own line instead of floating. */
-  .news-body img.wide {
-    @apply float-none mx-0 my-6 w-full max-w-sm;
   }
   .news-body table {
     @apply table w-full rounded-none border-0 text-base;

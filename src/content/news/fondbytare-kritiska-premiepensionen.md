@@ -7,9 +7,9 @@ tags: ["premiepension", "fondval", "premiepensionsguiden", "fondtorget", "pensio
 published_at: 2026-10-20
 ---
 
-Pensionssparare som själva byter fonder är betydligt mer kritiska till stödet för att göra fondval än de som aldrig byter. Det visar en ny utvärdering från Pensionsmyndigheten. Bland de mest aktiva fondväljarna tycker bara omkring hälften att beslutsstöden räcker.
+<img src="/nyheter/premiepensionen.webp" width="260" height="82" alt="Pensionsmyndighetens bild: Premiepensionen, en pyramid i flera färger" />
 
-<img class="wide" src="/nyheter/premiepensionen.webp" width="900" height="282" alt="Pensionsmyndighetens bild: Premiepensionen, en pyramid i flera färger" />
+Pensionssparare som själva byter fonder är betydligt mer kritiska till stödet för att göra fondval än de som aldrig byter. Det visar en ny utvärdering från Pensionsmyndigheten. Bland de mest aktiva fondväljarna tycker bara omkring hälften att beslutsstöden räcker.
 
 Pensionsmyndigheten har för första gången utvärderat premiepensionssystemets valarkitektur. I undersökningen fick sparare och pensionärer bedöma premiepensionsguiden, fondtorget och den bekräftelse som visas innan ett fondval genomförs.
 
