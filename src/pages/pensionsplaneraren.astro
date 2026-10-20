@@ -1,13 +1,11 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import source from "@/data/pensionsplaneraren-source.json";
-import { formatDate } from "@/lib/format";
 
 // The planner is Retirement_Planner.html of github.com/mathiasboos/Calculators, fetched with the site's colours, fonts
 // and Swedish as the default language by scripts/sync-pensionsplaneraren.mjs (a GitHub Action does it every hour). It
-// is shown as it is, in a frame the height of the window: it has its own header, tabs and scrolling.
+// is shown as it is, in a frame the height of the window: it has its own header, tabs and scrolling. The page does
+// not show the file's version; the sync still writes it to src/data/pensionsplaneraren-source.json.
 const app = "/pensionsplaneraren-app.html";
-const file = `${source.repository}/blob/main/${source.path}`;
 ---
 
 <BaseLayout
@@ -52,14 +50,6 @@ const file = `${source.repository}/blob/main/${source.path}`;
       <p>
         Resultatet är en uppskattning och inget besked om din egen pension eller finansiell rådgivning. Din personliga
         prognos finns på minPension.
-      </p>
-      <p>
-        Planeraren är filen{" "}
-        <a href={file} target="_blank" rel="noopener" class="text-primary underline underline-offset-2"
-          >Retirement_Planner.html i projektet Calculators på GitHub</a
-        >, och sidan uppdateras automatiskt när den ändras där. Den här sidan visar version <code
-          >{source.commit.slice(0, 7)}</code
-        >{source.committedAt && <> från {formatDate(source.committedAt)}</>}.
       </p>
     </div>
   </section>
