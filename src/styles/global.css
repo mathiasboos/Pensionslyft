@@ -350,6 +350,13 @@
   .ticker-track {
     animation: ticker 60s linear infinite;
   }
+  /* The key figures run the other way and slower than the news, as there are many of them. */
+  .ticker-reverse .ticker-track {
+    animation-direction: reverse;
+  }
+  .ticker-slow .ticker-track {
+    animation-duration: 150s;
+  }
   .ticker:hover .ticker-track,
   .ticker:focus-within .ticker-track {
     animation-play-state: paused;
