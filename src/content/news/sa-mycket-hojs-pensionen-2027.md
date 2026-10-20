@@ -7,7 +7,7 @@ tags: ["inkomstpension", "garantipension", "pension", "pensioner", "pensionsmynd
 published_at: 2026-10-19
 ---
 
-<img src="/nyheter/inkomstpension-2027.png" width="188" height="156" alt="Pyramid med texten +2,2 % på den understa nivån, som symboliserar inkomstpensionen" />
+<img src="/nyheter/inkomstpension-2027.png" width="144" height="119" alt="Pyramid med texten +2,2 % på den understa nivån, som symboliserar inkomstpensionen" />
 
 Inkomstpensionen höjs med **2,2 procent** i januari 2027, medan garantipensionen ökar med **0,7 procent**. Hur stor höjningen blir för dig beror på vilka pensionsdelar du har. De exakta beloppen blir tillgängliga i januari 2027.
 

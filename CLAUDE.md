@@ -112,7 +112,10 @@ look at on the preview.
 - **News** are Markdown files in `src/content/news/` (collection `news` in `src/content.config.ts`: `title`, `source`, `source_url`, `excerpt`,
   `published_at`), listed at `/nyheter` and shown at `/nyheter/<file name>`; "Nyheter" is in `insights` (the Insikter menu and the footer) and a top-level
   header link. The owner pastes a news item (text, link, date) in the chat and Claude rewrites it in clean Swedish, checks every number, adds the file and
-  opens a PR; there is no editor. No agency logos: the source is named in text and linked.
+  opens a PR; there is no editor. No agency logos: the source is named in text and linked. A picture that comes with a news item (the owner has the right
+  to use it) is always put the same way: the `<img>` as the first thing in the text, floated to the right without a frame (`.news-body img`), its
+  size set by `width`/`height` (about 144 px for a square pyramid, 260 px for a wide logo), file in `public/nyheter/`, cropped of white margins
+  and given a pure white background, with an `alt` text. A table is written as a plain Markdown table (shown without a frame).
 - **Search (SEO) fields.** News and articles need `tags` (2-6 lowercase words; shown as `#hashtag` chips, used as `keywords` and `article:tag`;
   news tags link to `/nyheter/tagg/<slug>`), a `title` of at most 70 characters and an `excerpt` of 50-160 characters (the meta description);
   `tests/seo.test.ts` checks every file. Structured data is in `src/lib/seo.ts`; `BaseLayout.astro` adds the home page's `WebSite`/`Organization`,
