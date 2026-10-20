@@ -22,7 +22,7 @@ const { Content } = await render(item);
 ---
 
 <BaseLayout
-  title={`${title} – Pensionslyft`}
+  title={`${title} – Pensionslyft`.length <= 65 ? `${title} – Pensionslyft` : title}
   description={excerpt}
   ogTitle={title}
   ogType="article"

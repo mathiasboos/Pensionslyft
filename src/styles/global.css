@@ -295,6 +295,10 @@
   .news-body h2 {
     clear: both;
   }
+  /* A wide picture (a logo with a word) stands on its own line instead of floating. */
+  .news-body img.wide {
+    @apply float-none mx-0 my-6 w-full max-w-sm;
+  }
   .news-body table {
     @apply table w-full rounded-none border-0 text-base;
   }
