@@ -277,6 +277,14 @@ header{
 }
 .card-header::before{content:'';width:3px;height:14px;background:var(--gold);border-radius:2px;display:inline-block}
 
+/* ── ABOUT TAB + SOURCE CREDIT FOOTER ── */
+.about-p{font-size:13px;line-height:1.55;color:var(--text);margin:0 0 10px}
+.about-ul{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--text)}
+.about-a{color:#22507B;font-weight:600;white-space:nowrap}
+#src-credit{max-width:1400px;margin:0 auto;padding:14px 32px 24px;font-size:11px;line-height:1.5;color:var(--muted);border-top:1px solid var(--border)}
+#src-credit a{color:#22507B}
+@media(max-width:767px){#src-credit{padding:12px 12px 90px}}
+
 /* ── GRID LAYOUTS ── */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
@@ -1188,6 +1196,7 @@ header {
   <button class="tab-btn" onclick="switchTab('parameters')"><span data-i18n="nav.params">Parameters</span></button>
   <button class="tab-btn" onclick="switchTab('income')"><span data-i18n="nav.income">Income</span></button>
   <button class="tab-btn" onclick="switchTab('projection')"><span data-i18n="nav.proj">Projection</span></button>
+  <button class="tab-btn" onclick="switchTab('about')"><span data-i18n="nav.about">About</span></button>
 </div>
 
 <!-- ════════════ DASHBOARD ════════════ -->
@@ -2115,7 +2124,62 @@ header {
   </div>
 </div>
 
+<!-- ════════════ ABOUT ════════════ -->
+<div id="tab-about" class="tab-content">
+  <div class="section-title" data-i18n="about.title">About the model</div>
+  <div class="section-sub" data-i18n="about.sub">Where the calculations come from, and what is developed for this planner</div>
+  <div class="grid-2" style="align-items:start">
+    <div class="card">
+      <div class="card-header" data-i18n="about.src.hdr">SOURCE AND CREDIT</div>
+      <p class="about-p"><span data-i18n="about.src.p1">The pension calculations in this planner are based on Typfallsmodellen v4.8, published by Pensionsmyndigheten (the Swedish Pensions Agency). Pensionsmyndigheten is the source of the pension model.</span>
+        <a class="about-a" href="https://www.pensionsmyndigheten.se/statistik-och-rapporter/pensionsmodellen/typfallsmodellen" target="_blank" rel="noopener">pensionsmyndigheten.se &rarr; Typfallsmodellen</a></p>
+      <p class="about-p" data-i18n="about.src.p2">Pensionsmyndigheten allows the tool to be spread and modified, as long as the authority is named as the source: "Du får sprida och modifiera verktyget men du ska ange Pensionsmyndigheten som källa."</p>
+      <p class="about-p" data-i18n="about.src.p3">This planner is a modified, independent work. It is not an official Pensionsmyndigheten product, and Pensionsmyndigheten is not responsible for its content or results.</p>
+    </div>
+    <div class="card">
+      <div class="card-header" data-i18n="about.other.hdr">OTHER SOURCES</div>
+      <ul class="about-ul">
+        <li data-i18n="about.other.1">Skatteverket: tax rules (grundavdrag, jobbskatteavdrag, state tax) in the Income tab</li>
+        <li data-i18n="about.other.2">SCB: municipal tax rates by municipality</li>
+        <li data-i18n="about.other.3">Pensionsmyndigheten: divisors (PFS 2024:2) and target retirement age (riktålder) per birth year</li>
+        <li data-i18n="about.other.4">minpension.se: typical retiree budgets used by the Basic / Average / Extra buttons in the Expenses tab</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid-2" style="align-items:start;margin-top:16px">
+    <div class="card">
+      <div class="card-header" data-i18n="about.tm.hdr">TAKEN FROM TYPFALLSMODELLEN</div>
+      <ul class="about-ul">
+        <li data-i18n="about.tm.1">Occupational pensions: premiums and payout for ITP 1 / ITP 2, SAF-LO, KAP-KL, AKAP-KR and PA16</li>
+        <li data-i18n="about.tm.2">Income pension and premium pension: PGI, pension index, inheritance gains, divisors</li>
+        <li data-i18n="about.tm.3">Garantipension, Inkomstpensionstillägg, tilläggspension (ATP) and PGB</li>
+        <li data-i18n="about.tm.4">Pension income tax: grundavdrag by age, skiktgräns, burial fee and public service fee</li>
+        <li data-i18n="about.tm.5">Default assumptions (1,9 % return before fees, 1,7 % for occupational schemes, 0 % inflation)</li>
+        <li data-i18n="about.tm.6">Replacement rate (kompensationsgrad) and the key data tables (income index, IBB, PBB)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header" data-i18n="about.own.hdr">DEVELOPED FOR THIS PLANNER</div>
+      <ul class="about-ul">
+        <li data-i18n="about.own.1">The Dashboard and all charts</li>
+        <li data-i18n="about.own.2">Expenses and budget, with the saving goal</li>
+        <li data-i18n="about.own.3">Withdrawal planning and withdrawal rules</li>
+        <li data-i18n="about.own.4">Portfolio Value tab and Projection table with exports</li>
+        <li data-i18n="about.own.5">Scenarios and Monte Carlo simulation</li>
+        <li data-i18n="about.own.6">Income tab (net salary according to Skatteverket's rules)</li>
+        <li data-i18n="about.own.7">Plan presets, guided walkthrough, Work after retirement and the Swedish / English interface</li>
+      </ul>
+    </div>
+  </div>
+  <p class="about-p" style="margin-top:16px" data-i18n="about.disc">The planner gives forecasts, not advice. The results can differ from Typfallsmodellen and from the forecast on minpension.se, for example because the premium pension follows the account's own funds and fees, and because some rules are not modelled.</p>
+</div>
 
+<!-- Source credit, shown under every tab -->
+<footer id="src-credit">
+  <span data-i18n="foot.credit">Pension calculations are based on Pensionsmyndigheten's Typfallsmodellen (source: Pensionsmyndigheten). Charts, budget, Scenarios, Monte Carlo and the planner itself are developed independently; this is not an official Pensionsmyndigheten product.</span>
+  <a href="https://www.pensionsmyndigheten.se/statistik-och-rapporter/pensionsmodellen/typfallsmodellen" target="_blank" rel="noopener">pensionsmyndigheten.se</a>
+  &middot; <a href="#" onclick="switchTab('about');window.scrollTo(0,0);return false" data-i18n="foot.more">About the model</a>
+</footer>
 
 <script>
 // ══════════════════════════════════════════════════
@@ -2127,7 +2191,34 @@ var _lang = 'en';
 var LANG = {
 en:{
   'nav.dashboard':'Dashboard','nav.personal':'Personal','nav.expenses':'Expenses',
-  'nav.accounts':'Assets','nav.params':'Params','nav.proj':'Projection',
+  'nav.accounts':'Assets','nav.params':'Params','nav.proj':'Projection','nav.about':'About',
+  'foot.credit':'Pension calculations are based on Pensionsmyndigheten\'s Typfallsmodellen (source: Pensionsmyndigheten). Charts, budget, Scenarios, Monte Carlo and the planner itself are developed independently; this is not an official Pensionsmyndigheten product.','foot.more':'About the model',
+  'about.title':'About the model','about.sub':'Where the calculations come from, and what is developed for this planner',
+  'about.src.hdr':'Source and credit',
+  'about.src.p1':'The pension calculations in this planner are based on Typfallsmodellen v4.8, published by Pensionsmyndigheten (the Swedish Pensions Agency). Pensionsmyndigheten is the source of the pension model.',
+  'about.src.p2':'Pensionsmyndigheten allows the tool to be spread and modified, as long as the authority is named as the source: "Du får sprida och modifiera verktyget men du ska ange Pensionsmyndigheten som källa."',
+  'about.src.p3':'This planner is a modified, independent work. It is not an official Pensionsmyndigheten product, and Pensionsmyndigheten is not responsible for its content or results.',
+  'about.other.hdr':'Other sources',
+  'about.other.1':'Skatteverket: tax rules (grundavdrag, jobbskatteavdrag, state tax) in the Income tab',
+  'about.other.2':'SCB: municipal tax rates by municipality',
+  'about.other.3':'Pensionsmyndigheten: divisors (PFS 2024:2) and target retirement age (riktålder) per birth year',
+  'about.other.4':'minpension.se: typical retiree budgets used by the Basic / Average / Extra buttons in the Expenses tab',
+  'about.tm.hdr':'Taken from Typfallsmodellen',
+  'about.tm.1':'Occupational pensions: premiums and payout for ITP 1 / ITP 2, SAF-LO, KAP-KL, AKAP-KR and PA16',
+  'about.tm.2':'Income pension and premium pension: PGI, pension index, inheritance gains, divisors',
+  'about.tm.3':'Garantipension, Inkomstpensionstillägg, tilläggspension (ATP) and PGB',
+  'about.tm.4':'Pension income tax: grundavdrag by age, skiktgräns, burial fee and public service fee',
+  'about.tm.5':'Default assumptions (1,9 % return before fees, 1,7 % for occupational schemes, 0 % inflation)',
+  'about.tm.6':'Replacement rate (kompensationsgrad) and the key data tables (income index, IBB, PBB)',
+  'about.own.hdr':'Developed for this planner',
+  'about.own.1':'The Dashboard and all charts',
+  'about.own.2':'Expenses and budget, with the saving goal',
+  'about.own.3':'Withdrawal planning and withdrawal rules',
+  'about.own.4':'Portfolio Value tab and Projection table with exports',
+  'about.own.5':'Scenarios and Monte Carlo simulation',
+  'about.own.6':'Income tab (net salary according to Skatteverket\'s rules)',
+  'about.own.7':'Plan presets, guided walkthrough, Work after retirement and the Swedish / English interface',
+  'about.disc':'The planner gives forecasts, not advice. The results can differ from Typfallsmodellen and from the forecast on minpension.se, for example because the premium pension follows the account\'s own funds and fees, and because some rules are not modelled.',
   'hdr.subtitle':'Constant prices · Swedish tax rules · All amounts in SEK',
   'hdr.sub.const':'Constant Prices','hdr.sub.infl':'Inflation {pct}%','hdr.sub.rest':'Swedish Tax Rules',
   'tile.goalTarget':'Saving Goal (Target Portfolio)',
@@ -2749,7 +2840,34 @@ en:{
 },
 sv:{
   'nav.dashboard':'Översikt','nav.personal':'Personuppgifter','nav.expenses':'Utgifter',
-  'nav.accounts':'Tillgångar','nav.params':'Parametrar','nav.proj':'Prognos',
+  'nav.accounts':'Tillgångar','nav.params':'Parametrar','nav.proj':'Prognos','nav.about':'Om modellen',
+  'foot.credit':'Pensionsberäkningarna bygger på Pensionsmyndighetens Typfallsmodellen (källa: Pensionsmyndigheten). Diagram, budget, scenarier, Monte Carlo och själva planeraren är egenutvecklade; detta är inte en officiell produkt från Pensionsmyndigheten.','foot.more':'Om modellen',
+  'about.title':'Om modellen','about.sub':'Varifrån beräkningarna kommer och vad som är utvecklat för den här planeraren',
+  'about.src.hdr':'Källa och erkännande',
+  'about.src.p1':'Pensionsberäkningarna i planeraren bygger på Typfallsmodellen v4.8, som publiceras av Pensionsmyndigheten. Pensionsmyndigheten är källan till pensionsmodellen.',
+  'about.src.p2':'Pensionsmyndigheten tillåter att verktyget sprids och ändras, så länge myndigheten anges som källa: "Du får sprida och modifiera verktyget men du ska ange Pensionsmyndigheten som källa."',
+  'about.src.p3':'Planeraren är ett bearbetat, fristående verk. Den är inte en officiell produkt från Pensionsmyndigheten, och Pensionsmyndigheten ansvarar inte för innehållet eller resultaten.',
+  'about.other.hdr':'Övriga källor',
+  'about.other.1':'Skatteverket: skatteregler (grundavdrag, jobbskatteavdrag, statlig skatt) i fliken Inkomst',
+  'about.other.2':'SCB: kommunala skattesatser per kommun',
+  'about.other.3':'Pensionsmyndigheten: delningstal (PFS 2024:2) och riktålder per födelseår',
+  'about.other.4':'minpension.se: typiska pensionärsbudgetar som används av knapparna Bas / Medel / Plus i fliken Utgifter',
+  'about.tm.hdr':'Hämtat från Typfallsmodellen',
+  'about.tm.1':'Tjänstepension: premier och utbetalning för ITP 1 / ITP 2, SAF-LO, KAP-KL, AKAP-KR och PA16',
+  'about.tm.2':'Inkomstpension och premiepension: PGI, pensionsindex, arvsvinster, delningstal',
+  'about.tm.3':'Garantipension, inkomstpensionstillägg, tilläggspension (ATP) och PGB',
+  'about.tm.4':'Skatt på pensionsinkomst: grundavdrag efter ålder, skiktgräns, begravningsavgift och public service-avgift',
+  'about.tm.5':'Standardantaganden (1,9 % avkastning före avgifter, 1,7 % för tjänstepensionsavtal, 0 % inflation)',
+  'about.tm.6':'Kompensationsgrad och nyckeltalen (inkomstindex, IBB, PBB)',
+  'about.own.hdr':'Utvecklat för den här planeraren',
+  'about.own.1':'Översikten och alla diagram',
+  'about.own.2':'Utgifter och budget, med sparmålet',
+  'about.own.3':'Uttagsplanering och uttagsregler',
+  'about.own.4':'Fliken Portföljvärde och Prognostabellen med export',
+  'about.own.5':'Scenarier och Monte Carlo-simulering',
+  'about.own.6':'Fliken Inkomst (nettolön enligt Skatteverkets regler)',
+  'about.own.7':'Planförval, guidad genomgång, Arbete efter pension och svenskt / engelskt gränssnitt',
+  'about.disc':'Planeraren ger prognoser, inte rådgivning. Resultaten kan skilja sig från Typfallsmodellen och från prognosen på minpension.se, till exempel eftersom premiepensionen följer kontots egna fonder och avgifter och eftersom vissa regler inte är modellerade.',
   'hdr.subtitle':'Fasta priser · Svenska skatteregler · Alla belopp i SEK',
   'hdr.sub.const':'Fasta priser','hdr.sub.infl':'Inflation {pct}%','hdr.sub.rest':'Svenska skatteregler',
   'tile.goalTarget':'Sparmål (målportfölj)',
