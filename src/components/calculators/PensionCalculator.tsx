@@ -245,8 +245,8 @@ export default function PensionCalculator() {
           columns={COLUMNS}
           rows={rows}
           rowKey={(r) => r.year}
-          fileName="sparkalkylator"
-          sheet="Sparkalkylator"
+          fileName="pensionssparkalkylator"
+          sheet="Pensionssparkalkylator"
         />
 
         <div className="rounded-xl border border-border bg-secondary/50 p-6 text-sm">
