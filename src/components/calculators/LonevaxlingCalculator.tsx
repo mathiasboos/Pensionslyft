@@ -1,6 +1,6 @@
 // Löneväxlingskalkylatorn (/lonevaxlingskalkylator): the calculation and the texts of the supplied
 // Salary_Exchange_Consumer.html (github.com/mathiasboos/Calculators, see src/lib/lonevaxling.ts), in the site's own
-// components and in the layout of the Sparkalkylatorn: the inputs in a frame to the left, the results and the chart to the right.
+// components and in the layout of the Pensionssparkalkylatorn: the inputs in a frame to the left, the results and the chart to the right.
 import { useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {

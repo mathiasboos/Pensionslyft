@@ -65,10 +65,10 @@ look at on the preview.
   | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
   | Löneväxling, Nettolön, FIRE (re-written in React from `Salary_Exchange_Consumer.html`, `Net_Salary_2026.html`, `FIRE_Calculator .html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
-  | Sparkalkylatorn, Pensionsöversikt, Ränta på ränta | the site's own: no original elsewhere |
+  | Pensionssparkalkylatorn, Pensionsöversikt, Ränta på ränta | the site's own: no original elsewhere |
 
 - **Pensionsöversikten** (`/pensionsoversikt`, `src/lib/pensionsoversikt.ts`, `PensionsoversiktCalculator.tsx`), after
-  Wealthsimple's retirement calculator and next to the older Sparkalkylatorn (the former Pensionskalkylatorn, URL `/pensionskalkylator`, unchanged): the public
+  Wealthsimple's retirement calculator and next to the older Pensionssparkalkylatorn (the former Pensionskalkylatorn, URL `/pensionskalkylator`, unchanged): the public
   pension and the tjänstepension come from `runTypfall` (or amounts the user enters), are taxed with `calcNettolon`
   (2026 rules, förhöjt grundavdrag from `xage`), and the budget's gap (minPension's Bas/Medel/Plus or an own amount)
   is taken from an ISK followed month by month. Everything is shown in today's money. "Det du behöver" is the capital
@@ -82,8 +82,8 @@ look at on the preview.
   Surplus (`capitalDiff >= 0`): green "Kapitalöverskott", "Budgetöverskott" and "Du kan uppskattningsvis gå i pension
   vid YY"; deficit: red "Behövs", "Budgetunderskott" and "Du behöver uppskattningsvis jobba till YY" (`retireEstimate`,
   the earliest age 55–75 at which the capital reaches the need and the savings carry the budget until the pensions start). `calculatePension` in
-  `src/lib/pension.ts` is still used by the Sparkalkylatorn and the home page.
-- **Sparkalkylatorn's payout** (`calculatePayout` in `src/lib/pension.ts`, next to the untouched `calculatePension`):
+  `src/lib/pension.ts` is still used by the Pensionssparkalkylatorn and the home page.
+- **Pensionssparkalkylatorn's payout** (`calculatePayout` in `src/lib/pension.ts`, next to the untouched `calculatePension`):
   the saving phase is `calculatePension`'s; the payout is monthly (the same annuity over `payoutYears`, at least 5 years,
   the capital growing at half the net return meanwhile, followed year by year). There is no lump sum.
   The chart shows the capital falling to 0 and the payouts as bars; the table has a column "Utbetalning". Before tax.
@@ -130,7 +130,7 @@ look at on the preview.
   once / more choices / several tabs and many settings). It shows as three dots and the word (`CalculatorLevel.astro`) in the menu, on the cards
   and with a legend on `/kalkylatorer`. A new calculator must get one.
 - **One palette and one typeface for all calculators.** The owner wants every calculator in the colours and fonts
-  of the Sparkalkylatorn: the tokens in `src/styles/global.css` (navy, gold, sand, white; the `chart-*`
+  of the Pensionssparkalkylatorn: the tokens in `src/styles/global.css` (navy, gold, sand, white; the `chart-*`
   colours in diagrams), Inter for text and Inter `font-display` for headings and big numbers. A
   calculator taken from GitHub keeps its calculation, texts and layout, but not its own palette or fonts: map
   them to the site's, and check diagram colours with the dataviz validator.
@@ -144,7 +144,7 @@ look at on the preview.
 - `src/lib/lonevaxling.ts` is a port of `Salary_Exchange_Consumer.html`, and `tests/lonevaxling.test.ts` compares
   the calculation with what the original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
   The page (`LonevaxlingCalculator.tsx`) keeps the original's texts and behaviour but is built like the
-  Sparkalkylatorn, in the site's own components: inputs in a frame to the left, results and a Recharts chart to
+  Pensionssparkalkylatorn, in the site's own components: inputs in a frame to the left, results and a Recharts chart to
   the right (`AmountSliderField` is in `fields.tsx`). There is no separate stylesheet or canvas chart any more.
 - **Ränta på ränta** (`calculateCompound` in `src/lib/pension.ts`, `CompoundCalculator.tsx`): the capital grows at the
   gross return and the tax (Avkastningsskatt, default 1,05 %) and the fee are taken each year as a share of the
@@ -158,7 +158,7 @@ look at on the preview.
   Typfallsmodellen page is its own app.
 - **Tables and fold-outs.** Every fold-out in the calculators is `Collapsible` (an arrow at the far left, then the name; closed
   from the start). A table of the result year by year is `YearTable` (a `Collapsible` with CSV and Excel buttons in its
-  header; `src/lib/export.ts` writes the files): Sparkalkylatorn, Ränta på ränta and FIRE use it, so a new calculator with a
+  header; `src/lib/export.ts` writes the files): Pensionssparkalkylatorn, Ränta på ränta and FIRE use it, so a new calculator with a
   table should too. The embedded Typfallsmodellen app is built from another project, so the fold-in of its table
   "Månadsinkomster" is added by `scripts/typfallsmodellen-site.js` and `scripts/typfallsmodellen-theme.css`, which the sync script
   puts into the file (`node scripts/sync-typfallsmodellen.mjs --reapply` does it again after an edit, with no build).
