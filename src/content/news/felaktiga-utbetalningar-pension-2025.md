@@ -1,6 +1,7 @@
 ---
 title: "1,6 miljarder kronor betalades ut felaktigt i pension och stöd"
 source: "Pensionsmyndigheten"
+source_url: "https://www.pensionsmyndigheten.se/nyheter-och-press/pressrum/ny-rapport-skattar-att-1-6-av-483-miljarder-kronor-betalas-ut-fel"
 excerpt: "Pensionsmyndigheten betalade ut cirka 1,6 miljarder kronor felaktigt under 2025, 0,33 procent av utbetalningarna. Mest gällde bostadstillägg."
 tags: ["felaktiga utbetalningar", "bostadstillägg", "äldreförsörjningsstöd", "pensionsmyndigheten", "pension"]
 published_at: 2026-10-22

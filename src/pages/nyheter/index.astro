@@ -17,10 +17,8 @@ const tags = await getTags();
 >
   <div class="dot-grid">
     <div class="mx-auto max-w-7xl px-4 pt-8 pb-6">
-      <nav aria-label="Ämnen och nyheter" class="border-b border-border pb-6">
-        <p class="eyebrow">Ämnen</p>
-        <TagList tags={tags.map((t) => t.tag)} link class="mt-3" />
-        <p class="eyebrow mt-5">Senaste nyheterna</p>
+      <nav aria-label="Senaste nyheterna" class="border-b border-border pb-6">
+        <p class="eyebrow">Senaste nyheterna</p>
         <ul class="mt-2 space-y-1.5 text-sm">
           {
             news.slice(0, 8).map((item) => (
@@ -71,4 +69,9 @@ const tags = await getTags();
       }
     </ul>
   </div>
+
+  <nav aria-label="Ämnen" class="mx-auto max-w-7xl border-t border-border px-4 py-8">
+    <p class="eyebrow">Ämnen</p>
+    <TagList tags={tags.map((t) => t.tag)} link class="mt-3" />
+  </nav>
 </BaseLayout>
