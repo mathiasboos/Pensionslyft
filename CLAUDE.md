@@ -126,6 +126,10 @@ look at on the preview.
 - **The two bands at the top of the home page**: "Nytt:" (the five newest news headlines, linked) and below it "Nyckeltal <year>:" (the key figures,
   scrolling the other way and slower). The figures are in `src/data/nyckeltal.ts` (label, value, and the bracket note = the change on last year or last
   year's value), in the owner's order; when a new year's figures are out, change that file and `KEY_FIGURES_YEAR`.
+- **The news slider on the home page** (under the hero, where the two calculator examples used to be): `src/components/NewsSlider.astro` shows the
+  six newest news items as designed cards (navy, fine dots, an accent colour per slide, no photo), with arrows and dots. It is a scroll-snap
+  track, so it also swipes and works without JavaScript; `src/scripts/news-slider.ts` adds arrows, dots and auto-advance every 6 s (pauses on
+  hover/focus/touch, stops for good after a click or swipe, off with `prefers-reduced-motion`). `nextIndex` is in `src/lib/slider.ts` (tested).
 - **Every calculator has a level**, `level: "Enkel" | "Medel" | "Avancerad"` on its `NavItem` in `src/lib/site-nav.ts` (a few fields and the answer at
   once / more choices / several tabs and many settings). It shows as three dots and the word (`CalculatorLevel.astro`) in the menu, on the cards
   and with a legend on `/kalkylatorer`. A new calculator must get one.
@@ -187,8 +191,7 @@ look at on the preview.
 - `/rapporter` lists links to the authorities' reports from `src/data/rapporter.ts`. Link to a page that lists every
   edition rather than to one year's PDF, and only add a link that has been checked to work.
 - The articles have no images: `ArticleCover.astro` draws a cover from the category (colour) and the article (the
-  shape of the rising line). The home page's example figures and key figures are computed at build time from
-  `src/lib/pension.ts`, `src/lib/nettolon.ts` and `src/data/kommunalskatt-2026.json`, so they follow those files.
+  shape of the rising line). The home page's Prisbasbelopp comes from `src/lib/nettolon.ts` and its key figures from `src/data/nyckeltal.ts`.
   The home page's salary field opens `/nettolonkalkylator?lon=…`, which the Nettolön calculator reads.
 - Sliders are native range inputs (`SliderField` in `fields.tsx`, the `.range` class in `global.css`). The
   Radix slider that was used before did not follow a finger on a phone, so do not bring it back; test any

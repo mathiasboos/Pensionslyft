@@ -2,31 +2,21 @@
 import { ArrowRight } from "lucide-react";
 import ArticleCard from "@/components/ArticleCard.astro";
 import CalculatorCard from "@/components/CalculatorCard.astro";
+import NewsSlider from "@/components/NewsSlider.astro";
 import { buttonVariants } from "@/components/ui/button";
 import { KEY_FIGURES_YEAR, keyFigures } from "@/data/nyckeltal";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getArticles } from "@/lib/articles";
-import { formatPercent, formatSek } from "@/lib/format";
+import { formatSek } from "@/lib/format";
 import { getNews } from "@/lib/news";
-import { DEFAULTS, PBB, nettolonView } from "@/lib/nettolon";
-import { calculatePension } from "@/lib/pension";
+import { PBB } from "@/lib/nettolon";
 import { calculatorGroups } from "@/lib/site-nav";
 import { cn } from "@/lib/utils";
 
 const latest = (await getArticles()).slice(0, 3);
-const headlines = (await getNews()).slice(0, 5);
-
-// The example on the page is what the calculators show for their own starting values.
-const pensionInput = {
-  currentCapital: 350000,
-  monthlyDeposit: 2000,
-  yearsToRetirement: 25,
-  annualReturn: 6.5,
-  annualFee: 0.6,
-  payoutYears: 20,
-};
-const pension = calculatePension(pensionInput);
-const netto = nettolonView(DEFAULTS);
+const news = await getNews();
+const headlines = news.slice(0, 5);
+const slides = news.slice(0, 6);
 ---
 
 <BaseLayout
@@ -132,83 +122,7 @@ const netto = nettolonView(DEFAULTS);
     </div>
   </section>
 
-  <section class="mx-auto max-w-7xl px-4">
-    <div class="relative overflow-hidden rounded-2xl border border-border bg-muted px-4 py-10 sm:px-10 sm:py-14">
-      <p class="eyebrow">Exempel · räknat med kalkylatorerna</p>
-      <div class="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
-        <a
-          href="/pensionskalkylator"
-          class="group block rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] sm:p-8"
-        >
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border pb-4">
-            <p class="font-display text-lg font-semibold">Pensionsprognos</p>
-            <p class="eyebrow hidden sm:block">Pensionssparkalkylatorn</p>
-          </div>
-          <dl class="mt-4 grid grid-cols-[1fr_auto] gap-x-6 gap-y-2 text-sm">
-            <dt class="text-muted-foreground">Kapital i dag</dt>
-            <dd class="text-right tabular-nums">{formatSek(pensionInput.currentCapital)}</dd>
-            <dt class="text-muted-foreground">Sparande per månad</dt>
-            <dd class="text-right tabular-nums">{formatSek(pensionInput.monthlyDeposit)}</dd>
-            <dt class="text-muted-foreground">År till pension</dt>
-            <dd class="text-right tabular-nums">{pensionInput.yearsToRetirement} år</dd>
-            <dt class="text-muted-foreground">Avkastning före avgift</dt>
-            <dd class="text-right tabular-nums">{formatPercent(pensionInput.annualReturn, 1)}</dd>
-            <dt class="text-muted-foreground">Årlig avgift</dt>
-            <dd class="text-right tabular-nums">{formatPercent(pensionInput.annualFee, 2)}</dd>
-          </dl>
-          <dl class="mt-5 grid grid-cols-[1fr_auto] gap-x-6 gap-y-2 border-t border-border pt-4 text-sm">
-            <dt class="text-muted-foreground">Egna insättningar</dt>
-            <dd class="text-right tabular-nums">{formatSek(pension.totalDeposits)}</dd>
-            <dt class="text-muted-foreground">Varav avkastning</dt>
-            <dd class="text-right tabular-nums">{formatSek(pension.totalGrowth)}</dd>
-            <dt class="font-medium">Kapital vid pension</dt>
-            <dd class="text-right font-display text-lg font-semibold tabular-nums sm:text-xl">
-              {formatSek(pension.finalCapital)}
-            </dd>
-            <dt class="font-medium">Per månad i {pensionInput.payoutYears} år</dt>
-            <dd class="text-right font-display text-lg font-semibold tabular-nums sm:text-xl">
-              {formatSek(pension.monthlyPension)}
-            </dd>
-          </dl>
-          <span class="mt-6 inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
-            Räkna med dina egna siffror <ArrowRight className="size-4" aria-hidden="true" />
-          </span>
-        </a>
-
-        <a
-          href="/nettolonkalkylator"
-          class="group relative block rounded-xl border border-primary/30 bg-card p-6 shadow-[var(--shadow-soft)] lg:mt-16"
-        >
-          <span class="absolute -top-1 -left-1 size-2 bg-primary" aria-hidden="true"></span>
-          <span class="absolute -top-1 -right-1 size-2 bg-primary" aria-hidden="true"></span>
-          <span class="absolute -bottom-1 -left-1 size-2 bg-primary" aria-hidden="true"></span>
-          <span class="absolute -right-1 -bottom-1 size-2 bg-primary" aria-hidden="true"></span>
-          <p class="eyebrow">Nettolön 2026</p>
-          <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div class="rounded-md border border-border px-3 py-2">
-              <dt class="text-xs text-muted-foreground">Månadslön</dt>
-              <dd class="mt-0.5 tabular-nums">{formatSek(DEFAULTS.lon)}</dd>
-            </div>
-            <div class="rounded-md border border-border px-3 py-2">
-              <dt class="text-xs text-muted-foreground">Kommunalskatt</dt>
-              <dd class="mt-0.5 tabular-nums">{formatPercent(DEFAULTS.kommun, 1)}</dd>
-            </div>
-            <div class="col-span-2 rounded-md bg-primary px-3 py-3 text-primary-foreground">
-              <dt class="text-xs text-primary-foreground/75">Kvar efter skatt per månad</dt>
-              <dd class="mt-0.5 font-display text-2xl font-semibold tabular-nums">{netto.netMonth} kr</dd>
-            </div>
-            <div class="col-span-2 flex items-baseline justify-between px-1">
-              <dt class="text-muted-foreground">Skatt och avgifter totalt</dt>
-              <dd class="tabular-nums">{netto.effRate}</dd>
-            </div>
-          </dl>
-          <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
-            Se hela uträkningen <ArrowRight className="size-4" aria-hidden="true" />
-          </span>
-        </a>
-      </div>
-    </div>
-  </section>
+  <NewsSlider items={slides} />
 
   <section class="mx-auto max-w-7xl px-4 pt-20">
     <div class="flex flex-wrap items-end justify-between gap-4">

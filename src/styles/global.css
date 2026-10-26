@@ -167,6 +167,22 @@
     -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 25%, transparent 80%);
     mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 25%, transparent 80%);
   }
+  /* The slides of the home page's news slider (NewsSlider.astro): navy with fine dots and a corner glow in the accent. */
+  .news-slide {
+    background-image:
+      radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--slide-accent) 28%, transparent), transparent 55%),
+      radial-gradient(rgb(255 255 255 / 0.14) 1px, transparent 1.4px);
+    background-size:
+      auto,
+      14px 14px;
+  }
+  .news-dot {
+    width: 0.375rem;
+  }
+  .news-dot[data-active="true"] {
+    width: 1.75rem;
+    background-color: white;
+  }
   @media print {
     .dot-canvas {
       display: none;
