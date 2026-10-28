@@ -103,7 +103,12 @@ const data = [
     {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
     {words.length > 0 && <meta name="keywords" content={words.join(", ")} />}
     {tags.map((tag) => <meta property="article:tag" content={tag} />)}
-    <link rel="alternate" type="application/rss+xml" title="Pensionslyft – Nyheter" href="/nyheter/rss.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={lang === "en" ? "Pensionslyft – News" : "Pensionslyft – Nyheter"}
+      href={lang === "en" ? "/en/news/rss.xml" : "/nyheter/rss.xml"}
+    />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon-48x48.png" type="image/png" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

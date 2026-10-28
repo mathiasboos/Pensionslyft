@@ -77,6 +77,7 @@ export function articleData(a: {
   author?: string;
   image?: string;
   source?: { name: string; url?: string };
+  lang?: "sv" | "en";
 }): Json {
   return {
     "@context": "https://schema.org",
@@ -91,7 +92,7 @@ export function articleData(a: {
     author: { "@type": "Organization", name: a.author ?? SITE_NAME },
     publisher: { "@id": `${SITE_URL}/#organization` },
     ...(a.source?.url ? { isBasedOn: a.source.url, citation: a.source.url } : {}),
-    inLanguage: "sv-SE",
+    inLanguage: a.lang === "en" ? "en-GB" : "sv-SE",
     isAccessibleForFree: true,
   };
 }

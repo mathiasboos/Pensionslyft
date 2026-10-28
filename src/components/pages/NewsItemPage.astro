@@ -1,0 +1,82 @@
+---
+import { render } from "astro:content";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagList from "@/components/TagList.astro";
+import { articleData } from "@/lib/seo";
+import { formatDate } from "@/lib/format";
+import { newsListPath, newsPath, type Lang } from "@/lib/i18n";
+import type { NewsItem } from "@/lib/news";
+
+interface Props {
+  lang: Lang;
+  item: NewsItem;
+}
+
+const { lang, item } = Astro.props;
+const { title, excerpt, source, source_url, published_at, tags } = item.data;
+const { Content } = await render(item);
+
+const text = {
+  sv: { crumb: "Nyheter", all: "Alla nyheter", eyebrow: "Nyheter", source: "Källa", readAt: "Läs hos", newTab: "(öppnas i en ny flik)", suffix: " – Pensionslyft" },
+  en: { crumb: "News", all: "All news", eyebrow: "News", source: "Source", readAt: "Read at", newTab: "(opens in a new tab, in Swedish)", suffix: " – Pensionslyft" },
+}[lang];
+---
+
+<BaseLayout
+  title={`${title}${text.suffix}`.length <= 65 ? `${title}${text.suffix}` : title}
+  description={excerpt}
+  ogTitle={title}
+  ogType="article"
+  tags={tags}
+  publishedTime={published_at}
+  breadcrumbs={[
+    { name: text.crumb, path: newsListPath(lang) },
+    { name: title, path: newsPath(lang, item.id) },
+  ]}
+  jsonLd={articleData({
+    type: "NewsArticle",
+    title,
+    description: excerpt,
+    path: newsPath(lang, item.id),
+    published: published_at,
+    tags,
+    source: { name: source, url: source_url },
+    lang,
+  })}
+>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    <a href={newsListPath(lang)} class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+      <ArrowLeft className="size-4" aria-hidden="true" />
+      {text.all}
+    </a>
+    <p class="eyebrow mt-6">
+      {text.eyebrow} ·
+      <time datetime={published_at.toISOString().slice(0, 10)}>{formatDate(published_at, lang)}</time>
+    </p>
+    <h1 class="mt-3 font-display text-3xl leading-tight font-semibold break-words hyphens-auto sm:text-5xl">{title}</h1>
+    <p class="mt-4 text-lg text-muted-foreground">{excerpt}</p>
+    <p class="mt-4 text-sm text-muted-foreground">{text.source}: {source}</p>
+
+    <TagList tags={tags} link class="mt-4" />
+
+    <div class="article-body news-body mt-8">
+      <Content />
+    </div>
+
+    {
+      source_url && (
+        <a
+          href={source_url}
+          target="_blank"
+          rel="noopener"
+          class="mt-10 inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
+        >
+          {text.readAt} {source}
+          <ArrowUpRight className="size-4" aria-hidden="true" />
+          <span class="sr-only">{text.newTab}</span>
+        </a>
+      )
+    }
+  </article>
+</BaseLayout>

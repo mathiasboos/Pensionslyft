@@ -37,6 +37,21 @@ for (const file of files) {
     }
   }
 }
+// Language versions: every hreflang link points at a page that exists, and that page points back.
+const urlOf = (file) => {
+  const path = "/" + file.slice(dist.length).replace(/\.html$/, "").replace(/\/index$/, "");
+  return `https://pensionslyft.se${path === "/index" ? "/" : path}`;
+};
+const byUrl = new Map(files.map((f) => [urlOf(f), readFileSync(f, "utf8")]));
+for (const [url, html] of byUrl) {
+  const links = [...html.matchAll(/<link rel="alternate" hreflang="([\w-]+)" href="([^"]+)"/g)].map((m) => [m[1], m[2]]);
+  for (const [lang, href] of links) {
+    const target = byUrl.get(href);
+    if (!target) problems.push(`${url}: hreflang ${lang} points at ${href}, which is not a page`);
+    else if (lang !== "x-default" && !target.includes(`hreflang="${lang === "sv" ? "sv" : "en"}" href="${href}"`))
+      problems.push(`${url}: ${href} does not link back`);
+  }
+}
 if (problems.length) {
   console.error(problems.join("\n"));
   process.exit(1);

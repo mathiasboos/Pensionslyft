@@ -5,12 +5,15 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 
-// "published_at" of the Markdown file behind /nyheter/<slug> or /artiklar/<slug>.
+// "published_at" of the Markdown file behind /nyheter/<slug>, /artiklar/<slug> or the English /en/news/<slug>, /en/articles/<slug>.
 /** @param {string} url */
 function lastModified(url) {
-  const match = new URL(url).pathname.match(/^\/(nyheter|artiklar)\/([^/]+)$/);
+  const pathname = new URL(url).pathname;
+  const english = pathname.match(/^\/en\/(news|articles)\/([^/]+)$/);
+  const match = english ?? pathname.match(/^\/(nyheter|artiklar)\/([^/]+)$/);
   if (!match || match[2] === "rss.xml") return undefined;
-  const folder = new URL(`./src/content/${match[1] === "nyheter" ? "news" : "articles"}/`, import.meta.url);
+  const kind = english ? match[1] : match[1] === "nyheter" ? "news" : "articles";
+  const folder = new URL(`./src/content/${english ? "en/" : ""}${kind}/`, import.meta.url);
   for (const name of readdirSync(folder)) {
     const text = readFileSync(new URL(name, folder), "utf8");
     const slug = text.match(/^slug:\s*"?([^"\n]+)"?/m)?.[1] ?? name.replace(/\.md$/, "");

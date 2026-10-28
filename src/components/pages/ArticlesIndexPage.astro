@@ -1,0 +1,263 @@
+---
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import ArticleCard from "@/components/ArticleCard.astro";
+import ArticleCover from "@/components/ArticleCover.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { coverOf, getArticles } from "@/lib/articles";
+import { formatDate } from "@/lib/format";
+import { articlePath, newsListPath, type Lang } from "@/lib/i18n";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const en = lang === "en";
+const articles = await getArticles(lang);
+const featured = articles.slice(0, 4);
+const covers = new Map(await Promise.all(articles.map(async (a) => [a.id, await coverOf(a)] as const)));
+const categories = [...new Set(articles.map((a) => a.data.category))].sort((a, b) => a.localeCompare(b, en ? "en" : "sv"));
+const chip =
+  "cursor-pointer rounded-full border border-border px-3 py-1 text-sm transition-colors hover:border-primary aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground";
+const param = en ? "category" : "kategori";
+---
+
+<BaseLayout
+  title={en ? "Articles about pensions – Pensionslyft" : "Artiklar om pension – Pensionslyft"}
+  description={en
+    ? "Guides and analysis about the public pension, occupational pension, fees and withdrawal strategies in Sweden."
+    : "Guider och analyser om allmän pension, tjänstepension, avgifter och uttagsstrategier."}
+  ogDescription={en ? "Guides and analysis about Swedish pensions from Pensionslyft." : "Guider och analyser om svensk pension från Pensionslyft."}
+>
+  <div class="mx-auto max-w-7xl px-4 py-12">
+    <p class="eyebrow">{en ? "Pensionslyft · Insights" : "Pensionslyft · Insikter"}</p>
+    <h1 class="mt-2 font-display text-4xl font-semibold sm:text-5xl">{en ? "Articles" : "Artiklar"}</h1>
+    <p class="mt-3 max-w-2xl text-muted-foreground">
+      {
+        en
+          ? "Everything you need to make better pension decisions, explained in plain English, with no sales talk."
+          : "Allt du behöver för att fatta bättre pensionsbeslut – förklarat på svenska, utan säljsnack."
+      }
+    </p>
+
+    {
+      featured.length > 0 && (
+        <section class="mt-10" aria-roledescription={en ? "carousel" : "karusell"} aria-label={en ? "Featured articles" : "Utvalda artiklar"} data-carousel>
+          <div
+            class="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            data-track
+          >
+            {featured.map((article, index) => (
+              <div
+                class="w-full shrink-0 snap-start"
+                role="group"
+                aria-roledescription={en ? "slide" : "bild"}
+                aria-label={en ? `${index + 1} of ${featured.length}` : `${index + 1} av ${featured.length}`}
+              >
+                <a
+                  href={articlePath(lang, article.id)}
+                  class="group grid h-full overflow-hidden rounded-xl bg-muted p-2 md:grid-cols-[2fr_3fr]"
+                  tabindex={index === 0 ? undefined : -1}
+                >
+                  <div class="flex flex-col justify-between gap-6 p-4 sm:p-6 md:order-first">
+                    <div>
+                      <p class="eyebrow">
+                        {article.data.category} · {article.data.reading_minutes} {en ? "min read" : "min läsning"}
+                      </p>
+                      <h2 class="mt-3 font-display text-2xl leading-tight font-semibold group-hover:text-primary-soft sm:text-3xl">
+                        {article.data.title}
+                      </h2>
+                      <p class="mt-3 line-clamp-3 text-muted-foreground">{article.data.excerpt}</p>
+                    </div>
+                    <p class="flex items-center gap-2 text-sm">
+                      <span class="grid size-7 place-items-center rounded-full bg-highlight font-mono text-[0.625rem] font-medium text-highlight-foreground">
+                        PL
+                      </span>
+                      <span>{article.data.author}</span>
+                      <span class="text-muted-foreground">· {formatDate(article.data.published_at, lang)}</span>
+                    </p>
+                  </div>
+                  <ArticleCover
+                    seed={covers.get(article.id)?.seed ?? article.id}
+                    category={covers.get(article.id)?.category ?? article.data.category}
+                    large
+                    class="order-first aspect-[16/9] rounded-lg md:order-none md:aspect-auto md:min-h-80"
+                  />
+                </a>
+              </div>
+            ))}
+          </div>
+          <div class="mt-4 flex items-center gap-4">
+            <div class="flex flex-1 gap-2">
+              {featured.map((article, index) => (
+                <button
+                  type="button"
+                  class="h-6 flex-1 cursor-pointer [&[aria-current=true]>span]:bg-primary"
+                  aria-label={en ? `Show ${article.data.title}` : `Visa ${article.data.title}`}
+                  aria-current={index === 0 ? "true" : undefined}
+                  data-dot={index}
+                >
+                  <span class="block h-0.5 rounded-full bg-border transition-colors" />
+                </button>
+              ))}
+            </div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="grid size-9 cursor-pointer place-items-center rounded-full border border-border hover:border-primary"
+                aria-label={en ? "Previous article" : "Föregående artikel"}
+                data-prev
+              >
+                <ChevronLeft className="size-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="grid size-9 cursor-pointer place-items-center rounded-full border border-primary hover:bg-primary hover:text-primary-foreground"
+                aria-label={en ? "Next article" : "Nästa artikel"}
+                data-next
+              >
+                <ChevronRight className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    <div class="mt-10 grid gap-4 md:grid-cols-2">
+      <a
+        href="/pensionskalkylator"
+        class="group flex flex-col justify-between gap-6 rounded-xl p-6 text-primary-foreground sm:p-8"
+        style="background: var(--gradient-deep)"
+      >
+        <div>
+          <p class="font-display text-xl font-semibold">{en ? "Calculate your pension" : "Räkna på din pension"}</p>
+          <p class="mt-1 text-sm text-primary-foreground/80">
+            {
+              en
+                ? "See your future pension capital and what it gives per month after fees (the calculator is in Swedish)."
+                : "Se ditt framtida pensionskapital och vad det blir per månad efter avgifter."
+            }
+          </p>
+        </div>
+        <span
+          class="inline-flex h-9 w-fit items-center rounded-md bg-highlight px-4 text-sm font-medium text-highlight-foreground group-hover:bg-highlight/80"
+        >
+          {en ? "Open the calculator" : "Öppna kalkylatorn"}
+        </span>
+      </a>
+      <a href={en ? newsListPath(lang) : "/rapporter"} class="group flex flex-col justify-between gap-6 rounded-xl bg-muted p-6 sm:p-8">
+        <div>
+          <p class="font-display text-xl font-semibold">{en ? "News about Swedish pensions" : "Rapporter från myndigheterna"}</p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            {
+              en
+                ? "New amounts, rules and calculations from the Swedish Pensions Agency, the Tax Agency and others, in brief and with a link to the source."
+                : "Statistik och rapporter från Pensionsmyndigheten, Riksbanken och andra myndigheter, samlade på ett ställe."
+            }
+          </p>
+        </div>
+        <span class="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:underline">
+          {en ? "Read the news" : "Se rapporterna"} <ArrowRight className="size-4" aria-hidden="true" />
+        </span>
+      </a>
+    </div>
+
+    <section class="mt-16 scroll-mt-24" id="alla" data-filter-section data-param={param}>
+      <h2 class="font-display text-2xl font-semibold sm:text-3xl">{en ? "All articles" : "Alla artiklar"}</h2>
+      <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label={en ? "Show articles about" : "Visa artiklar om"}>
+        <button type="button" class={chip} aria-pressed="true" data-filter="">{en ? "All" : "Alla"}</button>
+        {
+          categories.map((category) => (
+            <button type="button" class={chip} aria-pressed="false" data-filter={category}>
+              {category}
+            </button>
+          ))
+        }
+      </div>
+      <div class="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-grid>
+        {articles.map((article) => <ArticleCard article={article} />)}
+      </div>
+      {articles.length === 0 && <p class="mt-10 text-muted-foreground">{en ? "No articles here yet." : "Inga artiklar här ännu."}</p>}
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  /*
+   * The carousel of the latest articles: it can be swiped, and moved with the arrows and the bars under it.
+   * It moves on by itself every 7 seconds, except while the pointer or the focus is in it, while the tab is
+   * hidden, and never for a reader who has asked for less motion.
+   */
+  const carousel = document.querySelector<HTMLElement>("[data-carousel]");
+  const track = carousel?.querySelector<HTMLElement>("[data-track]");
+  if (carousel && track) {
+    const slides = [...track.children] as HTMLElement[];
+    const dots = [...carousel.querySelectorAll<HTMLButtonElement>("[data-dot]")];
+    let index = 0;
+    let paused = false;
+
+    const goTo = (i: number) => {
+      const next = (i + slides.length) % slides.length;
+      track.scrollTo({ left: next * track.clientWidth, behavior: "smooth" });
+    };
+
+    const mark = () => {
+      index = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+      dots.forEach((dot, i) => dot.setAttribute("aria-current", String(i === index)));
+      // Only the visible slide's link can be reached with Tab.
+      slides.forEach((slide, i) => slide.querySelector("a")?.setAttribute("tabindex", i === index ? "0" : "-1"));
+    };
+
+    track.addEventListener("scroll", () => window.requestAnimationFrame(mark), { passive: true });
+    dots.forEach((dot, i) => dot.addEventListener("click", () => goTo(i)));
+    carousel.querySelector("[data-prev]")?.addEventListener("click", () => goTo(index - 1));
+    carousel.querySelector("[data-next]")?.addEventListener("click", () => goTo(index + 1));
+
+    for (const [event, value] of [
+      ["pointerenter", true],
+      ["pointerleave", false],
+      ["focusin", true],
+      ["focusout", false],
+    ] as const) {
+      carousel.addEventListener(event, () => (paused = value));
+    }
+
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && slides.length > 1) {
+      window.setInterval(() => {
+        if (!paused && !document.hidden) goTo(index + 1);
+      }, 7000);
+    }
+  }
+
+  // The topic buttons above the grid; /artiklar?kategori=Korta%20pensionstips opens with that topic chosen
+  // (/en/articles?category=... in English).
+  const section = document.querySelector<HTMLElement>("[data-filter-section]");
+  if (section) {
+    const param = section.dataset.param ?? "kategori";
+    const buttons = [...section.querySelectorAll<HTMLButtonElement>("[data-filter]")];
+    const cards = [...section.querySelectorAll<HTMLElement>("[data-grid] > [data-category]")];
+
+    const apply = (category: string) => {
+      buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === category)));
+      cards.forEach((card) => (card.hidden = category !== "" && card.dataset.category !== category));
+    };
+
+    buttons.forEach((button) =>
+      button.addEventListener("click", () => {
+        const category = button.dataset.filter ?? "";
+        apply(category);
+        const url = new URL(window.location.href);
+        if (category) url.searchParams.set(param, category);
+        else url.searchParams.delete(param);
+        window.history.replaceState(null, "", url);
+      }),
+    );
+
+    const wanted = new URLSearchParams(window.location.search).get(param);
+    if (wanted && buttons.some((b) => b.dataset.filter === wanted)) {
+      apply(wanted);
+      section.scrollIntoView();
+    }
+  }
+</script>
