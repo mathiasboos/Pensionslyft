@@ -13,6 +13,7 @@
 export const REPOSITORY = "https://github.com/mathiasboos/Calculators";
 
 export const apps = [
+  { slug: "pensionssparande", file: "Pension Savings Calculator.html", sv: "/pensionskalkylator", en: "/en/pension-savings-calculator", native: true },
   { slug: "pensionsmal", file: "Replacement rate goal calculator.html", sv: "/pensionsmalkalkylatorn", en: "/en/replacement-rate-calculator", native: true },
 ];
 

@@ -1,0 +1,42 @@
+---
+import AppFrame from "@/components/AppFrame.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// The Swedish page is /pensionskalkylator. The calculator is the same file, started in English.
+---
+
+<BaseLayout
+  title="Pension savings calculator – your future pension capital"
+  description="Work out your future pension capital from your saving, return and fees, and see what it gives per month."
+  ogTitle="Pension savings calculator – Pensionslyft"
+  ogDescription="See your future pension capital and monthly amount after fees."
+>
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">Pension savings calculator</h1>
+    <AppFrame slug="pensionssparande" title="Pension savings calculator" />
+
+    <section class="mt-12 border-t border-border pt-10">
+      <h2 class="font-display text-2xl font-semibold">What does the pension savings calculator cover?</h2>
+      <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
+        <p>
+          The calculator is for private pension, IPS (individual pension saving), occupational pension and private
+          saving, but not the public pension. Note that pension is normally taxed as income when it is paid out, which
+          private saving is not, because the tax on it has already been paid.
+        </p>
+        <p>
+          Within private saving it also matters how the capital is taxed. For an ISK (investment savings account), a
+          capital insurance and a securities insurance you pay a yield tax every year. For a securities account, a fund
+          account and a custody account you pay capital gains tax only when you sell, if there has been a gain.
+        </p>
+        <p>
+          The public pension is always paid for life. To include the public pension as well, see the
+          <a href="/en/calculators" class="text-primary underline underline-offset-2">other calculators</a>
+          (in Swedish for now).
+        </p>
+        <p>
+          The calculation is an estimate before tax and not individual advice. The return is not guaranteed.
+        </p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

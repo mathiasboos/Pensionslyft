@@ -10,6 +10,7 @@ export const PAGE_PAIRS: readonly (readonly [string, string])[] = [
   ["/om-pensionslyft", "/en/about"],
   ["/nyheter", "/en/news"],
   ["/artiklar", "/en/articles"],
+  ["/pensionskalkylator", "/en/pension-savings-calculator"],
   ["/pensionsmalkalkylatorn", "/en/replacement-rate-calculator"],
 ];
 

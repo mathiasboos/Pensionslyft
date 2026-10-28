@@ -58,8 +58,10 @@ const planner: NavItem = {
   keywords: ["pensionsplanerare", "pensionsplanering", "uttag pension", "monte carlo", "tjänstepension"],
 };
 
+// Shown as it is in github.com/mathiasboos/Calculators (Pension Savings Calculator.html), see scripts/sync-apps.mjs.
 const pension: NavItem = {
   href: "/pensionskalkylator",
+  enHref: "/en/pension-savings-calculator",
   title: "Pensionssparkalkylatorn",
   description: "Se ditt framtida pensionskapital och vad det blir per månad efter avgifter.",
   icon: Calculator,

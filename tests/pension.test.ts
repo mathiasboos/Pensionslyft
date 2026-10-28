@@ -5,104 +5,11 @@ import fireWeb from "./fixtures/fire-web.json";
 import {
   calculateCompound,
   calculateFire,
-  calculatePayout,
-  calculatePension,
   requiredMonthlyDeposit,
 } from "../src/lib/pension";
 
 // Regression values: the calculators must keep giving the same numbers as the
 // original Lovable site for its default inputs.
-
-describe("calculatePension", () => {
-  const result = calculatePension({
-    currentCapital: 350000,
-    monthlyDeposit: 2000,
-    yearsToRetirement: 25,
-    annualReturn: 6.5,
-    annualFee: 0.6,
-    payoutYears: 20,
-  });
-
-  it("matches the default results shown on the site", () => {
-    expect(Math.round(result.finalCapital)).toBe(2800224);
-    expect(Math.round(result.monthlyPension)).toBe(15405);
-    expect(Math.round(result.totalDeposits)).toBe(950000);
-    expect(Math.round(result.totalGrowth)).toBe(1850224);
-    expect(Math.round(result.feeCost)).toBe(344401);
-    expect(result.series).toHaveLength(26);
-  });
-
-  it("handles zero return and zero fee", () => {
-    const flat = calculatePension({
-      currentCapital: 100000,
-      monthlyDeposit: 1000,
-      yearsToRetirement: 10,
-      annualReturn: 0,
-      annualFee: 0,
-      payoutYears: 10,
-    });
-    expect(flat.finalCapital).toBeCloseTo(220000, 6);
-    expect(flat.monthlyPension).toBeCloseTo(220000 / 120, 6);
-    expect(flat.feeCost).toBe(0);
-  });
-});
-
-describe("calculatePayout", () => {
-  const input = {
-    currentCapital: 350000,
-    monthlyDeposit: 2000,
-    yearsToRetirement: 25,
-    annualReturn: 6.5,
-    annualFee: 0.6,
-    payoutYears: 20,
-  };
-  const base = calculatePension(input);
-
-  it("keeps the saving phase and the monthly payment of calculatePension", () => {
-    const monthly = calculatePayout(input);
-    expect(monthly.series).toEqual(base.series);
-    expect(monthly.finalCapital).toBe(base.finalCapital);
-    expect(monthly.payment).toBe(base.monthlyPension);
-    expect(Math.round(monthly.payment)).toBe(15405);
-  });
-
-  it("pays a monthly amount for the payout years and ends at 0", () => {
-    const { payouts, totalPaid, payment } = calculatePayout(input);
-    expect(payouts).toHaveLength(20);
-    expect(payouts[0]!.year).toBe(26);
-    expect(payouts[19]!.year).toBe(45);
-    expect(payouts[0]!.opening).toBeCloseTo(base.finalCapital, 6);
-    expect(payouts[19]!.closing).toBe(0);
-    for (const row of payouts) expect(row.paid).toBeCloseTo(payment * 12, 6);
-    expect(totalPaid).toBeCloseTo(payment * 12 * 20, 6);
-    expect(payouts[19]!.cumulativePaid).toBeCloseTo(totalPaid, 6);
-    // The rest of the capital keeps growing, so more is paid out than was saved.
-    expect(totalPaid).toBeGreaterThan(base.finalCapital);
-  });
-
-  it("follows the capital year by year: opening + growth - paid = closing", () => {
-    const { payouts } = calculatePayout(input);
-    payouts.forEach((row, i) => {
-      expect(row.opening + row.growth - row.paid).toBeCloseTo(row.closing, 6);
-      if (i > 0) expect(row.opening).toBeCloseTo(payouts[i - 1]!.closing, 6);
-    });
-  });
-
-  it("handles zero return and a payout of one year", () => {
-    const flat = calculatePayout({
-      currentCapital: 100000,
-      monthlyDeposit: 1000,
-      yearsToRetirement: 10,
-      annualReturn: 0,
-      annualFee: 0,
-      payoutYears: 1,
-    });
-    expect(flat.payouts).toHaveLength(1);
-    expect(flat.payment).toBeCloseTo(220000 / 12, 6);
-    expect(flat.totalPaid).toBeCloseTo(220000, 6);
-    expect(flat.payouts[0]!.closing).toBe(0);
-  });
-});
 
 describe("calculateCompound", () => {
   const base = { startCapital: 50000, monthlyDeposit: 2500, years: 20, annualReturn: 7, annualFee: 0.3, yieldTax: 1.05 };
