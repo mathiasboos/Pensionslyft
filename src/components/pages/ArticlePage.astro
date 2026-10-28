@@ -1,0 +1,136 @@
+---
+import { render } from "astro:content";
+import { Clock } from "lucide-react";
+import ArticleCard from "@/components/ArticleCard.astro";
+import ArticleCover from "@/components/ArticleCover.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagList from "@/components/TagList.astro";
+import { articleData } from "@/lib/seo";
+import { coverOf, getArticles, type Article } from "@/lib/articles";
+import { formatDate } from "@/lib/format";
+import { articlePath, articlesListPath, type Lang } from "@/lib/i18n";
+
+interface Props {
+  lang: Lang;
+  article: Article;
+}
+
+const { lang, article } = Astro.props;
+const en = lang === "en";
+const { title, excerpt, lead, category, author, published_at, reading_minutes, tags } = article.data;
+const { Content } = await render(article);
+const cover = await coverOf(article);
+
+// "More articles": the same topic first, then the newest.
+const others = (await getArticles(lang)).filter((a) => a.id !== article.id);
+const more = [
+  ...others.filter((a) => a.data.category === category),
+  ...others.filter((a) => a.data.category !== category),
+].slice(0, 3);
+const categoryParam = en ? "category" : "kategori";
+---
+
+<BaseLayout
+  title={`${title} – Pensionslyft`.length <= 65 ? `${title} – Pensionslyft` : title}
+  description={excerpt}
+  ogTitle={title}
+  ogType="article"
+  tags={tags}
+  publishedTime={published_at}
+  breadcrumbs={[
+    { name: en ? "Articles" : "Artiklar", path: articlesListPath(lang) },
+    { name: title, path: articlePath(lang, article.id) },
+  ]}
+  jsonLd={articleData({
+    type: "Article",
+    title,
+    description: excerpt,
+    path: articlePath(lang, article.id),
+    published: published_at,
+    tags,
+    author,
+    lang,
+  })}
+>
+  <div class="fixed inset-x-0 top-[65px] z-40 h-[3px] bg-border" aria-hidden="true" data-read-progress>
+    <div class="h-full origin-left bg-primary" style="transform: scaleX(0)" data-read-progress-bar></div>
+  </div>
+
+  <article class="mx-auto max-w-3xl px-4 py-12" data-article>
+    <p class="eyebrow">
+      <a href={`${articlesListPath(lang)}?${categoryParam}=${encodeURIComponent(category)}`} class="hover:text-primary">{category}</a>{
+        " "
+      }· {reading_minutes} {en ? "min read" : "min läsning"}
+    </p>
+    <h1 class="mt-3 font-display text-4xl leading-tight font-semibold sm:text-5xl">{title}</h1>
+    <p class="mt-4 text-lg text-muted-foreground">{excerpt}</p>
+    <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+      <span class="inline-flex items-center gap-2 text-foreground">
+        <span
+          class="grid size-7 place-items-center rounded-full bg-highlight font-mono text-[0.625rem] font-medium text-highlight-foreground"
+          aria-hidden="true">PL</span
+        >
+        {author}
+      </span>
+      <time datetime={published_at.toISOString().slice(0, 10)}>{formatDate(published_at, lang)}</time>
+      <span class="inline-flex items-center gap-1">
+        <Clock className="size-3" aria-hidden="true" />
+        {reading_minutes} min
+      </span>
+    </div>
+
+    <TagList tags={tags} class="mt-6" />
+
+    <ArticleCover seed={cover.seed} category={cover.category} large class="mt-8 aspect-[16/9] rounded-xl" />
+
+    <p class="mt-10 font-display text-xl leading-9 text-foreground">{lead}</p>
+
+    <div class="article-body mt-6">
+      <Content />
+    </div>
+  </article>
+
+  {
+    more.length > 0 && (
+      <section class="mx-auto mt-8 max-w-7xl border-t border-border px-4 pt-12">
+        <div class="flex items-end justify-between gap-4">
+          <h2 class="font-display text-2xl font-semibold">{en ? "More articles" : "Fler artiklar"}</h2>
+          <a href={articlesListPath(lang)} class="text-sm font-medium text-primary hover:underline">
+            {en ? "All articles" : "Alla artiklar"}
+          </a>
+        </div>
+        <div class="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          {more.map((a) => (
+            <ArticleCard article={a} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<script>
+  // The reading meter under the header: full when the end of the article reaches the bottom of the window.
+  const article = document.querySelector<HTMLElement>("[data-article]");
+  const bar = document.querySelector<HTMLElement>("[data-read-progress-bar]");
+
+  if (article && bar) {
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const end = article.getBoundingClientRect().bottom + window.scrollY - window.innerHeight;
+      const share = end > 0 ? window.scrollY / end : 1;
+      bar.style.transform = `scaleX(${Math.min(1, Math.max(0, share))})`;
+    };
+    const schedule = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    };
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    window.addEventListener("load", schedule);
+    update();
+  }
+</script>

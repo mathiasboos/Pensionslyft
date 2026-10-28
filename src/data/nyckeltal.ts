@@ -43,10 +43,10 @@ const LABELS_EN: Record<string, { label: string; value?: string }> = {
   "Prisbasbelopp": { label: "Price base amount" },
   "Förhöjt prisbasbelopp": { label: "Raised price base amount" },
   "Inkomstbasbelopp": { label: "Income base amount" },
-  "Intjänande tak allmän pension": { label: "Pension-earning ceiling, public pension", value: "56 087 kr/month" },
-  "Intjänande golv allmän pension": { label: "Pension-earning floor, public pension", value: "25 042 kr/year" },
-  "Brytpunkt statlig skatt, ej fyllt 67 år": { label: "State tax threshold, under 67", value: "55 033 kr/month" },
-  "Brytpunkt statlig skatt, fyller 67 år": { label: "State tax threshold, turning 67 or older", value: "63 375 kr/month" },
+  "Intjänande tak allmän pension": { label: "Pension-earning ceiling, public pension", value: "56,087 kr/month" },
+  "Intjänande golv allmän pension": { label: "Pension-earning floor, public pension", value: "25,042 kr/year" },
+  "Brytpunkt statlig skatt, ej fyllt 67 år": { label: "State tax threshold, under 67", value: "55,033 kr/month" },
+  "Brytpunkt statlig skatt, fyller 67 år": { label: "State tax threshold, turning 67 or older", value: "63,375 kr/month" },
   "Avkastningsskatt pensionsförsäkring": { label: "Yield tax, pension insurance" },
   "Avkastningsskatt ISK K-försäkr.": { label: "Yield tax, ISK and endowment insurance" },
   "Riktålder allmän pension": { label: "Guide age (riktålder), public pension", value: "67 years" },
@@ -59,12 +59,12 @@ const LABELS_EN: Record<string, { label: string; value?: string }> = {
   "SAF-LO tidigast uttagsålder": { label: "SAF-LO earliest withdrawal age", value: "55 years" },
   "AKAP-KR tidigast uttagsålder": { label: "AKAP-KR earliest withdrawal age", value: "62 years" },
   "PA16 avdelning 1 tidigast uttagsålder": { label: "PA16 division 1 earliest withdrawal age", value: "63 years" },
-  "Genomsnittlig pension total (inkl. tjänstepension)": { label: "Average total pension (incl. occupational pension)", value: "26 200 kr in 2025" },
+  "Genomsnittlig pension total (inkl. tjänstepension)": { label: "Average total pension (incl. occupational pension)", value: "26,200 kr in 2025" },
   "Balanstalet": { label: "Balance ratio (balanstal)", value: "1.147 in 2025" },
   "Inkomstindex": { label: "Income index" },
   "Följsamhetsindex": { label: "Adjustment index (följsamhetsindex)" },
 };
-const point = (text?: string) => text?.replace(/(\d),(\d)/g, "$1.$2");
+const point = (text?: string) => text?.replace(/(\d),(\d)/g, "$1.$2").replace(/(\d) (\d{3})(?!\d)/g, "$1,$2");
 
 export const keyFiguresEn: KeyFigure[] = keyFigures.map((f) => {
   const en = LABELS_EN[f.label];

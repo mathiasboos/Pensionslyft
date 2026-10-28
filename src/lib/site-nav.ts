@@ -208,3 +208,21 @@ export function levelName(level: Level, lang: Lang): string {
 export function levelText(level: Level, lang: Lang): string {
   return lang === "en" ? LEVEL_TEXT_EN[level] : (LEVELS.find((l) => l.level === level)?.text ?? "");
 }
+
+const INSIGHTS_EN: NavItem[] = [
+  {
+    href: "/en/articles",
+    title: "Articles",
+    description: "Guides and analysis about the public pension, occupational pension and saving.",
+    icon: BookOpen,
+  },
+  {
+    href: "/en/news",
+    title: "News",
+    description: "New amounts, rules and calculations, in brief and with a link to the source.",
+    icon: Newspaper,
+  },
+];
+
+/** The pages under Insights in the language (the reports are in Swedish only). */
+export const insightsFor = (lang: Lang): NavItem[] => (lang === "en" ? INSIGHTS_EN : insights);

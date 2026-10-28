@@ -1,11 +1,12 @@
 ---
-import { calculatorGroups, groupTitle, insights, navItem } from "@/lib/site-nav";
+import { calculatorGroups, groupTitle, insightsFor, navItem } from "@/lib/site-nav";
 import { langOf } from "@/lib/i18n";
 import { ui } from "@/i18n/ui";
 
 const year = new Date().getFullYear();
 const lang = langOf(Astro.url.pathname);
 const en = lang === "en";
+const insights = insightsFor(lang);
 const t = ui[lang];
 const groups = calculatorGroups.map((g) => ({ ...g, title: groupTitle(g, lang), items: g.items.map((i) => navItem(i, lang)) }));
 const calcHref = en ? "/en/calculators" : "/kalkylatorer";
@@ -43,10 +44,10 @@ const aboutHref = en ? "/en/about" : "/om-pensionslyft";
       ))
     }
     <div>
-      <p class="eyebrow">{en ? "Pensionslyft" : t["nav.insights"]}</p>
+      <p class="eyebrow">{t["nav.insights"]}</p>
       <ul class="mt-4 space-y-3 text-sm">
         {
-          !en && insights.map((item) => (
+          insights.map((item) => (
             <li>
               <a href={item.href} class="text-foreground/80 hover:text-primary hover:underline">
                 {item.title}

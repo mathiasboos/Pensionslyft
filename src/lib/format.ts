@@ -10,11 +10,16 @@ export function formatSek(value: number): string {
   return sek.format(Math.round(value));
 }
 
-export function formatDate(value?: Date | string | null): string {
+export function formatDate(value?: Date | string | null, lang: "sv" | "en" = "sv"): string {
   if (!value) return "";
-  return new Intl.DateTimeFormat("sv-SE", { dateStyle: "long", timeZone: "Europe/Stockholm" }).format(
+  return new Intl.DateTimeFormat(lang === "en" ? "en-GB" : "sv-SE", { dateStyle: "long", timeZone: "Europe/Stockholm" }).format(
     new Date(value),
   );
+}
+
+/** An amount of kronor for the English pages: "59,200 kr" (English separators, kronor kept). */
+export function formatKrEn(value: number): string {
+  return `${new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 }).format(Math.round(value))} kr`;
 }
 
 export function slugify(input: string): string {

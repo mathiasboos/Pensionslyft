@@ -16,7 +16,7 @@ function load(folder: string) {
     });
 }
 
-describe.each(["news", "articles"])("%s: search fields", (folder) => {
+describe.each(["news", "articles", "en/news", "en/articles"])("%s: search fields", (folder) => {
   for (const item of load(folder)) {
     it(`${item.name}: title, description and tags`, () => {
       expect(item.title.length, "title").toBeGreaterThan(0);
@@ -32,7 +32,7 @@ describe.each(["news", "articles"])("%s: search fields", (folder) => {
 });
 
 describe("news has a source link", () => {
-  for (const item of load("news")) {
+  for (const item of [...load("news"), ...load("en/news")]) {
     it(item.name, () => expect(item.sourceUrl).toMatch(/^"?https:\/\//));
   }
 });

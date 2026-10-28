@@ -133,9 +133,17 @@ look at on the preview.
   the path (`langOf`). The texts around the pages (menu, footer, cards, hint) are in `src/i18n/ui.ts`; the English dictionary has the Swedish one's type, so a missing
   text fails the build. The calculators' English names and descriptions are in `site-nav.ts` (`navItem`, `groupTitle`, `levelName`), the key figures in
   `nyckeltal.ts` (`keyFiguresEn`). A visitor whose browser is English (or who chose English) gets a dismissible hint on the Swedish pages and is never redirected.
-  **Phase 1 is live**: the English home page, `/en/calculators` and `/en/about`. The calculators, articles, news and reports are still Swedish only; the English
-  pages link to the Swedish calculator pages (marked "Swedish"), and the English menu has no Insights. When a page gets an English version, add its pair to
-  `PAIRS`, add its English texts, and add it to the English menu.
+  **Live in English**: the home page, `/en/calculators`, `/en/about`, the news (`/en/news`, tag pages `/en/news/tag/<slug>`, RSS) and the articles (`/en/articles`).
+  The calculators and the reports are still Swedish only; the English pages link to the Swedish calculator pages (marked "Swedish") and the English menu has no Reports.
+  **English news and articles**: each Swedish item has an English file of its own in `src/content/en/news/` or `src/content/en/articles/` (collections `newsEn` and
+  `articlesEn`, the same fields plus `translation_of: <Swedish slug>`; the file name is the English URL). **A new Swedish news item or article gets its English
+  twin in the same PR** (`tests/translations.test.ts` fails otherwise and checks that date, source, headings, table rows, list items, images, links and every number
+  are the same in both). Translate faithfully, keep official Swedish terms with an English gloss ("income pension (inkomstpension)"), amounts as "86,600 kronor"/"kr"
+  with English separators, decimals with a point, dates as "28 October 2026", the English slug and tags in English, title ≤ 70 and excerpt 50–160 characters, English
+  alt text on images; an agency picture with Swedish text is kept (say so in the alt text) and our own graphics get an English twin (`…-en.webp`). The pages are built
+  by shared components in `src/components/pages/` with a `lang` prop, so the Swedish and English pages change together. The pairs for the language switch and hreflang
+  come from `translation_of` (see `PAIRS` in `src/lib/i18n.ts`); `scripts/check-seo.mjs` checks that every hreflang link points at a page that links back.
+  When another page gets an English version, add its pair to `PAGE_PAIRS` and its English texts, and add it to the English menu.
 - **The news slider on the home page** (under the hero, where the two calculator examples used to be): `src/components/NewsSlider.astro` shows the
   six newest news items as designed cards (navy, fine dots, an accent colour per slide, no photo), with arrows and dots. It is a scroll-snap
   track, so it also swipes and works without JavaScript; `src/scripts/news-slider.ts` adds arrows, dots and auto-advance every 6 s (pauses on

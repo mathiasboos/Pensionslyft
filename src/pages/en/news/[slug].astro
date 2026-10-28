@@ -1,0 +1,17 @@
+---
+import NewsItemPage from "@/components/pages/NewsItemPage.astro";
+import { getNews, type NewsItem } from "@/lib/news";
+
+export async function getStaticPaths() {
+  const news = await getNews("en");
+  return news.map((item) => ({ params: { slug: item.id }, props: { item } }));
+}
+
+interface Props {
+  item: NewsItem;
+}
+
+const { item } = Astro.props;
+---
+
+<NewsItemPage lang="en" item={item} />

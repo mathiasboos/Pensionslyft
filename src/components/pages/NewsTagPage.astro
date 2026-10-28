@@ -1,0 +1,92 @@
+---
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagList from "@/components/TagList.astro";
+import { formatDate } from "@/lib/format";
+import { newsListPath, newsPath, newsTagPath, type Lang } from "@/lib/i18n";
+import type { NewsItem } from "@/lib/news";
+import { hashtag, tagSlug } from "@/lib/tags";
+
+interface Props {
+  lang: Lang;
+  tag: string;
+  items: NewsItem[];
+  allTags: string[];
+}
+
+const { lang, tag, items, allTags } = Astro.props;
+const path = newsTagPath(lang, tagSlug(tag));
+
+const text = {
+  sv: {
+    title: `${hashtag(tag)} – nyheter – Pensionslyft`,
+    description: `Nyheter om ${tag} inom pension, skatt och sparande från Pensionslyft: ${items.map((i) => i.data.title).join(", ")}.`,
+    crumb: "Nyheter",
+    all: "Alla nyheter",
+    count: items.length === 1 ? "en nyhet" : `${items.length} nyheter`,
+    lead: `Nyheter om ${tag}, `,
+    read: "Läs nyheten",
+    more: "Fler ämnen",
+  },
+  en: {
+    title: `${hashtag(tag)} – news – Pensionslyft`,
+    description: `News about ${tag} in pensions, tax and saving from Pensionslyft: ${items.map((i) => i.data.title).join(", ")}.`,
+    crumb: "News",
+    all: "All news",
+    count: items.length === 1 ? "one news item" : `${items.length} news items`,
+    lead: `News about ${tag}, `,
+    read: "Read the news item",
+    more: "More topics",
+  },
+}[lang];
+---
+
+<BaseLayout
+  title={text.title}
+  description={text.description.slice(0, 160)}
+  breadcrumbs={[
+    { name: text.crumb, path: newsListPath(lang) },
+    { name: hashtag(tag), path },
+  ]}
+>
+  <div class="mx-auto max-w-7xl px-4 py-12">
+    <a href={newsListPath(lang)} class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+      <ArrowLeft className="size-4" aria-hidden="true" />
+      {text.all}
+    </a>
+    <h1 class="mt-4 font-display text-4xl font-semibold sm:text-5xl">{hashtag(tag)}</h1>
+    <p class="mt-3 max-w-2xl text-muted-foreground">
+      {text.lead}{text.count}.
+    </p>
+
+    <ul class="mt-8 divide-y divide-border border-t border-border">
+      {
+        items.map((item) => (
+          <li>
+            <a href={newsPath(lang, item.id)} class="group grid gap-2 py-6 lg:grid-cols-[16rem_1fr] lg:gap-10">
+              <span class="eyebrow pt-1">
+                <time datetime={item.data.published_at.toISOString().slice(0, 10)}>
+                  {formatDate(item.data.published_at, lang)}
+                </time>
+                <span class="mt-1 block normal-case tracking-normal">{item.data.source}</span>
+              </span>
+              <span>
+                <span class="block font-display text-xl font-semibold text-foreground group-hover:text-primary group-hover:underline">
+                  {item.data.title}
+                </span>
+                <span class="mt-2 block max-w-3xl text-sm leading-6 text-muted-foreground">{item.data.excerpt}</span>
+                <span class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  {text.read}
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2 class="mt-10 text-sm font-medium text-muted-foreground">{text.more}</h2>
+    <TagList tags={allTags.filter((t) => tagSlug(t) !== tagSlug(tag))} link class="mt-3" />
+  </div>
+</BaseLayout>

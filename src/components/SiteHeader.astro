@@ -2,34 +2,39 @@
 import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
 import ArticleCover from "@/components/ArticleCover.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { getArticles } from "@/lib/articles";
+import { coverOf, getArticles } from "@/lib/articles";
 import CalculatorLevel from "@/components/CalculatorLevel.astro";
-import { calculatorGroups, featuredCalculator, groupTitle, insights, navItem } from "@/lib/site-nav";
-import { cleanPath, HOME, langOf, twinOf } from "@/lib/i18n";
+import { calculatorGroups, featuredCalculator, groupTitle, insightsFor, navItem } from "@/lib/site-nav";
+import { articlePath, articlesListPath, cleanPath, HOME, langOf, newsListPath, switchTarget } from "@/lib/i18n";
 import { ui } from "@/i18n/ui";
 import { cn } from "@/lib/utils";
 
-const articles = await getArticles();
-const latest = articles[0];
-const categories = [...new Set(articles.map((a) => a.data.category))].sort((a, b) => a.localeCompare(b, "sv"));
-
-const path = Astro.url.pathname.replace(/\.html$/, "");
 const lang = langOf(Astro.url.pathname);
 const en = lang === "en";
+const articles = await getArticles(lang);
+const latest = articles[0];
+const latestCover = latest ? await coverOf(latest) : undefined;
+const categories = [...new Set(articles.map((a) => a.data.category))].sort((a, b) => a.localeCompare(b, en ? "en" : "sv"));
+const insights = insightsFor(lang);
+const categoryParam = en ? "category" : "kategori";
+const articlesHref = articlesListPath(lang);
+const newsHref = newsListPath(lang);
+
+const path = Astro.url.pathname.replace(/\.html$/, "");
 const t = ui[lang];
 const groups = calculatorGroups.map((g) => ({ ...g, title: groupTitle(g, lang), items: g.items.map((i) => navItem(i, lang)) }));
 const featured = navItem(featuredCalculator, lang);
 const calcHref = en ? "/en/calculators" : "/kalkylatorer";
 const aboutHref = en ? "/en/about" : "/om-pensionslyft";
 // The other language: the same page if it exists there, else the front page of that language.
-const twin = twinOf(Astro.url.pathname);
+const target = switchTarget(Astro.url.pathname);
 const here = cleanPath(Astro.url.pathname);
-const svHref = en ? (twin ?? "/") : here;
-const enHref = en ? here : (twin ?? "/en");
+const svHref = en ? target : here;
+const enHref = en ? here : target;
 const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 const calculatorsActive =
   isActive(calcHref) || calculatorGroups.some((g) => g.items.some((item) => isActive(item.href)));
-const insightsActive = !en && insights.some((item) => isActive(item.href));
+const insightsActive = insights.some((item) => isActive(item.href));
 
 const trigger =
   "group inline-flex cursor-pointer items-center gap-1 rounded-md px-3 py-2 text-sm transition-colors hover:text-primary aria-expanded:text-primary";
@@ -131,9 +136,6 @@ const FeaturedIcon = featured.icon;
         </div>
       </div>
 
-      {
-        !en && (
-          <>
       <div class="flex h-full items-center" data-mega>
         <button
           type="button"
@@ -142,7 +144,7 @@ const FeaturedIcon = featured.icon;
           aria-controls="mega-insikter"
           data-mega-trigger
         >
-          Insikter
+          {t["nav.insights"]}
           <ChevronDown className="size-4 transition-transform group-aria-expanded:rotate-180" aria-hidden="true" />
         </button>
         <div id="mega-insikter" class="absolute inset-x-0 top-full z-10 px-4 pt-2" hidden data-mega-panel>
@@ -150,7 +152,7 @@ const FeaturedIcon = featured.icon;
             class="mx-auto grid max-w-7xl grid-cols-[1fr_1fr_20rem] overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]"
           >
             <div class="border-r border-border p-6">
-              <p class="eyebrow px-2">Läs och fördjupa</p>
+              <p class="eyebrow px-2">{t["nav.readAndDeepen"]}</p>
               <ul class="mt-3 space-y-1">
                 {
                   insights.map((item) => (
@@ -176,13 +178,13 @@ const FeaturedIcon = featured.icon;
               </ul>
             </div>
             <div class="border-r border-border p-6">
-              <p class="eyebrow">Ämnen</p>
+              <p class="eyebrow">{t["nav.topics"]}</p>
               <ul class="mt-3 space-y-3">
                 {
                   categories.map((category) => (
                     <li>
                       <a
-                        href={`/artiklar?kategori=${encodeURIComponent(category)}`}
+                        href={`${articlesHref}?${categoryParam}=${encodeURIComponent(category)}`}
                         class="text-sm text-foreground hover:text-primary hover:underline"
                       >
                         {category}
@@ -193,13 +195,13 @@ const FeaturedIcon = featured.icon;
               </ul>
             </div>
             <div class="bg-muted p-6">
-              <p class="eyebrow">Senaste artikeln</p>
+              <p class="eyebrow">{t["nav.latestArticle"]}</p>
               {
                 latest && (
-                  <a href={`/artiklar/${latest.id}`} class="group/feat mt-3 block">
+                  <a href={articlePath(lang, latest.id)} class="group/feat mt-3 block">
                     <ArticleCover
-                      seed={latest.id}
-                      category={latest.data.category}
+                      seed={latestCover?.seed ?? latest.id}
+                      category={latestCover?.category ?? latest.data.category}
                       class="aspect-[16/9] rounded-lg"
                     />
                     <span class="mt-3 block text-sm font-medium text-foreground group-hover/feat:text-primary">
@@ -217,29 +219,30 @@ const FeaturedIcon = featured.icon;
       </div>
 
       <a
-        href="/artiklar"
-        aria-current={isActive("/artiklar") ? "page" : undefined}
-        class:list={[plainLink, isActive("/artiklar") ? "font-medium text-primary" : "text-foreground/80"]}
+        href={articlesHref}
+        aria-current={isActive(articlesHref) ? "page" : undefined}
+        class:list={[plainLink, isActive(articlesHref) ? "font-medium text-primary" : "text-foreground/80"]}
       >
-        Artiklar
+        {t["nav.articles"]}
       </a>
-      <a
-        href="/rapporter"
-        aria-current={isActive("/rapporter") ? "page" : undefined}
-        class:list={[plainLink, isActive("/rapporter") ? "font-medium text-primary" : "text-foreground/80"]}
-      >
-        Rapporter
-      </a>
-      <a
-        href="/nyheter"
-        aria-current={isActive("/nyheter") ? "page" : undefined}
-        class:list={[plainLink, isActive("/nyheter") ? "font-medium text-primary" : "text-foreground/80"]}
-      >
-        Nyheter
-      </a>
-          </>
+      {
+        !en && (
+          <a
+            href="/rapporter"
+            aria-current={isActive("/rapporter") ? "page" : undefined}
+            class:list={[plainLink, isActive("/rapporter") ? "font-medium text-primary" : "text-foreground/80"]}
+          >
+            {t["nav.reports"]}
+          </a>
         )
       }
+      <a
+        href={newsHref}
+        aria-current={isActive(newsHref) ? "page" : undefined}
+        class:list={[plainLink, isActive(newsHref) ? "font-medium text-primary" : "text-foreground/80"]}
+      >
+        {t["nav.news"]}
+      </a>
       <a
         href={aboutHref}
         aria-current={isActive(aboutHref) ? "page" : undefined}
@@ -355,14 +358,11 @@ const FeaturedIcon = featured.icon;
           {t["nav.allCalculators"]} <ArrowRight className="size-4" aria-hidden="true" />
         </a>
       </details>
-      {
-        !en && (
-          <>
       <details class="group border-b border-border" open={insightsActive}>
         <summary
           class="flex cursor-pointer list-none items-center justify-between py-4 text-base font-medium [&::-webkit-details-marker]:hidden"
         >
-          Insikter
+          {t["nav.insights"]}
           <ChevronDown className="size-5 transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
         <ul class="space-y-1 pb-4">
@@ -386,13 +386,13 @@ const FeaturedIcon = featured.icon;
             ))
           }
         </ul>
-        <p class="eyebrow">Ämnen</p>
+        <p class="eyebrow">{t["nav.topics"]}</p>
         <ul class="mt-2 flex flex-wrap gap-2 pb-5">
           {
             categories.map((category) => (
               <li>
                 <a
-                  href={`/artiklar?kategori=${encodeURIComponent(category)}`}
+                  href={`${articlesHref}?${categoryParam}=${encodeURIComponent(category)}`}
                   class="inline-block rounded-full border border-border px-3 py-1 text-sm"
                 >
                   {category}
@@ -402,12 +402,9 @@ const FeaturedIcon = featured.icon;
           }
         </ul>
       </details>
-      <a href="/artiklar" class="block border-b border-border py-4 text-base font-medium">Artiklar</a>
-      <a href="/rapporter" class="block border-b border-border py-4 text-base font-medium">Rapporter</a>
-      <a href="/nyheter" class="block border-b border-border py-4 text-base font-medium">Nyheter</a>
-          </>
-        )
-      }
+      <a href={articlesHref} class="block border-b border-border py-4 text-base font-medium">{t["nav.articles"]}</a>
+      {!en && <a href="/rapporter" class="block border-b border-border py-4 text-base font-medium">{t["nav.reports"]}</a>}
+      <a href={newsHref} class="block border-b border-border py-4 text-base font-medium">{t["nav.news"]}</a>
       <a href={aboutHref} class="block border-b border-border py-4 text-base font-medium">{t["nav.about"]}</a>
       <div class="mt-8 grid gap-3">
         <a href="/pensionsoversikt" class={cn(buttonVariants({ variant: "highlight", size: "lg" }))}>

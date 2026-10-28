@@ -1,0 +1,22 @@
+---
+import NewsTagPage from "@/components/pages/NewsTagPage.astro";
+import { getNews, getTags } from "@/lib/news";
+import { tagSlug } from "@/lib/tags";
+
+export async function getStaticPaths() {
+  const tags = await getTags("en");
+  const news = await getNews("en");
+  return tags.map(({ tag, slug }) => ({
+    params: { tag: slug },
+    props: {
+      tag,
+      items: news.filter((item) => item.data.tags.some((t) => tagSlug(t) === slug)),
+      allTags: tags.map((t) => t.tag),
+    },
+  }));
+}
+
+const { tag, items, allTags } = Astro.props;
+---
+
+<NewsTagPage lang="en" tag={tag} items={items} allTags={allTags} />

@@ -14,6 +14,6 @@ export function hashtag(tag: string): string {
   return `#${tag.replace(/\s+/g, "")}`;
 }
 
-export function tagHref(tag: string): string {
-  return `/nyheter/tagg/${tagSlug(tag)}`;
+export function tagHref(tag: string, lang: "sv" | "en" = "sv"): string {
+  return lang === "en" ? `/en/news/tag/${tagSlug(tag)}` : `/nyheter/tagg/${tagSlug(tag)}`;
 }

@@ -1,0 +1,111 @@
+---
+import { ArrowRight } from "lucide-react";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagList from "@/components/TagList.astro";
+import { formatDate } from "@/lib/format";
+import { newsListPath, newsPath, type Lang } from "@/lib/i18n";
+import { getNews, getTags } from "@/lib/news";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const news = await getNews(lang);
+const tags = await getTags(lang);
+
+const text = {
+  sv: {
+    title: "Nyheter om pension – Pensionslyft",
+    description:
+      "Nyheter om pension, skatt och sparande: nya belopp, regler och beräkningar från myndigheterna, kortfattat och med länk till källan.",
+    ogDescription: "Det som händer inom pension, kortfattat och med länk till källan.",
+    crumb: "Nyheter",
+    navLabel: "Senaste nyheterna",
+    eyebrow: "Pensionslyft · Insikter",
+    h1: "Nyheter",
+    intro:
+      "Det som händer inom pension, skatt och sparande: nya belopp, regler och beräkningar. Kortfattat och med länk till källan.",
+    read: "Läs nyheten",
+    topics: "Ämnen",
+  },
+  en: {
+    title: "Pension news – Pensionslyft",
+    description:
+      "News about pensions, tax and saving in Sweden: new amounts, rules and calculations from the authorities, in brief and with a link to the source.",
+    ogDescription: "What is happening in Swedish pensions, in brief and with a link to the source.",
+    crumb: "News",
+    navLabel: "Latest news",
+    eyebrow: "Pensionslyft · Insights",
+    h1: "News",
+    intro:
+      "What is happening in pensions, tax and saving in Sweden: new amounts, rules and calculations. In brief and with a link to the source.",
+    read: "Read the news item",
+    topics: "Topics",
+  },
+}[lang];
+---
+
+<BaseLayout
+  title={text.title}
+  description={text.description}
+  ogDescription={text.ogDescription}
+  breadcrumbs={[{ name: text.crumb, path: newsListPath(lang) }]}
+>
+  <div class="dot-grid">
+    <div class="mx-auto max-w-7xl px-4 pt-8 pb-6">
+      <nav aria-label={text.navLabel} class="border-b border-border pb-6">
+        <p class="eyebrow">{text.navLabel}</p>
+        <ul class="mt-2 space-y-1.5 text-sm">
+          {
+            news.slice(0, 8).map((item) => (
+              <li>
+                <a href={newsPath(lang, item.id)} class="text-primary underline-offset-2 hover:underline">
+                  {item.data.title}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <p class="eyebrow mt-8">{text.eyebrow}</p>
+      <h1 class="mt-2 font-display text-4xl font-semibold sm:text-5xl">{text.h1}</h1>
+      <p class="mt-3 max-w-2xl text-muted-foreground">{text.intro}</p>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4">
+    <ul class="divide-y divide-border border-t border-border">
+      {
+        news.map((item) => (
+          <li>
+            <a href={newsPath(lang, item.id)} class="group grid gap-2 py-6 lg:grid-cols-[16rem_1fr] lg:gap-10">
+              <span class="eyebrow pt-1">
+                <time datetime={item.data.published_at.toISOString().slice(0, 10)}>
+                  {formatDate(item.data.published_at, lang)}
+                </time>
+                <span class="mt-1 block normal-case tracking-normal">{item.data.source}</span>
+              </span>
+              <span>
+                <span class="block font-display text-xl font-semibold text-foreground group-hover:text-primary group-hover:underline">
+                  {item.data.title}
+                </span>
+                <span class="mt-2 block max-w-3xl text-sm leading-6 text-muted-foreground">{item.data.excerpt}</span>
+                <TagList tags={item.data.tags} class="mt-3" />
+                <span class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  {text.read}
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                </span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <nav aria-label={text.topics} class="mx-auto max-w-7xl border-t border-border px-4 py-8">
+    <p class="eyebrow">{text.topics}</p>
+    <TagList tags={tags.map((t) => t.tag)} link class="mt-3" />
+  </nav>
+</BaseLayout>
