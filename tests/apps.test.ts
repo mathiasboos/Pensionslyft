@@ -13,9 +13,12 @@ const source = JSON.parse(readFileSync(join(root, "src/data/apps-source.json"), 
 describe("calculators shown from GitHub", () => {
   it.each(apps)("$slug has a page in both languages, a menu entry and an English twin", (app) => {
     expect(existsSync(join(root, `src/pages${app.sv}.astro`))).toBe(true);
-    expect(existsSync(join(root, `src/pages${app.en}.astro`))).toBe(true);
     const item = calculators.find((c) => c.href === app.sv);
+    expect(item).toBeDefined();
+    // A calculator without an English version has no English page, and its English card links to the Swedish page.
     expect(item?.enHref).toBe(app.en);
+    if (!app.en) return;
+    expect(existsSync(join(root, `src/pages${app.en}.astro`))).toBe(true);
     expect(navItem(item!, "en")).toMatchObject({ href: app.en, english: true });
     expect(PAIRS).toContainEqual([app.sv, app.en]);
     expect(switchTarget(app.sv)).toBe(app.en);
@@ -35,6 +38,7 @@ describe("calculators shown from GitHub", () => {
 
   it("has no duplicate slugs or pages", () => {
     expect(new Set(apps.map((a) => a.slug)).size).toBe(apps.length);
-    expect(new Set(apps.flatMap((a) => [a.sv, a.en])).size).toBe(apps.length * 2);
+    const pages = apps.flatMap((a) => [a.sv, a.en]).filter(Boolean);
+    expect(new Set(pages).size).toBe(pages.length);
   });
 });

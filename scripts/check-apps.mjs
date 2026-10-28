@@ -38,7 +38,7 @@ const problems = [];
 try {
   for (const app of apps.filter((a) => !only || only.includes(a.slug))) {
     for (const [device, viewport] of [["computer", { width: 1440, height: 1000 }], ["phone", { width: 390, height: 844 }]]) {
-      for (const lang of ["sv", "en"]) {
+      for (const lang of app.en ? ["sv", "en"] : ["sv"]) {
         const label = `${app.slug} (${lang}, ${device})`;
         const context = await browser.newContext({ viewport });
         const page = await context.newPage();

@@ -100,10 +100,9 @@ const typfall: NavItem = {
   keywords: ["typfallsmodellen", "pensionsmyndigheten", "inkomstpension", "premiepension", "garantipension"],
 };
 
-// Shown as it is in github.com/mathiasboos/Calculators (Salary_Exchange.html), see scripts/sync-apps.mjs.
+// Shown as it is in github.com/mathiasboos/Calculators (Salary_Exchange.html, Swedish only for now), see scripts/sync-apps.mjs.
 const lonevaxling: NavItem = {
   href: "/lonevaxlingskalkylator",
-  enHref: "/en/salary-exchange",
   title: "Löneväxlingskalkylatorn",
   description: "Se vad löneväxling ger i extra pensionskapital och när det passar din lönenivå.",
   icon: PiggyBank,

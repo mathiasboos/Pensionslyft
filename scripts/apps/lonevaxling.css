@@ -1,50 +1,5 @@
-/*
- * Löneväxlingskalkylatorn (Salary_Exchange.html in github.com/mathiasboos/Calculators) on pensionslyft.se: the site's
- * palette and fonts instead of the file's green and beige. The file writes its colours in :root variables, set here,
- * and in a few places in its code (scripts/apps-colors.mjs). Site tokens: navy #0c2a49, ink #0f2034, muted-foreground
- * #545f6c, border #e7e5e0, muted #f5f4f1, sand #ece0ca, highlight #f0c75e, destructive #cc2827, gold #a18142,
- * steel #4675a4, dark teal #2f6f73, brick #9c4438.
- */
-:root {
-  --accent: #0c2a49;
-  --accent2: #0c2a49;
-  --accent-dark: #081d33;
-  --accent-soft: #eef2f6;
-  --beige: #ece0ca;
-  --blue: #4675a4;
-  --yellow: #f0c75e;
-  --orange: #9c4438;
-  --ink: #0f2034;
-  --ink-soft: #545f6c;
-  --bg: #ffffff;
-  --card: #ffffff;
-  --panel: #f5f4f1;
-  --line: #e7e5e0;
-  --track: #e7e5e0;
-  --good: #2f6f73;
-  --good-bg: #e6f0ef;
-  --amber: #795f28;
-  --amber-bg: #fbf6e8;
-  --warn: #cc2827;
-  --warn-bg: #fbeceb;
-  --radius: 12px;
-  --display: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-body {
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  padding-top: 8px;
-  font-variant-numeric: tabular-nums;
-}
-.page-title,
-h1,
-h2,
-h3 {
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-weight: 600;
-}
-.card {
-  box-shadow: none;
-}
+/* The file's footer says that it is a stand-alone copy of the page on pensionslyft.se; on the site it is that page. The
+   page says the same about estimates (src/pages/lonevaxlingskalkylator.astro). */
 footer {
-  margin-top: 16px;
+  display: none;
 }

@@ -2,9 +2,8 @@
 import AppFrame from "@/components/AppFrame.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 
-// The calculator is Salary_Exchange.html of github.com/mathiasboos/Calculators, shown as it is with the site's colours
-// and fonts (scripts/sync-apps.mjs, scripts/apps-colors.mjs, scripts/apps/lonevaxling.css; a GitHub Action keeps it up
-// to date). English page: /en/salary-exchange.
+// The calculator is Salary_Exchange.html of github.com/mathiasboos/Calculators, shown as it is (scripts/sync-apps.mjs; a GitHub Action keeps
+// it up to date). It is Swedish only for now: no English page.
 ---
 
 <BaseLayout
@@ -16,5 +15,10 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
     <h1 class="sr-only">Löneväxlingskalkylator 2026</h1>
     <AppFrame slug="lonevaxling" title="Löneväxlingskalkylator 2026" />
+    <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
+      Kalkylatorn är ett förenklat beräkningsverktyg och utgör inte finansiell rådgivning. Beräkningarna bygger på
+      arbetsgivaravgift 31,42 % och särskild löneskatt 24,26 %. Historisk avkastning är inte en garanti för framtida
+      avkastning.
+    </p>
   </div>
 </BaseLayout>

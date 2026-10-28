@@ -15,9 +15,9 @@
     },
     "lonevaxling": {
       "file": "Salary_Exchange.html",
-      "commit": "ca22a875196a689e50ddbaf06e1b33e438ed67ff",
-      "committedAt": "2026-10-28T14:35:35+00:00",
-      "subject": "Add year-by-year table with CSV/Excel download to Salary Exchange, Salary Exchange Consumer and Pensionskompassen"
+      "commit": "b16fd45877257ce337ed74748d6617a8dd43897d",
+      "committedAt": "2026-10-28T17:56:40+01:00",
+      "subject": "Add files via upload"
     },
     "pensionsoversikt": {
       "file": "Pension Overview.html",
