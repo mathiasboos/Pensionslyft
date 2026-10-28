@@ -53,9 +53,8 @@ look at on the preview.
   mode, plus the Google Fonts link of the site), so that the page looks like the other calculators; change
   colours and fonts there, never in the HTML. When the app gets new CSS variables (the tab "Bästa pensionsålder" added
   `--fig-pa-*`, `--fig-ag-*`, the tab "Hur länge räcker pensionen?" `--fig-pu-*`), look at the new tab after a sync and map them in the theme too, validated with the dataviz
-  validator; otherwise they keep the app's own palette. The engine of the old React port is back in `src/lib/typfall/`
-  (with `src/data/typfall.json` and its tests `tests/typfall*.test.ts`), but only as the pension engine of the
-  Pensionsöversikten; its UI is in git history up to commit a4c6971.
+  validator; otherwise they keep the app's own palette. (The old React port of the Typfall model, `src/lib/typfall/`, was the pension engine of the Pensionsöversikten;
+  it went when that calculator moved to GitHub, see git history before the "Pensionsöversikten: visa GitHub-filen" commit.)
 - **How a change on GitHub reaches the site.** The owner expects a change in `github.com/mathiasboos/Calculators` or
   `github.com/mathiasboos/Typfallsmodellen` to show up here without anyone asking. Every calculator is in one of these groups, and a
   new one must be put in one of them (and in this table) when it is added:
@@ -63,13 +62,12 @@ look at on the preview.
   | Calculator | Kept up to date by |
   |---|---|
   | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
-  | Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
+  | Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
   | Löneväxling, Nettolön, FIRE (re-written in React from `Salary_Exchange_Consumer.html`, `Net_Salary_2026.html`, `FIRE_Calculator .html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
-  | Pensionsöversikt | the site's own: no original elsewhere (their GitHub files are copies made from the site) |
 
 - **Calculators shown straight from GitHub** (`scripts/lib/apps.mjs`; today the Pensionsmålkalkylatorn, `/pensionsmalkalkylatorn`
-  and `/en/replacement-rate-calculator`, the Pensionssparkalkylatorn, `/pensionskalkylator` and `/en/pension-savings-calculator`, and Ränta på ränta, `/ranta-pa-ranta` and `/en/compound-interest`). The file in Calculators is the master and is never edited here: `node
+  and `/en/replacement-rate-calculator`, the Pensionssparkalkylatorn, `/pensionskalkylator` and `/en/pension-savings-calculator`, Ränta på ränta, `/ranta-pa-ranta` and `/en/compound-interest`, and the Pensionsöversikten, `/pensionsoversikt` and `/en/pension-overview`). The file in Calculators is the master and is never edited here: `node
   scripts/sync-apps.mjs [--only slug] [--if-changed] [--reapply]` puts it in `public/app/<slug>.html` (disallowed in
   robots.txt) with `scripts/apps-theme.css` (hides the file's own header and SV | EN switch), `scripts/apps-site.js`
   (language from `?lang=`, links) and, when the file does not have the site's palette, its colours in
@@ -78,22 +76,6 @@ look at on the preview.
   move another calculator over: add it to `apps.mjs`, its pages and nav entry, run the sync, check it with
   `scripts/check-apps.mjs`, and take its React port and tests away (one source only). New texts need both languages in
   the file's own dictionary.
-- **Pensionsöversikten** (`/pensionsoversikt`, `src/lib/pensionsoversikt.ts`, `PensionsoversiktCalculator.tsx`), after
-  Wealthsimple's retirement calculator and next to the older Pensionssparkalkylatorn (the former Pensionskalkylatorn, URL `/pensionskalkylator`, unchanged): the public
-  pension and the tjänstepension come from `runTypfall` (or amounts the user enters), are taxed with `calcNettolon`
-  (2026 rules, förhöjt grundavdrag from `xage`), and the budget's gap (minPension's Bas/Medel/Plus or an own amount)
-  is taken from an ISK followed month by month. Everything is shown in today's money. "Det du behöver" is the capital
-  at the retirement age that lasts to the life expectancy (bisection), and the forecast box compares it with what the
-  user will have. `tests/pensionsoversikt.test.ts` pins the default and the Plus case.
-  The chart and the tiles show **all capital**: the private savings and the *capital value* of inkomstpension,
-  premiepension, tjänstepension and other income (garantipension is not counted as capital: with no real wage growth it comes only late in life; it stays in the monthly income and the forecast) (the present value of what each pays after tax
-  to the life expectancy), against the capital that funds the whole budget. One discount rate is calibrated so that the
-  budget's present value equals what the month-by-month savings run (fee, ISK tax) says funds the whole budget; then the
-  capital view and the forecast box agree (`discount`, `capital`, `capitalDiff`, `monthlyDiff` in `kalkylera`).
-  Surplus (`capitalDiff >= 0`): green "Kapitalöverskott", "Budgetöverskott" and "Du kan uppskattningsvis gå i pension
-  vid YY"; deficit: red "Behövs", "Budgetunderskott" and "Du behöver uppskattningsvis jobba till YY" (`retireEstimate`,
-  the earliest age 55–75 at which the capital reaches the need and the savings carry the budget until the pensions start). `calculatePension` in
-  `src/lib/pension.ts` is still used by FIRE.
 - **Pensionsplaneraren is not ported either, and it updates itself.** `/pensionsplaneraren` shows
   `Retirement_Planner.html` of `github.com/mathiasboos/Calculators` (11 tabs, Chart.js and SheetJS inline, EN/SV)
   in a same-origin iframe like Typfallsmodellen. The owner develops it there and wants every change, a parameter or a

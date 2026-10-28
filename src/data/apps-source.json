@@ -13,6 +13,12 @@
       "committedAt": "2026-10-28T14:35:35+00:00",
       "subject": "Add Excel download next to CSV in Compound Interest, Pension Savings and Pension Overview"
     },
+    "pensionsoversikt": {
+      "file": "Pension Overview.html",
+      "commit": "261b40f7274e5357fe04b47c9a52ee5544432394",
+      "committedAt": "2026-10-28T14:39:38+00:00",
+      "subject": "Merge main into claude/happy-edison-5gtmpq; re-apply Excel download on language-toggle version of Pension Overview"
+    },
     "pensionsmal": {
       "file": "Replacement rate goal calculator.html",
       "commit": "bf308a201ad6cc3866c6e33d866d7b65fb0e08b9",

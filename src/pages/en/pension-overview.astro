@@ -1,0 +1,22 @@
+---
+import AppFrame from "@/components/AppFrame.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// The Swedish page is /pensionsoversikt. The calculator is the same file, started in English.
+---
+
+<BaseLayout
+  title="Pension overview – will your pension last? – Pensionslyft"
+  description="See whether your pension and savings are enough: public and occupational pension, tax, budget and how much more you need to save each month."
+  ogTitle="Pension overview – Pensionslyft"
+  ogDescription="Will your pension and savings last? See your forecast and how much more you need to save."
+>
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">Pension overview</h1>
+    <AppFrame slug="pensionsoversikt" title="Pension overview" />
+    <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
+      The calculation is an estimate and not individual advice. The public pension is calculated with the Swedish
+      Pensions Agency's Typfall model, and your own forecast is on minPension. Amounts are in Swedish kronor (kr).
+    </p>
+  </div>
+</BaseLayout>

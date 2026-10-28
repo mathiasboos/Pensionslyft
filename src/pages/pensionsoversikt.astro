@@ -1,6 +1,9 @@
 ---
-import PensionsoversiktCalculator from "@/components/calculators/PensionsoversiktCalculator";
+import AppFrame from "@/components/AppFrame.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// The calculator is Pension Overview.html of github.com/mathiasboos/Calculators, shown as it is
+// (scripts/sync-apps.mjs; a GitHub Action keeps it up to date). English page: /en/pension-overview.
 ---
 
 <BaseLayout
@@ -9,15 +12,12 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   ogTitle="Pensionsöversikt – Pensionslyft"
   ogDescription="Räcker pensionen och sparandet? Se din prognos och hur mycket mer du behöver spara."
 >
-  <div class="mx-auto max-w-7xl px-4 py-14">
-    <h1 class="font-display text-4xl font-semibold">Pensionsöversikt</h1>
-    <p class="mt-3 max-w-2xl text-muted-foreground">
-      Berätta lite om din ekonomi i dag. Pensionsöversikten räknar ut din allmänna pension och tjänstepension, drar
-      skatten och visar om pensionen och ditt sparande räcker till den budget du vill ha som pensionär – och hur mycket
-      mer du i så fall behöver spara.
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">Pensionsöversikt</h1>
+    <AppFrame slug="pensionsoversikt" title="Pensionsöversikt" />
+    <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
+      Beräkningen är en uppskattning och inte individuell rådgivning. Den allmänna pensionen räknas enligt
+      Pensionsmyndighetens Typfallsmodell, och din egen prognos hittar du på minPension.
     </p>
-    <div class="mt-10">
-      <PensionsoversiktCalculator client:load />
-    </div>
   </div>
 </BaseLayout>
