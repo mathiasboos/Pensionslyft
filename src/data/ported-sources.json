@@ -13,17 +13,6 @@
         "tests/nettolon.test.ts"
       ],
       "commit": "0506fb50f96934e62911f386ff4b91e6c7b0e465"
-    },
-    {
-      "calculator": "FIRE-kalkylatorn",
-      "file": "FIRE_Calculator .html",
-      "page": "/fire-kalkylator",
-      "port": [
-        "calculateFire in src/lib/pension.ts",
-        "src/components/calculators/FireCalculator.tsx",
-        "tests/pension.test.ts"
-      ],
-      "commit": "b743ac966d769cd402ab0e7306305cef2bc75b97"
     }
   ]
 }

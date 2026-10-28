@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Pensionslyft</title>
+<meta name="description" content="Räkna ut när ditt sparande räcker för att leva på avkastningen. Fristående version av FIRE-kalkylatorn från pensionslyft.se." />
+<style>
+:root {
+  --bg: #fff; --fg: #0f2034; --primary: #0c2a49; --primary-fg: #fbf9f4; --muted: #f5f4f1; --muted-fg: #545f6c;
+  --border: #e7e5e0; --input: #d9d6cf; --highlight: #f0c75e; --secondary: #ece0ca;
+  --c1: #0c2a49; --c2: #a18142; --c4: #5fb7ae; --ring: #22507b;
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "IBM Plex Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { font-family: var(--font); -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); line-height: 1.5; }
+a { color: var(--primary); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+header.top { border-bottom: 1px solid var(--border); }
+header.top .wrap { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-top: 14px; padding-bottom: 14px; }
+.brand { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.02em; color: var(--primary); text-decoration: none; }
+.eyebrow { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-fg); }
+h1 { font-size: clamp(1.25rem, 6vw, 2.5rem); line-height: 1.1; letter-spacing: -0.022em; margin: 8px 0 8px; font-weight: 600; overflow-wrap: anywhere; hyphens: auto; }
+.intro { max-width: 46rem; color: var(--muted-fg); margin: 0 0 24px; }
+.layout { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); padding-bottom: 40px; }
+@media (min-width: 1024px) { .layout { grid-template-columns: 380px minmax(0, 1fr); gap: 32px; } }
+.card { border: 1px solid var(--border); border-radius: 12px; background: #fff; padding: 24px; }
+.inputs { align-self: start; display: grid; gap: 24px; }
+.field label, .field .lab { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 6px; }
+.row { display: flex; align-items: center; gap: 8px; }
+.num { position: relative; flex: 1; }
+.num input { width: 100%; height: 40px; border: 1px solid var(--input); border-radius: 8px; padding: 0 40px 0 12px; font: inherit; font-variant-numeric: tabular-nums; background: #fff; color: inherit; }
+.num span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted-fg); font-size: 0.875rem; pointer-events: none; }
+button.step { flex: none; width: 36px; height: 36px; border: 1px solid var(--input); border-radius: 6px; background: #fff; color: var(--primary); font-size: 1.125rem; line-height: 1; cursor: pointer; touch-action: manipulation; }
+button.step:hover { background: var(--primary); color: #fff; }
+input:focus-visible, button:focus-visible, summary:focus-visible, .tip:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.sliderhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.sliderhead .lab { margin: 0; font-size: 0.875rem; font-weight: 500; }
+.sliderhead output { font-variant-numeric: tabular-nums; font-size: 0.875rem; font-weight: 600; }
+input[type=range] { width: 100%; accent-color: var(--primary); height: 28px; margin: 0; }
+.tip { position: relative; cursor: help; border-bottom: 1px dotted var(--muted-fg); }
+.tip .pop { display: none; position: absolute; z-index: 5; left: 0; top: calc(100% + 6px); width: min(20rem, 80vw); background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 12px 28px -12px rgba(15, 32, 52, 0.35); padding: 10px 12px; font-size: 0.75rem; font-weight: 400; color: var(--fg); line-height: 1.45; }
+.tip:hover .pop, .tip:focus .pop, .tip.open .pop { display: block; }
+.stats { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 640px) { .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+.stat { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: #fff; }
+.stat.hl { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+.stat .eyebrow { color: inherit; opacity: 0.75; }
+.stat .v { font-size: 1.25rem; overflow-wrap: anywhere; font-weight: 600; letter-spacing: -0.022em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+.stat .n { font-size: 0.75rem; opacity: 0.75; }
+@media (min-width: 640px) { .stat .v { font-size: 1.5rem; } }
+.col { display: grid; gap: 24px; min-width: 0; align-content: start; grid-template-columns: minmax(0, 1fr); }
+.chart h2, .table h2 { font-size: 1.25rem; margin: 0; letter-spacing: -0.022em; font-weight: 600; }
+.chart .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; padding: 0; list-style: none; font-size: 0.75rem; color: var(--muted-fg); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.sub { font-size: 0.75rem; color: var(--muted-fg); margin: 4px 0 0; }
+.plot { position: relative; margin-top: 12px; }
+.plot svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.plot text { font-size: 11px; fill: var(--muted-fg); font-family: var(--font); }
+.tooltip { position: absolute; z-index: 3; pointer-events: none; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 0.75rem; box-shadow: 0 12px 28px -12px rgba(15, 32, 52, 0.35); white-space: nowrap; display: none; }
+.tooltip b { display: block; margin-bottom: 2px; }
+.tooltip .t { display: flex; justify-content: space-between; gap: 16px; font-variant-numeric: tabular-nums; }
+details.table { padding: 0; }
+details.table > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 24px; }
+details.table > summary::-webkit-details-marker { display: none; }
+details.table > summary h2::before { content: "▸"; display: inline-block; margin-right: 8px; transition: transform 0.15s; }
+details.table[open] > summary h2::before { transform: rotate(90deg); }
+.btn { height: 32px; border: 1px solid var(--input); border-radius: 6px; background: #fff; color: var(--fg); font: inherit; font-size: 0.8125rem; padding: 0 12px; cursor: pointer; }
+.btn:hover { background: var(--muted); }
+.scroll { max-height: 24rem; overflow: auto; border-top: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+thead th { position: sticky; top: 0; background: var(--muted); font-weight: 500; padding: 8px 12px; white-space: nowrap; }
+td { padding: 6px 12px; border-top: 1px solid var(--border); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+.goalnote, .hint { font-size: 0.75rem; color: var(--muted-fg); margin: 6px 0 0; }
+select { width: 100%; height: 40px; border: 1px solid var(--input); border-radius: 8px; padding: 0 10px; font: inherit; background: #fff; color: inherit; }
+.linkbtn { background: none; border: 0; color: var(--primary); font: inherit; font-size: 0.75rem; font-weight: 500; cursor: pointer; padding: 0; }
+.linkbtn:hover { text-decoration: underline; }
+.num input:disabled { background: var(--muted); color: var(--muted-fg); }
+.fieldhead { display: flex; justify-content: space-between; align-items: baseline; }
+.chart .head { align-items: flex-end; }
+.chart .head .sel { width: 100%; max-width: 14rem; }
+.caption { text-align: center; font-size: 0.75rem; font-weight: 500; color: var(--muted-fg); margin: 8px 0 0; }
+.note { border: 1px solid var(--border); border-radius: 12px; background: rgba(236, 224, 202, 0.35); padding: 24px; font-size: 0.875rem; }
+.note p { margin: 0 0 12px; }
+.note p:last-child { margin: 0; }
+footer { border-top: 1px solid var(--border); background: var(--muted); }
+footer .wrap { padding-top: 20px; padding-bottom: 24px; font-size: 0.8125rem; color: var(--muted-fg); }
+
+.status { display: flex; gap: 12px; align-items: flex-start; border-radius: 12px; padding: 20px; font-size: 0.875rem; }
+.status b { display: block; font-weight: 600; }
+.status.good { background: #e8f3f0; color: #1f5f55; } .status.amber { background: #f6eedb; color: #6b5320; } .status.warn { background: #fbe9e6; color: #a82020; }
+.status .ic { font-weight: 900; font-size: 1rem; line-height: 1.25; }
+.stats.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.limits { margin: 0 0 40px; padding: 24px; }
+.limits h2 { font-size: 1.5rem; margin: 0; letter-spacing: -0.022em; font-weight: 600; }
+.limits h3 { font-size: 1.125rem; margin: 24px 0 0; font-weight: 600; }
+.limits .g { display: grid; gap: 16px; margin-top: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 768px) { .limits .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .limits .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.limits .lim { border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.limits .lim b { display: block; font-size: 1.25rem; color: var(--primary); font-variant-numeric: tabular-nums; }
+.limits .lim span { display: block; margin-top: 4px; font-size: 0.875rem; color: var(--muted-fg); }
+.limits p { font-size: 0.875rem; margin: 8px 0 0; max-width: 48rem; }
+
+.tabs { display: none; gap: 6px; margin-bottom: 16px; }
+@media (max-width: 620px) { .tabs { display: flex; } .hide-m { display: none !important; } }
+.tabs button { flex: 1; min-height: 40px; border: 1px solid var(--fg); border-radius: 999px; background: #fff; color: var(--fg); font: inherit; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+.tabs button[aria-selected=true] { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+.stats.three { grid-template-columns: minmax(0, 1fr); } @media (min-width: 640px) { .stats.three { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.stat .big { font-size: 2.25rem; font-weight: 600; letter-spacing: -0.022em; margin-top: 8px; }
+.ms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; } @media (min-width: 640px) { .ms { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ms li { border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; color: var(--muted-fg); } .ms li.on { border-color: rgba(12,42,73,.2); background: rgba(236,224,202,.6); color: var(--fg); }
+.ms b { display: block; font-size: 1.125rem; } .ms span { font-size: 0.75rem; }
+.dl { margin: 12px 0 0; } .dl div { display: flex; justify-content: space-between; padding: 4px 0; } .dl dt { color: var(--muted-fg); } .dl dd { margin: 0; } .dl .tot { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-weight: 600; } .dl .tot dt { color: var(--fg); }
+.card h2.sm { font-size: 1.125rem; margin: 0; font-weight: 600; }
+.note ul { margin: 8px 0 0; padding-left: 20px; } .note li { margin: 4px 0; } .note h2 { font-size: 1.125rem; margin: 0; font-weight: 600; }
+tr.reached td { background: rgba(236,224,202,.5); } tr.fire td { font-weight: 600; }
+@media print { button, .tooltip { display: none; } details.table { display: none; } }
+</style>
+<!-- pensionslyft:begin -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<style id="pensionslyft-theme">
+/*
+ * The look of a calculator from github.com/mathiasboos/Calculators on pensionslyft.se. The calculators that are shown
+ * as they are already have the site's palette and fonts; the site only takes away what the page around them already
+ * has: their own header (the name of the site, the SV | EN switch, "stand-alone version") and shows the file once its
+ * language is set (scripts/apps-site.js). Every rule hangs on a stable name and does nothing if the file changes it.
+ */
+html:not(.pl-ready) body {
+  visibility: hidden;
+}
+.lang-toggle,
+.lang-bar,
+header.top {
+  display: none !important;
+}
+/* The frame is as high as the file; the file does not scroll inside it. */
+html,
+body {
+  background: #ffffff;
+  overflow-y: hidden;
+}
+
+/* The file's footer says that it is a stand-alone copy of the page on pensionslyft.se; on the site it is that page. The
+   page says the same about estimates (src/pages/fire-kalkylator.astro). */
+footer {
+  display: none;
+}
+</style>
+<script id="pensionslyft-site">
+/*
+ * What pensionslyft.se adds to a calculator that it shows straight from github.com/mathiasboos/Calculators
+ * (scripts/sync-apps.mjs puts it in the file's <head>).
+ *
+ * - The language is the site's: the page puts it in the address of the frame (?lang=sv or ?lang=en). When the file has
+ *   started, its own switch is used to change to it (the file's SV | EN buttons are hidden on the site, whose own
+ *   switch changes the page and with it the language of the frame). Until then the file stays hidden, so the wrong
+ *   language does not flash; after 1.5 seconds it is shown whatever happens.
+ * - A link in the file to the site opens in the whole window, and a link to another site in a new one, instead of
+ *   replacing the calculator inside its frame.
+ */
+(function () {
+  var root = document.documentElement;
+  var wanted = /[?&]lang=(sv|en)\b/.exec(location.search);
+  var lang = wanted ? wanted[1] : "sv";
+
+  function show() {
+    root.classList.add("pl-ready");
+  }
+  var fallback = setTimeout(show, 1500);
+
+  function switchTo(code) {
+    var buttons = document.querySelectorAll(".lang-btn");
+    for (var i = 0; i < buttons.length; i++) {
+      var button = buttons[i];
+      var named = button.getAttribute("data-lang");
+      var handler = button.getAttribute("onclick") || "";
+      if (named === code || handler.indexOf("'" + code + "'") >= 0 || handler.indexOf('"' + code + '"') >= 0) {
+        if (!button.classList.contains("active")) button.click();
+        return;
+      }
+    }
+    if (typeof window.setLang === "function") window.setLang(code);
+  }
+
+  function links() {
+    var anchors = document.querySelectorAll("a[href]");
+    for (var i = 0; i < anchors.length; i++) {
+      var a = anchors[i];
+      var href = a.getAttribute("href") || "";
+      if (!/^https?:/i.test(href)) continue;
+      var host = "";
+      try {
+        host = new URL(href).hostname;
+      } catch (e) {
+        continue;
+      }
+      if (host === "pensionslyft.se" || host === "www.pensionslyft.se") a.target = "_top";
+      else {
+        a.target = "_blank";
+        a.rel = "noopener";
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // This handler was added before the file's own ones and runs first; the timeout lets them run before the switch.
+    setTimeout(function () {
+      try {
+        switchTo(lang);
+        links();
+      } finally {
+        clearTimeout(fallback);
+        show();
+      }
+    }, 0);
+  });
+})();
+</script>
+<!-- pensionslyft:end -->
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="https://pensionslyft.se/fire-kalkylator">Pensionslyft</a>
+    <span class="eyebrow">Fristående version</span>
+  </div>
+</header>
+<main class="wrap">
+  <p class="eyebrow" style="margin-top: 32px">Pensionslyft · Kalkylatorer</p>
+  <h1>FIRE-kalkylator</h1>
+  <p class="intro">FIRE står för <em>Financial Independence, Retire Early</em>: att spara och investera tills avkastningen räcker att leva på. Ange din lön, hur stor del du sparar och vad du räknar med i avkastning, så ser du vid vilken ålder du når målet.</p>
+  <div id="app" class="layout"><noscript>Kalkylatorn kräver JavaScript.</noscript></div>
+  <section class="note" id="how" style="margin-bottom:40px"></section>
+</main>
+<footer>
+  <div class="wrap" id="foot"></div>
+</footer>
+<script>
+(() => {
+  // ../../../../../../home/user/pensionslyft/src/lib/pension.ts
+  var FIRE_YEARS = 70;
+  var ISK_TAX_FREE_AMOUNT = 3e5;
+  function calculateFire(input) {
+    const monthlyRate = Math.pow(1 + input.annualReturn / 100, 1 / 12) - 1;
+    const yearFactor = Math.pow(1 + monthlyRate, 12);
+    const depositFactor = monthlyRate === 0 ? 12 : (yearFactor - 1) / monthlyRate;
+    const monthlySavings = input.monthlySalary * input.savingsRate / 100;
+    const monthlySpending = input.monthlySalary - monthlySavings;
+    const yearlySavings = monthlySavings * 12;
+    const target = monthlySpending * 12 * input.fireMultiple;
+    const rows2 = [];
+    let opening = input.startCapital;
+    let fireYear2 = null;
+    for (let year = 1; year <= FIRE_YEARS; year++) {
+      const beforeCosts = opening * yearFactor + monthlySavings * depositFactor;
+      const tax = Math.max(beforeCosts - input.taxFreeAmount, 0) * input.yieldTax / 100;
+      const fees = beforeCosts * input.annualFee / 100;
+      const closing = beforeCosts - tax - fees;
+      const gap = target - closing;
+      if (fireYear2 === null && gap <= 0) fireYear2 = year;
+      rows2.push({
+        year,
+        age: input.currentAge + year,
+        monthlySalary: input.monthlySalary,
+        monthlySavings,
+        yearlySavings,
+        opening,
+        growth: beforeCosts - opening - yearlySavings,
+        tax,
+        fees,
+        closing,
+        target,
+        gap
+      });
+      opening = closing;
+    }
+    const milestones = [25, 50, 75, 100].map((percent) => {
+      var _a, _b;
+      return {
+        percent,
+        age: (_b = (_a = rows2.find((r) => target > 0 && r.closing / target * 100 >= percent)) == null ? void 0 : _a.age) != null ? _b : null
+      };
+    });
+    return {
+      rows: rows2,
+      fireYear: fireYear2,
+      fireAge: fireYear2 === null ? null : input.currentAge + fireYear2,
+      target,
+      monthlySavings,
+      monthlySpending,
+      netReturn: input.annualReturn - input.yieldTax - input.annualFee,
+      milestones
+    };
+  }
+
+  // ../../../../../../home/user/pensionslyft/src/lib/format.ts
+  var sek = new Intl.NumberFormat("sv-SE", {
+    style: "currency",
+    currency: "SEK",
+    maximumFractionDigits: 0
+  });
+  var num = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 0 });
+  function formatSek(value) {
+    return sek.format(Math.round(value));
+  }
+  function formatPercent(value, digits) {
+    return `${new Intl.NumberFormat("sv-SE", {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits
+    }).format(value)} %`;
+  }
+  var compact = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 1 });
+  function formatSekShort(value) {
+    if (Math.abs(value) >= 1e6) return `${compact.format(value / 1e6)} mkr`;
+    if (Math.abs(value) >= 1e3) return `${num.format(value / 1e3)} tkr`;
+    return `${num.format(value)} kr`;
+  }
+
+  // fire.ts
+  var state = { currentAge: 20, monthlySalary: 4e4, savingsRate: 50, fireMultiple: 25, startCapital: 0, annualReturn: 6.1, annualFee: 0.25, yieldTax: 1.05, taxFreeAmount: ISK_TAX_FREE_AMOUNT };
+  var $ = (id) => document.getElementById(id);
+  var esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  var NB = "\xA0";
+  var SLIDERS = [
+    { key: "currentAge", label: "Din \xE5lder", min: 15, max: 60, step: 1, show: (v) => `${v} \xE5r` },
+    { key: "monthlySalary", label: "M\xE5nadsl\xF6n efter skatt", min: 5e3, max: 2e5, step: 1e3, show: formatSek, after: "spend" },
+    { key: "savingsRate", label: "Sparkvot", min: 5, max: 95, step: 1, show: (v) => formatPercent(v, 0) },
+    { key: "fireMultiple", label: "FIRE-multipel", min: 10, max: 50, step: 1, show: (v) => `${v}${NB}\xD7`, after: "mult" },
+    { key: "startCapital", label: "Nuvarande sparande", min: 0, max: 2e6, step: 1e4, show: formatSek, after: "Det du redan har sparat och investerat." },
+    { key: "annualReturn", label: "Avkastning per \xE5r", min: 1, max: 15, step: 0.1, show: (v) => formatPercent(v, 1) },
+    { key: "annualFee", label: "Avgifter per \xE5r", min: 0, max: 2, step: 0.05, show: (v) => formatPercent(v, 2) },
+    { key: "yieldTax", label: "Skatt p\xE5 ISK/KF per \xE5r", min: 0, max: 3, step: 0.05, show: (v) => formatPercent(v, 2), after: "Schablonskatten p\xE5 investeringssparkonto och kapitalf\xF6rs\xE4kring." },
+    { key: "taxFreeAmount", label: "Skattefritt belopp", min: 0, max: 5e5, step: 1e4, show: formatSek, after: `Fr\xE5n 2026 \xE4r de f\xF6rsta ${formatSek(ISK_TAX_FREE_AMOUNT)} skattefria, totalt f\xF6r ISK, kapitalf\xF6rs\xE4kring och PEPP-konto. V\xE4lj 0 kr f\xF6r att r\xE4kna utan.` }
+  ];
+  var sliderHtml = (s) => `<div class="field"><div class="sliderhead"><label class="lab" for="s-${s.key}">${s.label}</label><output id="o-${s.key}" for="s-${s.key}"></output></div>
+  <input id="s-${s.key}" data-key="${s.key}" type="range" min="${s.min}" max="${s.max}" step="${s.step}" />${s.after ? `<p class="hint" id="h-${s.key}">${s.after.length > 8 ? esc(s.after) : ""}</p>` : ""}</div>`;
+  $("app").innerHTML = `
+  <div class="tabs hide-d" role="tablist" aria-label="Visa" style="grid-column:1/-1;margin:0">
+    <button type="button" role="tab" data-tab="inputs" aria-selected="true">Inst\xE4llningar</button>
+    <button type="button" role="tab" data-tab="results" aria-selected="false">Resultat</button>
+    <button type="button" role="tab" data-tab="table" aria-selected="false">Tabell</button>
+  </div>
+  <div class="inputsCol" id="col-in" style="display:grid;gap:24px;align-content:start">
+    <form class="card inputs" onsubmit="return false" aria-label="Indata">
+      ${SLIDERS.slice(0, 5).map(sliderHtml).join("")}
+      <div style="height:1px;background:var(--border)"></div>
+      ${SLIDERS.slice(5).map(sliderHtml).join("")}
+    </form>
+    <div class="card"><h2 class="sm">Avkastning efter kostnader</h2><dl class="dl" id="net"></dl><p class="hint" id="net-note"></p></div>
+  </div>
+  <div class="col" id="col-out">
+    <div class="stats three" id="stats" aria-live="polite"></div>
+    <section class="card"><h2 class="sm" style="font-size:1.25rem">V\xE4gen till m\xE5let</h2><ol class="ms" id="ms"></ol></section>
+    <section class="card chart">
+      <div class="head"><h2>Portf\xF6ljens utveckling</h2>
+        <ul class="legend"><li><i style="background:rgba(12,42,73,.7)"></i>Portf\xF6lj</li><li><i style="background:#a18142"></i>FIRE-m\xE5l</li></ul></div>
+      <div class="plot" id="plot"><svg id="svg" viewBox="0 0 800 340" role="img" aria-label="Diagram \xF6ver portf\xF6ljens utveckling, se tabellen nedan"></svg><div class="tooltip" id="tip"></div></div>
+    </section>
+    <details class="card table" id="table-card">
+      <summary><h2 id="table-title"></h2><span><button type="button" class="btn" id="csv">Ladda ner CSV</button></span></summary>
+      <div class="scroll"><table><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div>
+    </details>
+  </div>`;
+  $("how").innerHTML = `<h2>S\xE5 r\xE4knar kalkylatorn</h2><ul>
+  <li>M\xE5let \xE4r dina \xE5rsutgifter g\xE5nger FIRE-multipeln. Med 25${NB}\xD7 kan du ta ut 4${NB}% av portf\xF6ljen per \xE5r, den s\xE5 kallade 4${NB}%-regeln.</li>
+  <li>Du sparar samma belopp varje m\xE5nad. Skatt och avgifter dras p\xE5 portf\xF6ljens v\xE4rde i slutet av varje \xE5r.</li>
+  <li>Skatten tas bara ut p\xE5 det som \xF6verstiger det skattefria beloppet. Skatteverket r\xE4knar egentligen p\xE5 ett snitt av v\xE4rdet under \xE5ret plus ins\xE4ttningarna, s\xE5 den verkliga skatten kan skilja sig n\xE5got.</li>
+  <li>L\xF6n, utgifter och m\xE5l r\xE4knas i dagens kronor, utan inflation. Ange d\xE4rf\xF6r g\xE4rna avkastningen efter inflation.</li></ul>
+  <p style="margin:12px 0 0;color:var(--muted-fg)">Resultatet \xE4r en uppskattning, inte finansiell r\xE5dgivning. Avkastning \xE4r aldrig garanterad.</p>`;
+  $("foot").innerHTML = `Ber\xE4kningen \xE4r en uppskattning och inte individuell r\xE5dgivning. Avkastningen \xE4r inte garanterad. Den h\xE4r filen \xE4r en frist\xE5ende kopia av <a href="https://pensionslyft.se/fire-kalkylator">FIRE-kalkylatorn p\xE5 pensionslyft.se</a>, d\xE4r du alltid hittar den senaste versionen.`;
+  var COLS = [
+    { label: "\xC5r", v: (r) => r.year, plain: true },
+    { label: "\xC5lder", v: (r) => r.age, plain: true },
+    { label: "M\xE5nadsl\xF6n", v: (r) => r.monthlySalary },
+    { label: "M\xE5nadssparande", v: (r) => r.monthlySavings },
+    { label: "\xC5rssparande", v: (r) => r.yearlySavings },
+    { label: "Portf\xF6lj vid \xE5rets start", v: (r) => r.opening },
+    { label: "Avkastning", v: (r) => r.growth },
+    { label: "Skatt", v: (r) => r.tax },
+    { label: "Avgifter", v: (r) => r.fees },
+    { label: "Portf\xF6lj vid \xE5rets slut", v: (r) => r.closing },
+    { label: "FIRE-m\xE5l", v: (r) => r.target },
+    { label: "Kvar till m\xE5let", v: (r) => r.gap }
+  ];
+  var rows = [];
+  var fireYear = null;
+  var last;
+  function render() {
+    const s = state;
+    const r = calculateFire(s);
+    rows = r.rows;
+    fireYear = r.fireYear;
+    $("o-monthlySalary").textContent = formatSek(s.monthlySalary);
+    $("h-monthlySalary").textContent = `Du sparar ${formatSek(r.monthlySavings)} och lever p\xE5 ${formatSek(r.monthlySpending)} i m\xE5naden.`;
+    $("h-fireMultiple").textContent = `M\xE5let \xE4r ${s.fireMultiple} g\xE5nger dina \xE5rsutgifter. 25${NB}\xD7 motsvarar 4${NB}%-regeln.`;
+    $("net").innerHTML = `<div><dt>Avkastning</dt><dd>${formatPercent(s.annualReturn, 2)}</dd></div><div><dt>\u2212 Skatt</dt><dd>${formatPercent(s.yieldTax, 2)}</dd></div><div><dt>\u2212 Avgifter</dt><dd>${formatPercent(s.annualFee, 2)}</dd></div><div class="tot"><dt>= Netto, ungef\xE4r</dt><dd>${formatPercent(r.netReturn, 2)}</dd></div>`;
+    $("net-note").textContent = s.taxFreeAmount > 0 ? `Skatten tas bara ut p\xE5 det som \xF6verstiger ${formatSek(s.taxFreeAmount)}, s\xE5 den blir l\xE4gre \xE4n s\xE5. Mest m\xE4rks det i b\xF6rjan, n\xE4r portf\xF6ljen \xE4r liten.` : "";
+    $("stats").innerHTML = `
+    <div class="stat hl"><div class="eyebrow">FIRE-\xE5lder</div>${r.fireAge === null ? `<div class="v">N\xE5s inte inom ${FIRE_YEARS} \xE5r</div>` : `<div class="big">${r.fireAge} \xE5r</div><div class="n">om ${r.fireYear} \xE5r</div>`}</div>
+    <div class="stat"><div class="eyebrow">FIRE-m\xE5l</div><div class="v">${formatSek(r.target)}</div><div class="n">${formatSek(r.monthlySpending)}/m\xE5n \xD7 12 \xD7 ${s.fireMultiple}</div></div>
+    <div class="stat"><div class="eyebrow">M\xE5nadssparande</div><div class="v">${formatSek(r.monthlySavings)}</div><div class="n">${formatSek(r.monthlySavings * 12)}/\xE5r</div></div>`;
+    $("ms").innerHTML = r.milestones.map((m) => `<li class="${m.age === null ? "" : "on"}"><b>${m.percent}${NB}%</b><span>${m.age === null ? "\u2013" : `vid ${m.age} \xE5r`}</span></li>`).join("");
+    $("table-title").textContent = `\xC5r f\xF6r \xE5r (${rows.length} \xE5r)`;
+    $("thead").innerHTML = COLS.map((c) => `<th scope="col">${esc(c.label)}</th>`).join("");
+    $("tbody").innerHTML = rows.map((row) => `<tr class="${row.gap <= 0 ? "reached" : ""} ${row.year === r.fireYear ? "fire" : ""}">${COLS.map((c, i) => `<td>${c.plain ? c.v(row) : num.format(Math.round(c.v(row)))}${i === 1 && row.year === r.fireYear ? ' <span role="img" aria-label="FIRE-\xE5ret">\u{1F525}</span>' : ""}</td>`).join("")}</tr>`).join("");
+    const lastAge = r.fireAge === null ? 90 : Math.max(r.fireAge + 5, Math.min(r.fireAge + 15, 90));
+    const pts = [{ age: s.currentAge, closing: s.startCapital, target: r.target }, ...rows.filter((x) => x.age <= lastAge).map((x) => ({ age: x.age, closing: x.closing, target: x.target }))];
+    last = { pts, fireAge: r.fireAge };
+    draw(last);
+  }
+  function niceStep(raw) {
+    if (raw <= 0) return 1;
+    const p = Math.pow(10, Math.floor(Math.log10(raw)));
+    for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= raw) return m * p;
+    return 10 * p;
+  }
+  function draw(p) {
+    const W = Math.max(300, Math.min(800, $("plot").clientWidth || 800));
+    const H = W < 520 ? 290 : 340, L = 70, R = 12, T = 22, B = 28;
+    $("svg").setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const n = p.pts.length;
+    const hi = Math.max(...p.pts.map((q) => Math.max(q.closing, q.target)), 1);
+    const step = niceStep(hi / 5);
+    const yMax = Math.ceil(hi / step) * step;
+    const x = (i) => L + (n === 1 ? 0.5 : i / (n - 1)) * (W - L - R);
+    const y = (v) => T + (1 - v / yMax) * (H - T - B);
+    let out = `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0c2a49" stop-opacity="0.45"/><stop offset="100%" stop-color="#0c2a49" stop-opacity="0.02"/></linearGradient></defs>`;
+    for (let v = 0; v <= yMax + 1e-6; v += step) out += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-dasharray="3 3"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${esc(formatSekShort(v))}</text>`;
+    const every = Math.max(1, Math.ceil(n / 9));
+    for (let i = 0; i < n; i += every) out += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${p.pts[i].age}</text>`;
+    const line = (f) => p.pts.map((q, i) => `${i ? "L" : "M"}${x(i)},${y(f(q))}`).join(" ");
+    out += `<path d="${line((q) => q.closing)} L${x(n - 1)},${y(0)} L${x(0)},${y(0)} Z" fill="url(#g)"/><path d="${line((q) => q.closing)}" fill="none" stroke="#0c2a49" stroke-width="2" stroke-linejoin="round"/>`;
+    out += `<path d="${line((q) => q.target)}" fill="none" stroke="#a18142" stroke-width="2" stroke-dasharray="6 4"/>`;
+    if (p.fireAge !== null) {
+      const i = p.pts.findIndex((q) => q.age === p.fireAge);
+      if (i >= 0) out += `<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}" stroke="var(--fg)" stroke-dasharray="3 3"/><text x="${x(i)}" y="${T - 6}" text-anchor="middle" style="fill:var(--fg)">FIRE vid ${p.fireAge}</text>`;
+    }
+    out += `<line id="cursor" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="var(--muted-fg)" stroke-opacity="0.6" visibility="hidden"/>`;
+    $("svg").innerHTML = out;
+    const svg = $("svg"), tip = $("tip");
+    const cursor = svg.querySelector("#cursor");
+    const show = (clientX) => {
+      const box = svg.getBoundingClientRect();
+      const sx = (clientX - box.left) / box.width * W;
+      const i = Math.min(n - 1, Math.max(0, Math.round((sx - L) / (W - L - R) * (n - 1))));
+      cursor.setAttribute("x1", String(x(i)));
+      cursor.setAttribute("x2", String(x(i)));
+      cursor.setAttribute("visibility", "visible");
+      const q = p.pts[i];
+      tip.innerHTML = `<b>Vid ${q.age} \xE5r</b>
+      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#0c2a49;margin-right:6px"></i>Portf\xF6lj</span><span>${esc(formatSek(q.closing))}</span></div>
+      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#a18142;margin-right:6px"></i>FIRE-m\xE5l</span><span>${esc(formatSek(q.target))}</span></div>`;
+      tip.style.display = "block";
+      const px = x(i) / W * box.width;
+      tip.style.left = `${px > box.width / 2 ? px - tip.offsetWidth - 12 : px + 12}px`;
+      tip.style.top = "8px";
+    };
+    const hide = () => {
+      tip.style.display = "none";
+      cursor.setAttribute("visibility", "hidden");
+    };
+    svg.onpointermove = (e) => show(e.clientX);
+    svg.onpointerdown = (e) => show(e.clientX);
+    svg.onpointerleave = hide;
+  }
+  function syncSliders() {
+    for (const sl of SLIDERS) {
+      $(`s-${sl.key}`).value = String(state[sl.key]);
+      $(`o-${sl.key}`).textContent = sl.show(state[sl.key]);
+    }
+  }
+  document.querySelectorAll("input[type=range]").forEach((input) => {
+    input.addEventListener("input", () => {
+      state[input.dataset.key] = parseFloat(input.value);
+      syncSliders();
+      render();
+    });
+  });
+  var setTab = (tab) => {
+    document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+    $("col-in").classList.toggle("hide-m", tab !== "inputs");
+    $("col-out").classList.toggle("hide-m", tab === "inputs");
+    $("table-card").open = tab === "table";
+    if (tab === "table") setTimeout(() => $("table-card").scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+  };
+  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+  setTab("inputs");
+  if (window.matchMedia("(min-width: 621px)").matches) {
+    $("col-in").classList.remove("hide-m");
+    $("col-out").classList.remove("hide-m");
+  }
+  $("csv").addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const csv = [COLS.map((c) => c.label).join(";"), ...rows.map((r) => COLS.map((c) => Math.round(c.v(r))).join(";"))].join("\r\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "fire-kalkyl.csv";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1e3);
+  });
+  syncSliders();
+  render();
+  var shown = $("plot").clientWidth;
+  new ResizeObserver(() => {
+    const w = $("plot").clientWidth;
+    if (w !== shown && last) {
+      shown = w;
+      draw(last);
+    }
+  }).observe($("plot"));
+})();
+
+</script>
+</body>
+</html>

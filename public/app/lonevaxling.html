@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
 <title>Pensionslyft</title>
-<meta name="description" content="Se vad löneväxling ger i extra pensionskapital. Fristående version av Löneväxlingskalkylatorn från pensionslyft.se." />
+<meta id="meta-desc" name="description" content="Se vad löneväxling ger i extra pensionskapital. Fristående version av Löneväxlingskalkylatorn från pensionslyft.se." />
 <style>
 :root {
   --bg: #fff; --fg: #0f2034; --primary: #0c2a49; --primary-fg: #fbf9f4; --muted: #f5f4f1; --muted-fg: #545f6c;
@@ -22,6 +22,10 @@ a { color: var(--primary); }
 header.top { border-bottom: 1px solid var(--border); }
 header.top .wrap { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-top: 14px; padding-bottom: 14px; }
 .brand { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.02em; color: var(--primary); text-decoration: none; }
+.lang-toggle { display: inline-flex; gap: 4px; background: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 3px; align-self: center; }
+.lang-btn { padding: 4px 12px; font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; color: var(--muted-fg); background: none; border: none; border-radius: 5px; cursor: pointer; }
+.lang-btn.active { background: var(--primary); color: var(--primary-fg); }
+.lang-btn:not(.active):hover { color: var(--fg); }
 .eyebrow { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-fg); }
 h1 { font-size: clamp(1.25rem, 6vw, 2.5rem); line-height: 1.1; letter-spacing: -0.022em; margin: 8px 0 8px; font-weight: 600; overflow-wrap: anywhere; hyphens: auto; }
 .intro { max-width: 46rem; color: var(--muted-fg); margin: 0 0 24px; }
@@ -215,13 +219,13 @@ footer {
 <header class="top">
   <div class="wrap">
     <a class="brand" href="https://pensionslyft.se/lonevaxlingskalkylator">Pensionslyft</a>
-    <span class="eyebrow">Fristående version</span>
+    <span class="lang-toggle" role="group" aria-label="Language / Språk"><button type="button" class="lang-btn" data-lang="sv">SV</button><button type="button" class="lang-btn" data-lang="en">EN</button></span>
   </div>
 </header>
 <main class="wrap">
-  <p class="eyebrow" style="margin-top: 32px">Pensionslyft · Kalkylatorer</p>
-  <h1>Löneväxlingskalkylator 2026</h1>
-  <p class="intro">Ränta på ränta gör att varje krona du löneväxlar idag är värd mer än en krona imorgon. Fyll i din lön och hur mycket du vill växla, så ser du effekten direkt.</p>
+  <p class="eyebrow" id="eyebrow-main" style="margin-top: 32px">Pensionslyft · Kalkylatorer</p>
+  <h1 id="h1">Löneväxlingskalkylator 2026</h1>
+  <p class="intro" id="intro">Ränta på ränta gör att varje krona du löneväxlar idag är värd mer än en krona imorgon. Fyll i din lön och hur mycket du vill växla, så ser du effekten direkt.</p>
   <div id="app" class="layout"><noscript>Kalkylatorn kräver JavaScript.</noscript></div>
   <section class="card limits" id="limits"></section>
 </main>
@@ -230,25 +234,25 @@ footer {
 </footer>
 <script>
 (() => {
-  // ../../../../../../home/user/pensionslyft/src/lib/format.ts
-  var sek = new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK",
-    maximumFractionDigits: 0
-  });
-  var num = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 0 });
+  var lang = "sv";
+  try { if (localStorage.getItem("pension-lang") === "en") lang = "en"; } catch (e) {}
+  var tr = (sv, en) => lang === "en" ? en : sv;
+  var loc = () => lang === "en" ? "en-GB" : "sv-SE";
+  var nf = (min, max) => new Intl.NumberFormat(loc(), { minimumFractionDigits: min, maximumFractionDigits: max });
+  var num = { format: (v) => nf(0, 0).format(v) };
   function formatSek(value) {
-    return sek.format(Math.round(value));
+    const n = num.format(Math.round(value));
+    return lang === "en" ? `SEK\u00a0${n}` : `${n}\u00a0kr`;
   }
-  var compact = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 1 });
   function groupDigits(text) {
     const cleaned = text.replace(/[^\d,.]/g, "");
-    const point = cleaned.search(/[.,]/);
+    const point = lang === "en" ? cleaned.indexOf(".") : cleaned.search(/[.,]/);
     const whole = (point === -1 ? cleaned : cleaned.slice(0, point)).replace(/\D/g, "").replace(/^0+(?=\d)/, "");
-    const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, "\xA0");
-    return point === -1 ? grouped : `${grouped},${cleaned.slice(point + 1).replace(/\D/g, "")}`;
+    const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, lang === "en" ? "," : "\u00a0");
+    return point === -1 ? grouped : `${grouped}${lang === "en" ? "." : ","}${cleaned.slice(point + 1).replace(/\D/g, "")}`;
   }
   function parseAmount(text) {
+    if (lang === "en") return parseFloat(text.replace(/[\s,]/g, ""));
     return parseFloat(text.replace(/\s/g, "").replace(",", "."));
   }
   function stepValue(value, step, direction, min = 0, max = Infinity) {
@@ -257,7 +261,6 @@ footer {
     return Math.min(max, Math.max(min, next * step));
   }
 
-  // lonevaxling.ts
   var YEAR = 2026;
   var LIMIT_AVGIFTSTAK = 56087;
   var LIMIT_BRYTPUNKT = 55033;
@@ -277,15 +280,15 @@ footer {
   var ALDER = { min: 18, max: 70, start: 40 };
   var PENSIONSALDER = { min: 55, max: 75, start: 67 };
   var AVKASTNING = { min: 0, max: 12, step: 0.5, start: 6 };
-  var fmtKr = (n) => `${num.format(Math.round(n))}\xA0kr`;
+  var pct = (n, a, b) => { const t = nf(a, b).format(n); return lang === "en" ? `${t}%` : `${t} %`; };
+  var fmtKr = (n) => formatSek(n);
   var fmtInt = (n) => num.format(Math.round(n));
   var fmtText = (n) => fmtInt(n).replace(/\u00a0/g, " ");
-  var twoDecimals = new Intl.NumberFormat("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  var fmtRate = (rate) => twoDecimals.format(rate * 100);
-  var oneDecimal = new Intl.NumberFormat("sv-SE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  var fmtOneDecimal = (n) => oneDecimal.format(n);
-  var fmtUplift = (n) => `${n.toLocaleString("sv-SE", { maximumFractionDigits: 1 })} %`;
-  var disclaimer = (avkastning) => `Baserat p\xE5 ${avkastning.toLocaleString("sv-SE", { minimumFractionDigits: 1 })} % avkastning per \xE5r. Historisk avkastning \xE4r ingen garanti f\xF6r framtida avkastning.`;
+  var kr = () => tr("kr", "SEK");
+  var fmtRate = (rate) => nf(2, 2).format(rate * 100);
+  var fmtOneDecimal = (n) => nf(1, 1).format(n);
+  var fmtUplift = (n) => pct(n, 0, 1);
+  var disclaimer = (avkastning) => tr(`Baserat på ${pct(avkastning, 1, 1)} avkastning per år. Historisk avkastning är ingen garanti för framtida avkastning.`, `Based on ${pct(avkastning, 1, 1)} return per year. Past returns are no guarantee of future returns.`);
   function itp1Avsattning(manadslon) {
     const d1 = Math.min(manadslon, ITP1_GRENS1);
     const d2 = Math.max(0, Math.min(manadslon, ITP1_GRENS2) - ITP1_GRENS1);
@@ -322,25 +325,17 @@ footer {
   }
   var fvAt = (premie, pct, yrs) => simSeries(premie, pct, yrs)[yrs];
   function suitability(lonEfter) {
+    const after = tr(`Lön efter växling: ${fmtKr(lonEfter)}/mån`, `Salary after exchange: ${fmtKr(lonEfter)}/month`);
     if (lonEfter > LIMIT_AVGIFTSTAK) {
-      return {
-        kind: "good",
-        title: "L\xF6nev\xE4xling \xE4r l\xE4mpligt f\xF6r din l\xF6neniv\xE5 ",
-        text: `L\xF6n efter v\xE4xling: ${fmtKr(lonEfter)}/m\xE5n \u2013 \xF6ver avgiftstaket och brytpunkten.`
-      };
+      return { kind: "good", title: tr("Löneväxling är lämpligt för din lönenivå ", "Salary exchange suits your salary level "),
+        text: `${after} – ${tr("över avgiftstaket och brytpunkten.", "above the contribution ceiling and the tax threshold.")}` };
     }
     if (lonEfter > LIMIT_BRYTPUNKT) {
-      return {
-        kind: "amber",
-        title: "Gr\xE4nsfall \u2013 din allm\xE4nna pension kan p\xE5verkas ",
-        text: `L\xF6n efter v\xE4xling: ${fmtKr(lonEfter)}/m\xE5n. \xD6ver brytpunkten men under avgiftstaket.`
-      };
+      return { kind: "amber", title: tr("Gränsfall – din allmänna pension kan påverkas ", "Borderline – your public pension may be affected "),
+        text: `${after}. ${tr("Över brytpunkten men under avgiftstaket.", "Above the tax threshold but below the contribution ceiling.")}` };
     }
-    return {
-      kind: "warn",
-      title: "L\xF6nev\xE4xling avr\xE5ds vid din l\xF6neniv\xE5 ",
-      text: `L\xF6n efter v\xE4xling: ${fmtKr(lonEfter)}/m\xE5n \u2013 under avgiftstaket och brytpunkten.`
-    };
+    return { kind: "warn", title: tr("Löneväxling avråds vid din lönenivå ", "Salary exchange is not recommended at your salary level "),
+      text: `${after} – ${tr("under avgiftstaket och brytpunkten.", "below the contribution ceiling and the tax threshold.")}` };
   }
   function calcLonevaxling({ lon, belopp, alder, pensionsalder, avkastning }) {
     const premie = pensionPremie(belopp);
@@ -361,16 +356,16 @@ footer {
     };
   }
 
-  // lv.ts
   var SOURCE_URL = "https://www.pensionsmyndigheten.se/forsta-din-pension/om-pensionssystemet/sa-beraknas-din-pension-basbelopp-berakningsfaktorer-och-varderegler";
   var state = { lon: LON.start, belopp: BELOPP.start, alder: ALDER.start, pensionsalder: PENSIONSALDER.start, avkastning: AVKASTNING.start };
   var $ = (id) => document.getElementById(id);
   var esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   function amountSlider(id, label, key, stepBy, min, max, step, suffix, hint = "") {
+    const by = `${num.format(stepBy)} ${kr()}`;
     return `<div class="field"><label for="${id}">${label}</label><div class="row">
-    <button type="button" class="step" data-step="${key}" data-dir="-1" aria-label="Minska ${label.toLowerCase()} med ${num.format(stepBy)} kr">\u2212</button>
+    <button type="button" class="step" data-step="${key}" data-dir="-1" aria-label="${tr("Minska", "Decrease")} ${label.toLowerCase()} ${tr("med", "by")} ${by}">\u2212</button>
     <div class="num"><input id="${id}" data-key="${key}" data-stepby="${stepBy}" type="text" inputmode="numeric" autocomplete="off" /><span>${suffix}</span></div>
-    <button type="button" class="step" data-step="${key}" data-dir="1" aria-label="\xD6ka ${label.toLowerCase()} med ${num.format(stepBy)} kr">+</button></div>
+    <button type="button" class="step" data-step="${key}" data-dir="1" aria-label="${tr("Öka", "Increase")} ${label.toLowerCase()} ${tr("med", "by")} ${by}">+</button></div>
     <input id="${id}-r" class="rng" data-key="${key}" type="range" min="${min}" max="${max}" step="${step}" aria-label="${label}" style="margin-top:10px" />
     ${hint ? `<p class="hint" id="${id}-hint"></p>` : ""}</div>`;
   }
@@ -378,44 +373,71 @@ footer {
     return `<div class="field"><div class="sliderhead"><label class="lab" for="${id}">${label}</label><output id="${id}-out" for="${id}"></output></div>
     <input id="${id}" class="rng" data-key="${key}" type="range" min="${min}" max="${max}" step="${step}" /></div>`;
   }
+  function applyStatic() {
+    document.documentElement.lang = lang;
+    document.title = tr("Löneväxlingskalkylator 2026 – fristående version", "Salary Exchange Calculator 2026 – standalone version");
+    $("meta-desc").setAttribute("content", tr("Se vad löneväxling ger i extra pensionskapital. Fristående version av Löneväxlingskalkylatorn från pensionslyft.se.", "See how much extra pension capital salary exchange gives you. Standalone version of the Salary Exchange Calculator from pensionslyft.se."));
+    $("eyebrow-main").textContent = tr("Pensionslyft · Kalkylatorer", "Pensionslyft · Calculators");
+    $("h1").textContent = tr("Löneväxlingskalkylator 2026", "Salary Exchange Calculator 2026");
+    $("intro").textContent = tr("Ränta på ränta gör att varje krona du löneväxlar idag är värd mer än en krona imorgon. Fyll i din lön och hur mycket du vill växla, så ser du effekten direkt.", "Compound interest means every krona you exchange today is worth more than a krona tomorrow. Enter your salary and how much you want to exchange to see the effect instantly.");
+    $("foot").innerHTML = tr(`Kalkylatorn är ett förenklat beräkningsverktyg och utgör inte finansiell rådgivning. Beräkningarna bygger på arbetsgivaravgift ${fmtRate(AG_PCT)} % och särskild löneskatt ${fmtRate(SLP_PCT)} %. Historisk avkastning är inte en garanti för framtida avkastning. Den här filen är en fristående kopia av <a href="https://pensionslyft.se/lonevaxlingskalkylator">Löneväxlingskalkylatorn på pensionslyft.se</a>, där du alltid hittar den senaste versionen.`, `This calculator is a simplified tool and does not constitute financial advice. The calculations assume employer social contributions of ${fmtRate(AG_PCT)}% and special payroll tax of ${fmtRate(SLP_PCT)}%. Past returns are no guarantee of future returns. This file is a standalone copy of the <a href="https://pensionslyft.se/lonevaxlingskalkylator">Salary Exchange Calculator on pensionslyft.se</a> (in Swedish), where you will always find the latest version.`);
+    document.querySelectorAll(".lang-btn").forEach((b) => b.classList.toggle("active", b.dataset.lang === lang));
+  }
+  function buildUI() {
   $("app").innerHTML = `
-  <form class="card inputs" onsubmit="return false" aria-label="Indata">
-    ${amountSlider("lon", "M\xE5nadsl\xF6n f\xF6re skatt", "lon", 1e3, LON.min, LON.max, LON.step, "kr")}
-    ${amountSlider("belopp", "Hur mycket vill du l\xF6nev\xE4xla?", "belopp", 100, BELOPP.min, 1e3, BELOPP.step, "kr/m\xE5n", "x")}
-    ${slider("alder", "Din \xE5lder", "alder", ALDER.min, ALDER.max, 1)}
-    ${slider("pensionsalder", "Planerad pensions\xE5lder", "pensionsalder", PENSIONSALDER.min, PENSIONSALDER.max, 1)}
-    ${slider("avkastning", "F\xF6rv\xE4ntad avkastning per \xE5r", "avkastning", AVKASTNING.min, AVKASTNING.max, AVKASTNING.step)}
+  <form class="card inputs" onsubmit="return false" aria-label="${tr("Indata", "Inputs")}">
+    ${amountSlider("lon", tr("Månadslön före skatt", "Monthly salary before tax"), "lon", 1e3, LON.min, LON.max, LON.step, kr())}
+    ${amountSlider("belopp", tr("Hur mycket vill du löneväxla?", "How much do you want to exchange?"), "belopp", 100, BELOPP.min, 1e3, BELOPP.step, tr("kr/mån", "SEK/month"), "x")}
+    ${slider("alder", tr("Din ålder", "Your age"), "alder", ALDER.min, ALDER.max, 1)}
+    ${slider("pensionsalder", tr("Planerad pensionsålder", "Planned retirement age"), "pensionsalder", PENSIONSALDER.min, PENSIONSALDER.max, 1)}
+    ${slider("avkastning", tr("Förväntad avkastning per år", "Expected return per year"), "avkastning", AVKASTNING.min, AVKASTNING.max, AVKASTNING.step)}
   </form>
   <div class="col">
     <div class="stats four" id="stats" aria-live="polite"></div>
     <div class="status" id="status" role="status"></div>
     <section class="card chart">
-      <h2>S\xE5 v\xE4xer ditt sparande</h2>
+      <h2>${tr("Så växer ditt sparande", "How your savings grow")}</h2>
       <p class="sub" id="chart-sub"></p>
       <ul class="legend" id="legend" style="margin-top:12px"></ul>
-      <div class="plot" id="plot"><svg id="svg" viewBox="0 0 800 340" role="img" aria-label="Diagram \xF6ver hur sparandet v\xE4xer"></svg><div class="tooltip" id="tip"></div></div>
+      <div class="plot" id="plot"><svg id="svg" viewBox="0 0 800 340" role="img" aria-label="${tr("Diagram över hur sparandet växer", "Chart of how savings grow")}"></svg><div class="tooltip" id="tip"></div></div>
     </section>
     <div class="note" id="note"></div>
   </div>`;
-  $("limits").innerHTML = `
-  <h2>N\xE4r \xE4r l\xF6nev\xE4xling l\xE4mpligt?</h2>
-  <p>L\xF6nev\xE4xling \xE4r som regel bara l\xE4mpligt om din m\xE5nadsl\xF6n <strong>efter v\xE4xling</strong> \xF6verstiger b\xE5da gr\xE4nserna nedan. Annars kan din pensionsgrundande inkomst och socialf\xF6rs\xE4kringsf\xF6rm\xE5ner p\xE5verkas.</p>
+  $("limits").innerHTML = lang === "en" ? `
+  <h2>When does salary exchange make sense?</h2>
+  <p>Salary exchange generally only makes sense if your monthly salary <strong>after the exchange</strong> stays above both thresholds below. Otherwise your pensionable income and social insurance benefits may be affected.</p>
   <div class="g g3">
-    <div class="lim"><b>${fmtText(LIMIT_AVGIFTSTAK)} kr/m\xE5n</b><span>Avgiftstaket i allm\xE4n pension. Under denna niv\xE5 minskar din intj\xE4ning till allm\xE4n pension.</span></div>
-    <div class="lim"><b>${fmtText(LIMIT_BRYTPUNKT)} kr/m\xE5n</b><span>Brytpunkten f\xF6r statlig inkomstskatt. \xD6ver denna niv\xE5 \xE4r marginalskatten ~20 % h\xF6gre \u2013 l\xF6nev\xE4xling \xE4r extra f\xF6rm\xE5nlig.</span></div>
-    <div class="lim"><b>Max ${MAX_SPARANDE_PROCENT} % av l\xF6n</b><span>Pensionssparande f\xE5r uppg\xE5 till h\xF6gst ${MAX_SPARANDE_PROCENT} % av din \xE5rsl\xF6n fr\xE5n anst\xE4llningen, dock aldrig mer \xE4n 10 prisbasbelopp (${fmtText(MAX_SPARANDE_PBB)} kr/\xE5r = ${fmtText(MAX_SPARANDE_PBB / 12)} kr/m\xE5n, PBB ${YEAR}: ${fmtText(PBB)} kr).</span></div>
+    <div class="lim"><b>${fmtText(LIMIT_AVGIFTSTAK)} SEK/month</b><span>The contribution ceiling in the public pension. Below this level your public pension accrual is reduced.</span></div>
+    <div class="lim"><b>${fmtText(LIMIT_BRYTPUNKT)} SEK/month</b><span>The threshold for state income tax. Above this level the marginal tax is ~20% higher – salary exchange is especially beneficial.</span></div>
+    <div class="lim"><b>Max ${MAX_SPARANDE_PROCENT}% of salary</b><span>Pension savings may amount to at most ${MAX_SPARANDE_PROCENT}% of your annual salary from the employment, but never more than 10 price base amounts (${fmtText(MAX_SPARANDE_PBB)} SEK/year = ${fmtText(MAX_SPARANDE_PBB / 12)} SEK/month, PBB ${YEAR}: ${fmtText(PBB)} SEK).</span></div>
   </div>
-  <h3>Arbetsgivarens ITP1-avs\xE4ttning p\xE5 din l\xF6n</h3>
+  <h3>Employer's ITP1 contribution on your salary</h3>
   <div class="g g2">
-    <div class="lim"><b>4,5 % upp till 7,5 IBB</b><span>P\xE5 l\xF6nedelar upp till 7,5 inkomstbasbelopp (${fmtText(ITP1_GRENS1)} kr/m\xE5n, IBB ${YEAR}: ${fmtText(IBB)} kr) s\xE4tter arbetsgivaren in 4,5 %.</span></div>
-    <div class="lim"><b>30 % mellan 7,5\u201330 IBB</b><span>P\xE5 l\xF6nedelar mellan 7,5 och 30 IBB (${fmtText(ITP1_GRENS1)}\u2013${fmtText(ITP1_GRENS2)} kr/m\xE5n) s\xE4tter arbetsgivaren in 30 %. \xD6ver 30 IBB g\xF6rs ingen avs\xE4ttning.</span></div>
+    <div class="lim"><b>4.5% up to 7.5 IBB</b><span>On salary up to 7.5 income base amounts (${fmtText(ITP1_GRENS1)} SEK/month, IBB ${YEAR}: ${fmtText(IBB)} SEK) the employer contributes 4.5%.</span></div>
+    <div class="lim"><b>30% between 7.5–30 IBB</b><span>On salary between 7.5 and 30 IBB (${fmtText(ITP1_GRENS1)}–${fmtText(ITP1_GRENS2)} SEK/month) the employer contributes 30%. No contribution is made above 30 IBB.</span></div>
   </div>
-  <p>K\xE4lla: <a href="${SOURCE_URL}" target="_blank" rel="noopener">Pensionsmyndigheten</a>.</p>`;
-  $("foot").innerHTML = `Kalkylatorn \xE4r ett f\xF6renklat ber\xE4kningsverktyg och utg\xF6r inte finansiell r\xE5dgivning. Ber\xE4kningarna bygger p\xE5 arbetsgivaravgift ${fmtRate(AG_PCT)} % och s\xE4rskild l\xF6neskatt ${fmtRate(SLP_PCT)} %. Historisk avkastning \xE4r inte en garanti f\xF6r framtida avkastning. Den h\xE4r filen \xE4r en frist\xE5ende kopia av <a href="https://pensionslyft.se/lonevaxlingskalkylator">L\xF6nev\xE4xlingskalkylatorn p\xE5 pensionslyft.se</a>, d\xE4r du alltid hittar den senaste versionen.`;
+  <p>Source: <a href="${SOURCE_URL}" target="_blank" rel="noopener">Swedish Pensions Agency (Pensionsmyndigheten)</a>.</p>` : `
+  <h2>När är löneväxling lämpligt?</h2>
+  <p>Löneväxling är som regel bara lämpligt om din månadslön <strong>efter växling</strong> överstiger båda gränserna nedan. Annars kan din pensionsgrundande inkomst och socialförsäkringsförmåner påverkas.</p>
+  <div class="g g3">
+    <div class="lim"><b>${fmtText(LIMIT_AVGIFTSTAK)} kr/mån</b><span>Avgiftstaket i allmän pension. Under denna nivå minskar din intjäning till allmän pension.</span></div>
+    <div class="lim"><b>${fmtText(LIMIT_BRYTPUNKT)} kr/mån</b><span>Brytpunkten för statlig inkomstskatt. Över denna nivå är marginalskatten ~20 % högre – löneväxling är extra förmånlig.</span></div>
+    <div class="lim"><b>Max ${MAX_SPARANDE_PROCENT} % av lön</b><span>Pensionssparande får uppgå till högst ${MAX_SPARANDE_PROCENT} % av din årslön från anställningen, dock aldrig mer än 10 prisbasbelopp (${fmtText(MAX_SPARANDE_PBB)} kr/år = ${fmtText(MAX_SPARANDE_PBB / 12)} kr/mån, PBB ${YEAR}: ${fmtText(PBB)} kr).</span></div>
+  </div>
+  <h3>Arbetsgivarens ITP1-avsättning på din lön</h3>
+  <div class="g g2">
+    <div class="lim"><b>4,5 % upp till 7,5 IBB</b><span>På lönedelar upp till 7,5 inkomstbasbelopp (${fmtText(ITP1_GRENS1)} kr/mån, IBB ${YEAR}: ${fmtText(IBB)} kr) sätter arbetsgivaren in 4,5 %.</span></div>
+    <div class="lim"><b>30 % mellan 7,5–30 IBB</b><span>På lönedelar mellan 7,5 och 30 IBB (${fmtText(ITP1_GRENS1)}–${fmtText(ITP1_GRENS2)} kr/mån) sätter arbetsgivaren in 30 %. Över 30 IBB görs ingen avsättning.</span></div>
+  </div>
+  <p>Källa: <a href="${SOURCE_URL}" target="_blank" rel="noopener">Pensionsmyndigheten</a>.</p>`;
+  bind();
+  syncInputs();
+  render();
+  }
   var display = {
-    alder: (v) => `${v} \xE5r`,
-    pensionsalder: (v) => `${v} \xE5r`,
-    avkastning: (v) => `${fmtOneDecimal(v)} %`
+    alder: (v) => tr(`${v} år`, `${v} yrs`),
+    pensionsalder: (v) => tr(`${v} år`, `${v} yrs`),
+    avkastning: (v) => pct(v, 1, 1)
   };
   function constrain(changed) {
     const s = state;
@@ -437,7 +459,7 @@ footer {
       const el = $(id);
       if (document.activeElement !== el) el.value = groupDigits(String(Math.round(state[key])));
     }
-    $("belopp-hint").innerHTML = `Tak f\xF6r l\xF6nev\xE4xling: <strong>${fmtInt(tak)} kr/m\xE5n</strong>. Pensionssparande f\xE5r uppg\xE5 till max ${MAX_SPARANDE_PROCENT} % av \xE5rsl\xF6nen, dock h\xF6gst 10 prisbasbelopp (${fmtText(MAX_SPARANDE_PBB)} kr/\xE5r). Det l\xE4gsta av gr\xE4nserna avg\xF6r ditt tak.`;
+    $("belopp-hint").innerHTML = tr(`Tak för löneväxling: <strong>${fmtInt(tak)} kr/mån</strong>. Pensionssparande får uppgå till max ${MAX_SPARANDE_PROCENT} % av årslönen, dock högst 10 prisbasbelopp (${fmtText(MAX_SPARANDE_PBB)} kr/år). Det lägsta av gränserna avgör ditt tak.`, `Salary exchange ceiling: <strong>${fmtInt(tak)} SEK/month</strong>. Pension savings may amount to at most ${MAX_SPARANDE_PROCENT}% of annual salary, but no more than 10 price base amounts (${fmtText(MAX_SPARANDE_PBB)} SEK/year). The lowest of the limits sets your ceiling.`);
   }
   var last;
   function render() {
@@ -445,18 +467,18 @@ footer {
     const r = calcLonevaxling(s);
     const selected = fmtOneDecimal(s.avkastning);
     $("stats").innerHTML = [
-      ["Ditt m\xE5nadssparande", fmtKr(r.premie), `Inklusive ${fmtUplift(r.uplift)} som arbetsgivaren skjuter till`, "hl"],
-      [`Extra pensionskapital om ${r.years} \xE5r`, fmtKr(r.kapital), "", "hl"],
-      ["Inbetalt kapital", fmtKr(r.inbetalt), "", ""],
-      ["Varav avkastning", fmtKr(r.kapital - r.inbetalt), "", ""]
+      [tr("Ditt månadssparande", "Your monthly saving"), fmtKr(r.premie), tr(`Inklusive ${fmtUplift(r.uplift)} som arbetsgivaren skjuter till`, `Including ${fmtUplift(r.uplift)} added by the employer`), "hl"],
+      [tr(`Extra pensionskapital om ${r.years} år`, `Extra pension capital in ${r.years} years`), fmtKr(r.kapital), "", "hl"],
+      [tr("Inbetalt kapital", "Paid-in capital"), fmtKr(r.inbetalt), "", ""],
+      [tr("Varav avkastning", "Of which return"), fmtKr(r.kapital - r.inbetalt), "", ""]
     ].map(([l, v, n, c]) => `<div class="stat ${c}"><div class="eyebrow">${esc(l)}</div><div class="v">${v}</div>${n ? `<div class="n">${esc(n)}</div>` : ""}</div>`).join("");
     const icon = { good: "\u2713", amber: "!", warn: "\u2715" }[r.suitability];
     const st = $("status");
     st.className = `status ${r.suitability}`;
     st.innerHTML = `<span class="ic" aria-hidden="true">${icon}</span><p style="margin:0"><b>${esc(r.title)}</b>${esc(r.text)}</p>`;
-    $("chart-sub").innerHTML = `Utveckling fram till pension vid <strong>${selected} %</strong> avkastning per \xE5r.`;
-    $("legend").innerHTML = `<li><i style="background:#a18142"></i>Inbetalt kapital</li><li><i style="background:#0c2a49"></i>V\xE4rde vid ${selected} %</li>`;
-    $("note").innerHTML = `Arbetsgivaren betalar l\xE4gre l\xF6neskatt p\xE5 pensionspremier (${fmtRate(SLP_PCT)} %) \xE4n arbetsgivaravgift p\xE5 l\xF6n (${fmtRate(AG_PCT)} %). Skillnaden l\xE4ggs ovanp\xE5 din pensionspremie. ${esc(disclaimer(s.avkastning))}`;
+    $("chart-sub").innerHTML = tr(`Utveckling fram till pension vid <strong>${selected} %</strong> avkastning per år.`, `Development until retirement at <strong>${selected}%</strong> return per year.`);
+    $("legend").innerHTML = `<li><i style="background:#a18142"></i>${tr("Inbetalt kapital", "Paid-in capital")}</li><li><i style="background:#0c2a49"></i>${tr(`Värde vid ${selected} %`, `Value at ${selected}%`)}</li>`;
+    $("note").innerHTML = tr(`Arbetsgivaren betalar lägre löneskatt på pensionspremier (${fmtRate(SLP_PCT)} %) än arbetsgivaravgift på lön (${fmtRate(AG_PCT)} %). Skillnaden läggs ovanpå din pensionspremie. `, `The employer pays lower payroll tax on pension premiums (${fmtRate(SLP_PCT)}%) than social contributions on salary (${fmtRate(AG_PCT)}%). The difference is added on top of your pension premium. `) + esc(disclaimer(s.avkastning));
     const capital = simSeries(r.premie, s.avkastning, r.years);
     const deposits = capital.map((_, y) => r.premie * y * 12);
     last = { years: r.years, deposits, capital, label: selected };
@@ -479,9 +501,9 @@ footer {
     const x = (i) => L + (n === 1 ? 0.5 : i / (n - 1)) * (W - L - R);
     const y = (v) => T + (1 - v / yMax) * (H - T - B);
     let out = `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0c2a49" stop-opacity="0.45"/><stop offset="100%" stop-color="#0c2a49" stop-opacity="0.02"/></linearGradient></defs>`;
-    for (let v = 0; v <= yMax + 1e-6; v += step) out += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-dasharray="3 3"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${esc(`${num.format(v / 1e3)} tkr`)}</text>`;
+    for (let v = 0; v <= yMax + 1e-6; v += step) out += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-dasharray="3 3"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${esc(tr(`${num.format(v / 1e3)} tkr`, `${num.format(v / 1e3)}k SEK`))}</text>`;
     const every = Math.max(1, Math.ceil(n / 7));
-    for (let i = 0; i < n; i += every) out += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${i === 0 ? "Idag" : `+${i} \xE5r`}</text>`;
+    for (let i = 0; i < n; i += every) out += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${i === 0 ? tr("Idag", "Today") : tr(`+${i} år`, `+${i} yrs`)}</text>`;
     const line = (vals) => vals.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join(" ");
     const area = (vals) => `${line(vals)} L${x(n - 1)},${y(0)} L${x(0)},${y(0)} Z`;
     out += `<path d="${area(p.deposits)}" fill="#a18142" fill-opacity="0.15"/><path d="${line(p.deposits)}" fill="none" stroke="#a18142" stroke-width="1.5" stroke-dasharray="6 4"/>`;
@@ -497,9 +519,9 @@ footer {
       cursor.setAttribute("x1", String(x(i)));
       cursor.setAttribute("x2", String(x(i)));
       cursor.setAttribute("visibility", "visible");
-      tip.innerHTML = `<b>${i === 0 ? "Idag" : `Om ${i} \xE5r`}</b>
-      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#a18142;margin-right:6px"></i>Inbetalt kapital</span><span>${esc(formatSek(p.deposits[i]))}</span></div>
-      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#0c2a49;margin-right:6px"></i>V\xE4rde vid ${p.label} %</span><span>${esc(formatSek(p.capital[i]))}</span></div>`;
+      tip.innerHTML = `<b>${i === 0 ? tr("Idag", "Today") : tr(`Om ${i} år`, `In ${i} years`)}</b>
+      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#a18142;margin-right:6px"></i>${tr("Inbetalt kapital", "Paid-in capital")}</span><span>${esc(formatSek(p.deposits[i]))}</span></div>
+      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#0c2a49;margin-right:6px"></i>${tr(`Värde vid ${p.label} %`, `Value at ${p.label}%`)}</span><span>${esc(formatSek(p.capital[i]))}</span></div>`;
       tip.style.display = "block";
       const px = x(i) / W * box.width;
       tip.style.left = `${px > box.width / 2 ? px - tip.offsetWidth - 12 : px + 12}px`;
@@ -513,6 +535,7 @@ footer {
     svg.onpointerdown = (e) => show(e.clientX);
     svg.onpointerleave = hide;
   }
+  function bind() {
   document.querySelectorAll("input[data-key]").forEach((input) => {
     const key = input.dataset.key;
     input.addEventListener("input", () => {
@@ -535,7 +558,6 @@ footer {
       render();
     });
   });
-  var LON_TYPED_MAX = LON.typedMax;
   document.querySelectorAll("button.step").forEach((button) => {
     const key = button.dataset.step;
     const dir = Number(button.dataset.dir);
@@ -568,8 +590,17 @@ footer {
       }
     });
   });
-  syncInputs();
-  render();
+  }
+  var LON_TYPED_MAX = LON.typedMax;
+  function setLang(l) {
+    lang = l;
+    try { localStorage.setItem("pension-lang", l); } catch (e) {}
+    applyStatic();
+    buildUI();
+  }
+  document.querySelectorAll(".lang-btn").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
+  applyStatic();
+  buildUI();
   var shown = $("plot").clientWidth;
   new ResizeObserver(() => {
     const w = $("plot").clientWidth;

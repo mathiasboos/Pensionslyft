@@ -31,16 +31,16 @@ visual editor (Framer, Lovable) is needed.
 | Pensionsmålkalkylatorn | `/pensionsmalkalkylatorn`, `/en/replacement-rate-calculator` | `src/components/AppFrame.astro` showing `Replacement rate goal calculator.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Pensionsöversikt | `/pensionsoversikt`, `/en/pension-overview` | `src/components/AppFrame.astro` showing `Pension Overview.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Ränta på ränta | `/ranta-pa-ranta`, `/en/compound-interest` | `src/components/AppFrame.astro` showing `Compound Interest Calculator.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
-| FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
+| FIRE calculator | `/fire-kalkylator` | `src/components/AppFrame.astro` showing `FIRE_Calculator .html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Pensionsplaneraren | `/pensionsplaneraren` | `src/pages/pensionsplaneraren.astro` (shows `public/pensionsplaneraren-app.html`, fetched from GitHub every hour by `.github/workflows/pensionsplaneraren.yml` with `scripts/sync-pensionsplaneraren.mjs`) |
 | Typfallsmodellen | `/typfallsmodellen` | `src/pages/typfallsmodellen.astro` (shows `public/typfallsmodellen-app.html`, built from `main` on GitHub every hour by `.github/workflows/typfallsmodellen.yml` with `scripts/sync-typfallsmodellen.mjs`) |
-| Löneväxling | `/lonevaxlingskalkylator`, `/en/salary-exchange` | `src/components/AppFrame.astro` showing `Salary_Exchange.html` from GitHub with the site's colours (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
+| Löneväxling | `/lonevaxlingskalkylator`, `/en/salary-exchange` | `src/components/AppFrame.astro` showing `Salary_Exchange.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Nettolön | `/nettolonkalkylator` | `src/pages/nettolonkalkylator.astro` + `src/components/calculators/NettolonCalculator.tsx` + `src/lib/nettolon.ts` + `src/data/kommunalskatt-2026.json` |
 | Not found | any other URL | `src/pages/404.astro` |
 
 - **Changes in the source repositories.** The Pensionsplaneraren (`github.com/mathiasboos/Calculators`) and the
   Typfallsmodellen (`github.com/mathiasboos/Typfallsmodellen`, `main`) are fetched, checked in a browser and published by
-  GitHub Actions every hour. The calculators re-written in React (Nettolön, FIRE) are watched by
+  GitHub Actions every hour. The calculators re-written in React (Nettolön) is watched by
   `.github/workflows/watch-calculators.yml`, which opens an issue when their original file has changed
   (`src/data/ported-sources.json`); someone then ports the change.
 - **Articles** are Markdown files in `src/content/articles/`. Add a new file there and the
