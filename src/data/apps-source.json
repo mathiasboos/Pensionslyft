@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/mathiasboos/Calculators",
+  "apps": {
+    "pensionsmal": {
+      "file": "Replacement rate goal calculator.html",
+      "commit": "a3d981cbbdfed0fbd94833652bb02d2b1344f85e",
+      "committedAt": "2026-10-28T15:38:19+00:00",
+      "subject": "Replacement rate calculator: rename Total contributed KPI"
+    }
+  }
+}

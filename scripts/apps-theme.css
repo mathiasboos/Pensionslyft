@@ -1,0 +1,19 @@
+/*
+ * The look of a calculator from github.com/mathiasboos/Calculators on pensionslyft.se. The calculators that are shown
+ * as they are already have the site's palette and fonts; the site only takes away what the page around them already
+ * has: their own header (the name of the site, the SV | EN switch, "stand-alone version") and shows the file once its
+ * language is set (scripts/apps-site.js). Every rule hangs on a stable name and does nothing if the file changes it.
+ */
+html:not(.pl-ready) body {
+  visibility: hidden;
+}
+.lang-toggle,
+header.top {
+  display: none !important;
+}
+/* The frame is as high as the file; the file does not scroll inside it. */
+html,
+body {
+  background: #ffffff;
+  overflow-y: hidden;
+}

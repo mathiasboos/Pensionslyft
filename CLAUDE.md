@@ -63,10 +63,21 @@ look at on the preview.
   | Calculator | Kept up to date by |
   |---|---|
   | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
+  | Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
   | Löneväxling, Nettolön, FIRE (re-written in React from `Salary_Exchange_Consumer.html`, `Net_Salary_2026.html`, `FIRE_Calculator .html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
   | Pensionssparkalkylatorn, Pensionsöversikt, Ränta på ränta | the site's own: no original elsewhere |
 
+- **Calculators shown straight from GitHub** (`scripts/lib/apps.mjs`; today the Pensionsmålkalkylatorn, `/pensionsmalkalkylatorn`
+  and `/en/replacement-rate-calculator`). The file in Calculators is the master and is never edited here: `node
+  scripts/sync-apps.mjs [--only slug] [--if-changed] [--reapply]` puts it in `public/app/<slug>.html` (disallowed in
+  robots.txt) with `scripts/apps-theme.css` (hides the file's own header and SV | EN switch), `scripts/apps-site.js`
+  (language from `?lang=`, links) and, when the file does not have the site's palette, its colours in
+  `scripts/apps-colors.mjs` (`native: false` in the list). The page is `src/components/AppFrame.astro` (an iframe as
+  high as the file) plus a Swedish page and an English twin; the menu item has `enHref` in `src/lib/site-nav.ts`. To
+  move another calculator over: add it to `apps.mjs`, its pages and nav entry, run the sync, check it with
+  `scripts/check-apps.mjs`, and take its React port and tests away (one source only). New texts need both languages in
+  the file's own dictionary.
 - **Pensionsöversikten** (`/pensionsoversikt`, `src/lib/pensionsoversikt.ts`, `PensionsoversiktCalculator.tsx`), after
   Wealthsimple's retirement calculator and next to the older Pensionssparkalkylatorn (the former Pensionskalkylatorn, URL `/pensionskalkylator`, unchanged): the public
   pension and the tjänstepension come from `runTypfall` (or amounts the user enters), are taxed with `calcNettolon`

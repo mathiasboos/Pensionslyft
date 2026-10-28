@@ -28,7 +28,7 @@ const t = ui[lang];
   <p class="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{item.description}</p>
   <span class="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary">
     {t["card.open"]}
-    {lang === "en" && <span class="rounded border border-border px-1.5 text-xs font-normal text-muted-foreground">{t.swedishOnly}</span>}
+    {lang === "en" && !item.english && <span class="rounded border border-border px-1.5 text-xs font-normal text-muted-foreground">{t.swedishOnly}</span>}
     <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
   </span>
 </a>

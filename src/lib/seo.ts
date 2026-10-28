@@ -50,7 +50,7 @@ export function breadcrumbs(trail: { name: string; path: string }[]): Json {
   };
 }
 
-export function webApplication(app: { name: string; description: string; path: string; keywords?: string[] }): Json {
+export function webApplication(app: { name: string; description: string; path: string; keywords?: string[]; lang?: "sv" | "en" }): Json {
   return {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -58,8 +58,8 @@ export function webApplication(app: { name: string; description: string; path: s
     description: app.description,
     url: absolute(app.path),
     applicationCategory: "FinanceApplication",
-    operatingSystem: "Alla (webbläsare)",
-    inLanguage: "sv-SE",
+    operatingSystem: app.lang === "en" ? "All (web browser)" : "Alla (webbläsare)",
+    inLanguage: app.lang === "en" ? "en-GB" : "sv-SE",
     ...(app.keywords?.length ? { keywords: app.keywords.join(", ") } : {}),
     isAccessibleForFree: true,
     offers: { "@type": "Offer", price: "0", priceCurrency: "SEK" },

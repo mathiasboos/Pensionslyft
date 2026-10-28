@@ -1,0 +1,109 @@
+# Keeps the calculators that the site shows straight from github.com/mathiasboos/Calculators (the list is
+# scripts/lib/apps.mjs; for now the Pensionsmålkalkylatorn) up to date, so that a change the owner makes there reaches
+# the site without anyone porting it.
+#
+# Every hour, and when started by hand (Actions → Kalkylatorer → Run workflow), it fetches the files whose commit is
+# newer than the one the site has, with the site's look put on them (scripts/sync-apps.mjs). If anything is new, it checks
+# the calculators in a browser (scripts/check-apps.mjs), runs the tests and the build, and commits to main, which
+# Cloudflare Pages then publishes. If anything fails, nothing is published and the issue "Kalkylatorer kunde inte
+# uppdateras" is opened (or updated); it is closed again by the next run that works.
+name: Kalkylatorer
+
+on:
+  schedule:
+    - cron: "37 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: kalkylatorer
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Fetch the calculators from Calculators
+        run: node scripts/sync-apps.mjs --if-changed
+
+      - name: Anything new?
+        id: diff
+        run: |
+          if git diff --quiet -- public/app src/data/apps-source.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing new: the site already has these versions of the calculators." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm ci
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Check the calculators in a browser
+        if: steps.diff.outputs.changed == 'true'
+        run: node scripts/check-apps.mjs
+
+      - name: Tests and build
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm test
+          npm run build
+
+      - name: Publish
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          changed=$(git diff --name-only -- public/app | sed 's#public/app/##; s#\.html##' | paste -sd, -)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/app src/data/apps-source.json
+          git commit -m "Kalkylatorer: uppdaterade från GitHub (${changed})"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "Published the calculators ${changed}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report a failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Kalkylatorer kunde inte uppdateras";
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "Den automatiska uppdateringen av kalkylatorerna från github.com/mathiasboos/Calculators misslyckades,",
+              "så sajten visar fortfarande den förra versionen. Ärendet stängs av sig självt när en körning lyckas igen.",
+              "",
+              `Senaste körningen: ${run}`,
+            ].join("\n");
+            const { owner, repo } = context.repo;
+            const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: "open", per_page: 100 });
+            const existing = open.find((issue) => issue.title === title && !issue.pull_request);
+            if (existing) await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+            else await github.rest.issues.create({ owner, repo, title, body });
+
+      - name: Close a failure report
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Kalkylatorer kunde inte uppdateras";
+            const { owner, repo } = context.repo;
+            const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: "open", per_page: 100 });
+            for (const issue of open.filter((i) => i.title === title && !i.pull_request)) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: issue.number, body: "Uppdateringen fungerar igen." });
+              await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: "closed", state_reason: "completed" });
+            }

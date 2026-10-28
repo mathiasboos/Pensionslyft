@@ -1,0 +1,52 @@
+---
+import { ui } from "@/i18n/ui";
+import { langOf } from "@/lib/i18n";
+
+interface Props {
+  /** The calculator's name in scripts/lib/apps.mjs: the file is public/app/<slug>.html. */
+  slug: string;
+  title: string;
+}
+
+const lang = langOf(Astro.url.pathname);
+const { slug, title } = Astro.props;
+const src = `/app/${slug}.html?lang=${lang}`;
+const t = ui[lang];
+---
+
+<!--
+  A calculator from github.com/mathiasboos/Calculators, shown as it is (scripts/sync-apps.mjs fetches it, a GitHub Action
+  keeps it up to date). The frame is as high as the calculator, so the page scrolls, not the frame; the language is the
+  page's.
+-->
+<iframe
+  src={src}
+  title={title}
+  data-app-frame
+  class="block min-h-[40rem] w-full border-0 bg-card"
+  scrolling="no"></iframe>
+<noscript>
+  <p class="py-8 text-sm text-muted-foreground">
+    {t["app.noscript"]} <a href={src} class="underline">{t["app.open"]}</a>.
+  </p>
+</noscript>
+
+<script>
+  // Sets the frame to the height of the calculator and keeps it there when the calculator changes (a new result, a
+  // table that opens) or the window is resized.
+  for (const frame of document.querySelectorAll<HTMLIFrameElement>("iframe[data-app-frame]")) {
+    const fit = () => {
+      const doc = frame.contentDocument;
+      if (!doc?.documentElement) return;
+      frame.style.height = `${Math.ceil(doc.documentElement.scrollHeight)}px`;
+    };
+    const start = () => {
+      fit();
+      const body = frame.contentDocument?.body;
+      if (body && "ResizeObserver" in window) new ResizeObserver(fit).observe(body);
+      frame.contentWindow?.addEventListener("resize", fit);
+    };
+    frame.addEventListener("load", start);
+    if (frame.contentDocument?.readyState === "complete") start();
+  }
+</script>

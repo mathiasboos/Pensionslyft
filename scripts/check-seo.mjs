@@ -8,7 +8,10 @@ const files = [];
 (function walk(dir) {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
-    if (statSync(path).isDirectory()) walk(path);
+    if (statSync(path).isDirectory()) {
+      // dist/app/ holds the calculators shown from GitHub: files for the frames, not pages.
+      if (path !== join(dist, "app")) walk(path);
+    }
     else if (name.endsWith(".html") && !name.endsWith("-app.html") && name !== "404.html") files.push(path);
   }
 })(dist);
