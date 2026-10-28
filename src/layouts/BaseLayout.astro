@@ -3,6 +3,8 @@ import "@/styles/global.css";
 import SiteFooter from "@/components/SiteFooter.astro";
 import SiteHeader from "@/components/SiteHeader.astro";
 import { calculators } from "@/lib/site-nav";
+import { alternates as pageAlternates, cleanPath, LOCALE, langOf } from "@/lib/i18n";
+import { ui } from "@/i18n/ui";
 import { DEFAULT_IMAGE, DEFAULT_IMAGE_ALT, absolute, breadcrumbs as breadcrumbData, homeData, webApplication } from "@/lib/seo";
 
 interface Props {
@@ -23,22 +25,24 @@ interface Props {
   publishedTime?: Date;
 }
 
+const lang = langOf(Astro.url.pathname);
 const {
-  title = "Pensionslyft – pension, kalkyler och guider",
-  description = "Pensionslyft förklarar svensk pension med guider, artiklar och kalkylatorer för pensionskapital och ränta på ränta.",
+  title = ui[lang]["site.defaultTitle"],
+  description = ui[lang]["site.defaultDescription"],
   ogTitle = title,
   ogDescription = description,
   ogType = "website",
   jsonLd,
   breadcrumbs,
   image = DEFAULT_IMAGE,
-  imageAlt = DEFAULT_IMAGE_ALT,
+  imageAlt = lang === "en" ? "Pensionslyft – calculators and guides about Swedish pension" : DEFAULT_IMAGE_ALT,
   tags = [],
   publishedTime,
 } = Astro.props;
 
 // Pages are built as /artiklar.html, but served (and linked) as /artiklar.
-const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/index$/, "/") || "/";
+const path = cleanPath(Astro.url.pathname);
+const alternates = pageAlternates(path);
 const canonical = new URL(path, Astro.site);
 const imageUrl = absolute(image);
 
@@ -47,7 +51,7 @@ const calculator = calculators.find((c) => c.href === path);
 const words = tags.length > 0 ? tags : (calculator?.keywords ?? []);
 const data = [
   ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
-  ...(path === "/" ? homeData() : []),
+  ...(path === "/" ? homeData() : path === "/en" ? homeData("en") : []),
   ...(calculator
     ? [
         webApplication({ name: calculator.title, description, path, keywords: calculator.keywords }),
@@ -62,7 +66,7 @@ const data = [
 ---
 
 <!doctype html>
-<html lang="sv">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -70,11 +74,22 @@ const data = [
     <meta name="description" content={description} />
     <meta name="author" content="Pensionslyft" />
     <link rel="canonical" href={canonical} />
+    {
+      alternates && (
+        <>
+          <link rel="alternate" hreflang="sv" href={new URL(alternates.sv, Astro.site)} />
+          <link rel="alternate" hreflang="en" href={new URL(alternates.en, Astro.site)} />
+          <link rel="alternate" hreflang="x-default" href={new URL(alternates.sv, Astro.site)} />
+        </>
+      )
+    }
     <meta property="og:title" content={ogTitle} />
     <meta property="og:description" content={ogDescription} />
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:locale" content="sv_SE" />
+    <meta property="og:locale" content={LOCALE[lang]} />
+    {lang === "sv" && alternates && <meta property="og:locale:alternate" content={LOCALE.en} />}
+    {lang === "en" && <meta property="og:locale:alternate" content={LOCALE.sv} />}
     <meta property="og:site_name" content="Pensionslyft" />
     <meta property="og:image" content={imageUrl} />
     <meta property="og:image:width" content="1200" />

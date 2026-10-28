@@ -1,7 +1,15 @@
 ---
-import { calculatorGroups, insights } from "@/lib/site-nav";
+import { calculatorGroups, groupTitle, insights, navItem } from "@/lib/site-nav";
+import { langOf } from "@/lib/i18n";
+import { ui } from "@/i18n/ui";
 
 const year = new Date().getFullYear();
+const lang = langOf(Astro.url.pathname);
+const en = lang === "en";
+const t = ui[lang];
+const groups = calculatorGroups.map((g) => ({ ...g, title: groupTitle(g, lang), items: g.items.map((i) => navItem(i, lang)) }));
+const calcHref = en ? "/en/calculators" : "/kalkylatorer";
+const aboutHref = en ? "/en/about" : "/om-pensionslyft";
 ---
 
 <footer class="mt-24 border-t border-border bg-muted">
@@ -9,18 +17,17 @@ const year = new Date().getFullYear();
     <div>
       <p class="font-display text-lg font-semibold text-primary">Pensionslyft</p>
       <p class="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-        Oberoende guider och kalkyler om svensk pension. Vi ger allmän information, inte individuell
-        finansiell rådgivning.
+        {t["footer.about"]}
       </p>
       <p class="mt-3 text-sm text-muted-foreground">
-        Kontakt:{" "}
+        {t["footer.contact"]}{" "}
         <a href="mailto:info@pensionslyft.se" class="text-foreground/80 hover:text-primary hover:underline">
           info@pensionslyft.se
         </a>
       </p>
     </div>
     {
-      calculatorGroups.map((group) => (
+      groups.map((group) => (
         <div>
           <p class="eyebrow">{group.title}</p>
           <ul class="mt-4 space-y-3 text-sm">
@@ -36,10 +43,10 @@ const year = new Date().getFullYear();
       ))
     }
     <div>
-      <p class="eyebrow">Insikter</p>
+      <p class="eyebrow">{en ? "Pensionslyft" : t["nav.insights"]}</p>
       <ul class="mt-4 space-y-3 text-sm">
         {
-          insights.map((item) => (
+          !en && insights.map((item) => (
             <li>
               <a href={item.href} class="text-foreground/80 hover:text-primary hover:underline">
                 {item.title}
@@ -48,17 +55,17 @@ const year = new Date().getFullYear();
           ))
         }
         <li>
-          <a href="/kalkylatorer" class="text-foreground/80 hover:text-primary hover:underline">Alla kalkylatorer</a>
+          <a href={calcHref} class="text-foreground/80 hover:text-primary hover:underline">{t["nav.allCalculators"]}</a>
         </li>
         <li>
-          <a href="/om-pensionslyft" class="text-foreground/80 hover:text-primary hover:underline">Om Pensionslyft</a>
+          <a href={aboutHref} class="text-foreground/80 hover:text-primary hover:underline">{t["nav.about"]}</a>
         </li>
       </ul>
     </div>
   </div>
   <div class="border-t border-border">
     <p class="mx-auto max-w-7xl px-4 py-5 text-xs text-muted-foreground">
-      © {year} Pensionslyft. Alla belopp är uppskattningar.
+      © {year} Pensionslyft. {t["footer.copyright"]}
     </p>
   </div>
 </footer>

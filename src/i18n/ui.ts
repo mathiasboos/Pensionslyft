@@ -1,0 +1,73 @@
+// The texts around the pages (menus, footer, buttons, the English pages' own texts), in both languages. The English
+// dictionary has the type of the Swedish one, so the build fails if a text is missing in English.
+const sv = {
+  "site.defaultTitle": "Pensionslyft – pension, kalkyler och guider",
+  "site.defaultDescription": "Pensionslyft förklarar svensk pension med guider, artiklar och kalkylatorer för pensionskapital och ränta på ränta.",
+  "site.homeAria": "Pensionslyft, till startsidan",
+  "nav.main": "Huvudmeny",
+  "nav.menu": "Meny",
+  "nav.calculators": "Kalkylatorer",
+  "nav.insights": "Insikter",
+  "nav.articles": "Artiklar",
+  "nav.reports": "Rapporter",
+  "nav.news": "Nyheter",
+  "nav.about": "Om Pensionslyft",
+  "nav.allCalculators": "Alla kalkylatorer",
+  "nav.cta": "Räkna ut din pension",
+  "nav.featured": "Utvalt",
+  "nav.featuredNew": "Nytt:",
+  "nav.readAndDeepen": "Läs och fördjupa",
+  "nav.topics": "Ämnen",
+  "nav.latestArticle": "Senaste artikeln",
+  "lang.switchAria": "Språk",
+  "lang.toEnglish": "Switch to English",
+  "lang.toSwedish": "Byt till svenska",
+  "hint.text": "This site is also available in English.",
+  "hint.link": "Read in English",
+  "hint.dismiss": "Stäng",
+  "card.open": "Öppna kalkylatorn",
+  "level.label": "Svårighetsgrad",
+  "footer.about": "Oberoende guider och kalkyler om svensk pension. Vi ger allmän information, inte individuell finansiell rådgivning.",
+  "footer.contact": "Kontakt:",
+  "footer.copyright": "Alla belopp är uppskattningar.",
+  "swedishOnly": "Svenska",
+} as const;
+
+type Dict = Record<keyof typeof sv, string>;
+
+const en: Dict = {
+  "site.defaultTitle": "Pensionslyft – Swedish pension, calculators and guides",
+  "site.defaultDescription": "Pensionslyft explains the Swedish pension system with guides and calculators for pension savings, net salary and compound interest.",
+  "site.homeAria": "Pensionslyft, to the home page",
+  "nav.main": "Main menu",
+  "nav.menu": "Menu",
+  "nav.calculators": "Calculators",
+  "nav.insights": "Insights",
+  "nav.articles": "Articles",
+  "nav.reports": "Reports",
+  "nav.news": "News",
+  "nav.about": "About Pensionslyft",
+  "nav.allCalculators": "All calculators",
+  "nav.cta": "Calculate your pension",
+  "nav.featured": "Featured",
+  "nav.featuredNew": "New:",
+  "nav.readAndDeepen": "Read and learn more",
+  "nav.topics": "Topics",
+  "nav.latestArticle": "Latest article",
+  "lang.switchAria": "Language",
+  "lang.toEnglish": "Switch to English",
+  "lang.toSwedish": "Byt till svenska",
+  "hint.text": "This site is also available in English.",
+  "hint.link": "Read in English",
+  "hint.dismiss": "Dismiss",
+  "card.open": "Open the calculator",
+  "level.label": "Difficulty",
+  "footer.about": "Independent guides and calculators about the Swedish pension system. We give general information, not individual financial advice.",
+  "footer.contact": "Contact:",
+  "footer.copyright": "All amounts are estimates.",
+  "swedishOnly": "Swedish",
+};
+
+export const ui = { sv, en } as const;
+export type UiKey = keyof typeof sv;
+export const tr = (lang: "sv" | "en") => (key: UiKey): string => ui[lang][key];

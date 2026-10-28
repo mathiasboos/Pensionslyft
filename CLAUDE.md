@@ -126,6 +126,16 @@ look at on the preview.
 - **The two bands at the top of the home page**: "Nytt:" (the five newest news headlines, linked) and below it "Nyckeltal <year>:" (the key figures,
   scrolling the other way and slower). The figures are in `src/data/nyckeltal.ts` (label, value, and the bracket note = the change on last year or last
   year's value), in the owner's order; when a new year's figures are out, change that file and `KEY_FIGURES_YEAR`.
+- **Swedish and English.** Swedish is the main language and keeps its URLs; the English pages live under `/en` (`src/pages/en/`). A page that exists in both languages is
+  listed in `PAIRS` in `src/lib/i18n.ts` (Swedish path ↔ English path): the language switch in the header (`SV | EN`, plain links, the choice kept in
+  `localStorage` as `pl-lang`), the `hreflang` links in `BaseLayout.astro` and the tests all use that list, and a page without a twin links the switch to the other
+  language's front page. `<html lang>`, `og:locale`, the home page's JSON-LD and the sitemap (`i18n` in `astro.config.mjs`) follow the language, which is told from
+  the path (`langOf`). The texts around the pages (menu, footer, cards, hint) are in `src/i18n/ui.ts`; the English dictionary has the Swedish one's type, so a missing
+  text fails the build. The calculators' English names and descriptions are in `site-nav.ts` (`navItem`, `groupTitle`, `levelName`), the key figures in
+  `nyckeltal.ts` (`keyFiguresEn`). A visitor whose browser is English (or who chose English) gets a dismissible hint on the Swedish pages and is never redirected.
+  **Phase 1 is live**: the English home page, `/en/calculators` and `/en/about`. The calculators, articles, news and reports are still Swedish only; the English
+  pages link to the Swedish calculator pages (marked "Swedish"), and the English menu has no Insights. When a page gets an English version, add its pair to
+  `PAIRS`, add its English texts, and add it to the English menu.
 - **The news slider on the home page** (under the hero, where the two calculator examples used to be): `src/components/NewsSlider.astro` shows the
   six newest news items as designed cards (navy, fine dots, an accent colour per slide, no photo), with arrows and dots. It is a scroll-snap
   track, so it also swipes and works without JavaScript; `src/scripts/news-slider.ts` adds arrows, dots and auto-advance every 6 s (pauses on
