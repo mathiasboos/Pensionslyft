@@ -41,10 +41,7 @@ function numbers(text: string): string[] {
 }
 const count = (text: string, re: RegExp) => (text.match(re) ?? []).length;
 
-describe.each([
-  ["news", "news"],
-  ["articles", "articles"],
-] as const)("%s are translated", (kind) => {
+describe.each(["news", "articles"] as const)("%s are translated", (kind) => {
   const swedish = load(kind);
   const english = load(`en/${kind}`);
 
