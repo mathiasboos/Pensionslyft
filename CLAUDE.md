@@ -62,7 +62,7 @@ look at on the preview.
   | Calculator | Kept up to date by |
   |---|---|
   | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
-  | Löneväxling (`Salary_Exchange.html`, recoloured: `scripts/apps-colors.mjs` and `scripts/apps/lonevaxling.css`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
+  | Löneväxling (`Salary_Exchange.html`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
   | Nettolön, FIRE (re-written in React from `Net_Salary_2026.html`, `FIRE_Calculator .html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
 
@@ -123,7 +123,7 @@ look at on the preview.
   text fails the build. The calculators' English names and descriptions are in `site-nav.ts` (`navItem`, `groupTitle`, `levelName`), the key figures in
   `nyckeltal.ts` (`keyFiguresEn`). A visitor whose browser is English (or who chose English) gets a dismissible hint on the Swedish pages and is never redirected.
   **Live in English**: the home page, `/en/calculators`, `/en/about`, the news (`/en/news`, tag pages `/en/news/tag/<slug>`, RSS) and the articles (`/en/articles`).
-  The calculators and the reports are still Swedish only; the English pages link to the Swedish calculator pages (marked "Swedish") and the English menu has no Reports.
+  The calculators shown from GitHub (see below) have English pages too; the other calculators and the reports are Swedish only, and the English pages link to the Swedish calculator pages (marked "Swedish") and the English menu has no Reports.
   **English news and articles**: each Swedish item has an English file of its own in `src/content/en/news/` or `src/content/en/articles/` (collections `newsEn` and
   `articlesEn`, the same fields plus `translation_of: <Swedish slug>`; the file name is the English URL). **A new Swedish news item or article gets its English
   twin in the same PR** (`tests/translations.test.ts` fails otherwise and checks that date, source, headings, table rows, list items, images, links and every number

@@ -15,9 +15,9 @@
     },
     "lonevaxling": {
       "file": "Salary_Exchange.html",
-      "commit": "b16fd45877257ce337ed74748d6617a8dd43897d",
-      "committedAt": "2026-10-28T17:56:40+01:00",
-      "subject": "Add files via upload"
+      "commit": "e814cec5fa6f8f811048a8dd7ba051f37a6ed60d",
+      "committedAt": "2026-10-28T17:12:30+00:00",
+      "subject": "Add Swedish/English language toggle to Salary_Exchange.html"
     },
     "pensionsoversikt": {
       "file": "Pension Overview.html",
