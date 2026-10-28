@@ -11,6 +11,7 @@ export const PAGE_PAIRS: readonly (readonly [string, string])[] = [
   ["/nyheter", "/en/news"],
   ["/artiklar", "/en/articles"],
   ["/ranta-pa-ranta", "/en/compound-interest"],
+  ["/fire-kalkylator", "/en/fire-calculator"],
   ["/lonevaxlingskalkylator", "/en/salary-exchange"],
   ["/pensionsoversikt", "/en/pension-overview"],
   ["/pensionskalkylator", "/en/pension-savings-calculator"],

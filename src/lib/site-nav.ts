@@ -131,9 +131,10 @@ const compound: NavItem = {
   keywords: ["ränta på ränta", "ränta på ränta kalkylator", "sparkalkylator", "månadssparande"],
 };
 
-// Shown as it is in github.com/mathiasboos/Calculators (FIRE_Calculator .html, Swedish only for now), see scripts/sync-apps.mjs.
+// Shown as it is in github.com/mathiasboos/Calculators (FIRE_Calculator .html), see scripts/sync-apps.mjs.
 const fire: NavItem = {
   href: "/fire-kalkylator",
+  enHref: "/en/fire-calculator",
   title: "FIRE-kalkylatorn",
   description: "Se vid vilken ålder ditt sparande räcker för att leva på avkastningen.",
   icon: Flame,

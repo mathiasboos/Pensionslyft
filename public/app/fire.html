@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
 <title>Pensionslyft</title>
-<meta name="description" content="Räkna ut när ditt sparande räcker för att leva på avkastningen. Fristående version av FIRE-kalkylatorn från pensionslyft.se." />
+<meta id="meta-desc" name="description" content="Räkna ut när ditt sparande räcker för att leva på avkastningen. Fristående version av FIRE-kalkylatorn från pensionslyft.se." />
 <style>
 :root {
   --bg: #fff; --fg: #0f2034; --primary: #0c2a49; --primary-fg: #fbf9f4; --muted: #f5f4f1; --muted-fg: #545f6c;
@@ -21,6 +21,10 @@ a { color: var(--primary); }
 .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
 header.top { border-bottom: 1px solid var(--border); }
 header.top .wrap { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-top: 14px; padding-bottom: 14px; }
+.lang-toggle { display: inline-flex; gap: 4px; background: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 3px; align-self: center; }
+.lang-btn { padding: 4px 12px; font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; color: var(--muted-fg); background: none; border: none; border-radius: 5px; cursor: pointer; }
+.lang-btn.active { background: var(--primary); color: var(--primary-fg); }
+.lang-btn:not(.active):hover { color: var(--fg); }
 .brand { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.02em; color: var(--primary); text-decoration: none; }
 .eyebrow { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-fg); }
 h1 { font-size: clamp(1.25rem, 6vw, 2.5rem); line-height: 1.1; letter-spacing: -0.022em; margin: 8px 0 8px; font-weight: 600; overflow-wrap: anywhere; hyphens: auto; }
@@ -229,13 +233,13 @@ footer {
 <header class="top">
   <div class="wrap">
     <a class="brand" href="https://pensionslyft.se/fire-kalkylator">Pensionslyft</a>
-    <span class="eyebrow">Fristående version</span>
+    <span class="lang-toggle" role="group" aria-label="Language / Språk"><button type="button" class="lang-btn" data-lang="sv">SV</button><button type="button" class="lang-btn" data-lang="en">EN</button></span>
   </div>
 </header>
 <main class="wrap">
-  <p class="eyebrow" style="margin-top: 32px">Pensionslyft · Kalkylatorer</p>
-  <h1>FIRE-kalkylator</h1>
-  <p class="intro">FIRE står för <em>Financial Independence, Retire Early</em>: att spara och investera tills avkastningen räcker att leva på. Ange din lön, hur stor del du sparar och vad du räknar med i avkastning, så ser du vid vilken ålder du når målet.</p>
+  <p class="eyebrow" id="eyebrow-main" style="margin-top: 32px">Pensionslyft · Kalkylatorer</p>
+  <h1 id="h1">FIRE-kalkylator</h1>
+  <p class="intro" id="intro">FIRE står för <em>Financial Independence, Retire Early</em>: att spara och investera tills avkastningen räcker att leva på. Ange din lön, hur stor del du sparar och vad du räknar med i avkastning, så ser du vid vilken ålder du når målet.</p>
   <div id="app" class="layout"><noscript>Kalkylatorn kräver JavaScript.</noscript></div>
   <section class="note" id="how" style="margin-bottom:40px"></section>
 </main>
@@ -244,7 +248,7 @@ footer {
 </footer>
 <script>
 (() => {
-  // ../../../../../../home/user/pensionslyft/src/lib/pension.ts
+  // pension.ts
   var FIRE_YEARS = 70;
   var ISK_TAX_FREE_AMOUNT = 3e5;
   function calculateFire(input) {
@@ -257,14 +261,14 @@ footer {
     const target = monthlySpending * 12 * input.fireMultiple;
     const rows2 = [];
     let opening = input.startCapital;
-    let fireYear2 = null;
+    let fireYear = null;
     for (let year = 1; year <= FIRE_YEARS; year++) {
       const beforeCosts = opening * yearFactor + monthlySavings * depositFactor;
       const tax = Math.max(beforeCosts - input.taxFreeAmount, 0) * input.yieldTax / 100;
       const fees = beforeCosts * input.annualFee / 100;
       const closing = beforeCosts - tax - fees;
       const gap = target - closing;
-      if (fireYear2 === null && gap <= 0) fireYear2 = year;
+      if (fireYear === null && gap <= 0) fireYear = year;
       rows2.push({
         year,
         age: input.currentAge + year,
@@ -290,8 +294,8 @@ footer {
     });
     return {
       rows: rows2,
-      fireYear: fireYear2,
-      fireAge: fireYear2 === null ? null : input.currentAge + fireYear2,
+      fireYear,
+      fireAge: fireYear === null ? null : input.currentAge + fireYear,
       target,
       monthlySavings,
       monthlySpending,
@@ -300,116 +304,149 @@ footer {
     };
   }
 
-  // ../../../../../../home/user/pensionslyft/src/lib/format.ts
-  var sek = new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK",
-    maximumFractionDigits: 0
-  });
-  var num = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 0 });
-  function formatSek(value) {
-    return sek.format(Math.round(value));
-  }
-  function formatPercent(value, digits) {
-    return `${new Intl.NumberFormat("sv-SE", {
-      minimumFractionDigits: digits,
-      maximumFractionDigits: digits
-    }).format(value)} %`;
-  }
-  var compact = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 1 });
-  function formatSekShort(value) {
-    if (Math.abs(value) >= 1e6) return `${compact.format(value / 1e6)} mkr`;
-    if (Math.abs(value) >= 1e3) return `${num.format(value / 1e3)} tkr`;
-    return `${num.format(value)} kr`;
-  }
-
   // fire.ts
+  var lang = "sv";
+  try {
+    if (localStorage.getItem("pension-lang") === "en") lang = "en";
+  } catch (e) {
+  }
+  var tr = (sv, en) => lang === "en" ? en : sv;
+  var loc = () => lang === "en" ? "en-GB" : "sv-SE";
+  var NB = "\xA0";
+  var num = { format: (v) => new Intl.NumberFormat(loc(), { maximumFractionDigits: 0 }).format(v) };
+  var formatSek = (v) => lang === "en" ? `SEK${NB}${num.format(Math.round(v))}` : `${num.format(Math.round(v))}${NB}kr`;
+  var formatPercent = (v, digits) => {
+    const n = new Intl.NumberFormat(loc(), { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v);
+    return lang === "en" ? `${n}%` : `${n} %`;
+  };
+  function formatSekShort(v) {
+    const compact = new Intl.NumberFormat(loc(), { maximumFractionDigits: 1 });
+    if (Math.abs(v) >= 1e6) return lang === "en" ? `SEK${NB}${compact.format(v / 1e6)}m` : `${compact.format(v / 1e6)} mkr`;
+    if (Math.abs(v) >= 1e3) return lang === "en" ? `SEK${NB}${num.format(v / 1e3)}k` : `${num.format(v / 1e3)} tkr`;
+    return formatSek(v);
+  }
   var state = { currentAge: 20, monthlySalary: 4e4, savingsRate: 50, fireMultiple: 25, startCapital: 0, annualReturn: 6.1, annualFee: 0.25, yieldTax: 1.05, taxFreeAmount: ISK_TAX_FREE_AMOUNT };
   var $ = (id) => document.getElementById(id);
   var esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-  var NB = "\xA0";
-  var SLIDERS = [
-    { key: "currentAge", label: "Din \xE5lder", min: 15, max: 60, step: 1, show: (v) => `${v} \xE5r` },
-    { key: "monthlySalary", label: "M\xE5nadsl\xF6n efter skatt", min: 5e3, max: 2e5, step: 1e3, show: formatSek, after: "spend" },
-    { key: "savingsRate", label: "Sparkvot", min: 5, max: 95, step: 1, show: (v) => formatPercent(v, 0) },
-    { key: "fireMultiple", label: "FIRE-multipel", min: 10, max: 50, step: 1, show: (v) => `${v}${NB}\xD7`, after: "mult" },
-    { key: "startCapital", label: "Nuvarande sparande", min: 0, max: 2e6, step: 1e4, show: formatSek, after: "Det du redan har sparat och investerat." },
-    { key: "annualReturn", label: "Avkastning per \xE5r", min: 1, max: 15, step: 0.1, show: (v) => formatPercent(v, 1) },
-    { key: "annualFee", label: "Avgifter per \xE5r", min: 0, max: 2, step: 0.05, show: (v) => formatPercent(v, 2) },
-    { key: "yieldTax", label: "Skatt p\xE5 ISK/KF per \xE5r", min: 0, max: 3, step: 0.05, show: (v) => formatPercent(v, 2), after: "Schablonskatten p\xE5 investeringssparkonto och kapitalf\xF6rs\xE4kring." },
-    { key: "taxFreeAmount", label: "Skattefritt belopp", min: 0, max: 5e5, step: 1e4, show: formatSek, after: `Fr\xE5n 2026 \xE4r de f\xF6rsta ${formatSek(ISK_TAX_FREE_AMOUNT)} skattefria, totalt f\xF6r ISK, kapitalf\xF6rs\xE4kring och PEPP-konto. V\xE4lj 0 kr f\xF6r att r\xE4kna utan.` }
+  var sliders = () => [
+    { key: "currentAge", label: tr("Din \xE5lder", "Your age"), min: 15, max: 60, step: 1, show: (v) => `${v} ${tr("\xE5r", "years")}` },
+    { key: "monthlySalary", label: tr("M\xE5nadsl\xF6n efter skatt", "Monthly salary after tax"), min: 5e3, max: 2e5, step: 1e3, show: formatSek, after: "spend" },
+    { key: "savingsRate", label: tr("Sparkvot", "Savings rate"), min: 5, max: 95, step: 1, show: (v) => formatPercent(v, 0) },
+    { key: "fireMultiple", label: tr("FIRE-multipel", "FIRE multiple"), min: 10, max: 50, step: 1, show: (v) => `${v}${NB}\xD7`, after: "mult" },
+    { key: "startCapital", label: tr("Nuvarande sparande", "Current savings"), min: 0, max: 2e6, step: 1e4, show: formatSek, after: tr("Det du redan har sparat och investerat.", "What you have already saved and invested.") },
+    { key: "annualReturn", label: tr("Avkastning per \xE5r", "Return per year"), min: 1, max: 15, step: 0.1, show: (v) => formatPercent(v, 1) },
+    { key: "annualFee", label: tr("Avgifter per \xE5r", "Fees per year"), min: 0, max: 2, step: 0.05, show: (v) => formatPercent(v, 2) },
+    { key: "yieldTax", label: tr("Skatt p\xE5 ISK/KF per \xE5r", "ISK/KF tax per year"), min: 0, max: 3, step: 0.05, show: (v) => formatPercent(v, 2), after: tr("Schablonskatten p\xE5 investeringssparkonto och kapitalf\xF6rs\xE4kring.", "The standard tax on an investment savings account (ISK) and capital insurance (KF).") },
+    { key: "taxFreeAmount", label: tr("Skattefritt belopp", "Tax-free amount"), min: 0, max: 5e5, step: 1e4, show: formatSek, after: tr(`Fr\xE5n 2026 \xE4r de f\xF6rsta ${formatSek(ISK_TAX_FREE_AMOUNT)} skattefria, totalt f\xF6r ISK, kapitalf\xF6rs\xE4kring och PEPP-konto. V\xE4lj 0 kr f\xF6r att r\xE4kna utan.`, `From 2026 the first ${formatSek(ISK_TAX_FREE_AMOUNT)} are tax-free, in total for ISK, capital insurance and PEPP accounts. Choose SEK 0 to calculate without it.`) }
   ];
   var sliderHtml = (s) => `<div class="field"><div class="sliderhead"><label class="lab" for="s-${s.key}">${s.label}</label><output id="o-${s.key}" for="s-${s.key}"></output></div>
   <input id="s-${s.key}" data-key="${s.key}" type="range" min="${s.min}" max="${s.max}" step="${s.step}" />${s.after ? `<p class="hint" id="h-${s.key}">${s.after.length > 8 ? esc(s.after) : ""}</p>` : ""}</div>`;
-  $("app").innerHTML = `
-  <div class="tabs hide-d" role="tablist" aria-label="Visa" style="grid-column:1/-1;margin:0">
-    <button type="button" role="tab" data-tab="inputs" aria-selected="true">Inst\xE4llningar</button>
-    <button type="button" role="tab" data-tab="results" aria-selected="false">Resultat</button>
-    <button type="button" role="tab" data-tab="table" aria-selected="false">Tabell</button>
+  var cols = () => [
+    { label: tr("\xC5r", "Year"), v: (r) => r.year, plain: true },
+    { label: tr("\xC5lder", "Age"), v: (r) => r.age, plain: true },
+    { label: tr("M\xE5nadsl\xF6n", "Monthly salary"), v: (r) => r.monthlySalary },
+    { label: tr("M\xE5nadssparande", "Monthly saving"), v: (r) => r.monthlySavings },
+    { label: tr("\xC5rssparande", "Yearly saving"), v: (r) => r.yearlySavings },
+    { label: tr("Portf\xF6lj vid \xE5rets start", "Portfolio at start of year"), v: (r) => r.opening },
+    { label: tr("Avkastning", "Return"), v: (r) => r.growth },
+    { label: tr("Skatt", "Tax"), v: (r) => r.tax },
+    { label: tr("Avgifter", "Fees"), v: (r) => r.fees },
+    { label: tr("Portf\xF6lj vid \xE5rets slut", "Portfolio at end of year"), v: (r) => r.closing },
+    { label: tr("FIRE-m\xE5l", "FIRE target"), v: (r) => r.target },
+    { label: tr("Kvar till m\xE5let", "Left to target"), v: (r) => r.gap }
+  ];
+  var rows = [];
+  var last;
+  function buildUI() {
+    const wasOpen = document.getElementById("table-card") ? $("table-card").open : false;
+    const sl = sliders();
+    $("app").innerHTML = `
+  <div class="tabs" role="tablist" aria-label="${tr("Visa", "Show")}" style="grid-column:1/-1;margin:0">
+    <button type="button" role="tab" data-tab="inputs" aria-selected="true">${tr("Inst\xE4llningar", "Settings")}</button>
+    <button type="button" role="tab" data-tab="results" aria-selected="false">${tr("Resultat", "Results")}</button>
+    <button type="button" role="tab" data-tab="table" aria-selected="false">${tr("Tabell", "Table")}</button>
   </div>
   <div class="inputsCol" id="col-in" style="display:grid;gap:24px;align-content:start">
-    <form class="card inputs" onsubmit="return false" aria-label="Indata">
-      ${SLIDERS.slice(0, 5).map(sliderHtml).join("")}
+    <form class="card inputs" onsubmit="return false" aria-label="${tr("Indata", "Inputs")}">
+      ${sl.slice(0, 5).map(sliderHtml).join("")}
       <div style="height:1px;background:var(--border)"></div>
-      ${SLIDERS.slice(5).map(sliderHtml).join("")}
+      ${sl.slice(5).map(sliderHtml).join("")}
     </form>
-    <div class="card"><h2 class="sm">Avkastning efter kostnader</h2><dl class="dl" id="net"></dl><p class="hint" id="net-note"></p></div>
+    <div class="card"><h2 class="sm">${tr("Avkastning efter kostnader", "Return after costs")}</h2><dl class="dl" id="net"></dl><p class="hint" id="net-note"></p></div>
   </div>
   <div class="col" id="col-out">
     <div class="stats three" id="stats" aria-live="polite"></div>
-    <section class="card"><h2 class="sm" style="font-size:1.25rem">V\xE4gen till m\xE5let</h2><ol class="ms" id="ms"></ol></section>
+    <section class="card"><h2 class="sm" style="font-size:1.25rem">${tr("V\xE4gen till m\xE5let", "The road to the target")}</h2><ol class="ms" id="ms"></ol></section>
     <section class="card chart">
-      <div class="head"><h2>Portf\xF6ljens utveckling</h2>
-        <ul class="legend"><li><i style="background:rgba(12,42,73,.7)"></i>Portf\xF6lj</li><li><i style="background:#a18142"></i>FIRE-m\xE5l</li></ul></div>
-      <div class="plot" id="plot"><svg id="svg" viewBox="0 0 800 340" role="img" aria-label="Diagram \xF6ver portf\xF6ljens utveckling, se tabellen nedan"></svg><div class="tooltip" id="tip"></div></div>
+      <div class="head"><h2>${tr("Portf\xF6ljens utveckling", "Portfolio growth")}</h2>
+        <ul class="legend"><li><i style="background:rgba(12,42,73,.7)"></i>${tr("Portf\xF6lj", "Portfolio")}</li><li><i style="background:#a18142"></i>${tr("FIRE-m\xE5l", "FIRE target")}</li></ul></div>
+      <div class="plot" id="plot"><svg id="svg" viewBox="0 0 800 340" role="img" aria-label="${tr("Diagram \xF6ver portf\xF6ljens utveckling, se tabellen nedan", "Chart of the portfolio growth, see the table below")}"></svg><div class="tooltip" id="tip"></div></div>
     </section>
-    <details class="card table" id="table-card">
-      <summary><h2 id="table-title"></h2><span><button type="button" class="btn" id="csv">Ladda ner CSV</button></span></summary>
+    <details class="card table" id="table-card"${wasOpen ? " open" : ""}>
+      <summary><h2 id="table-title"></h2><span><button type="button" class="btn" id="csv">${tr("Ladda ner CSV", "Download CSV")}</button> <button type="button" class="btn" id="xls">${tr("Ladda ner Excel", "Download Excel")}</button></span></summary>
       <div class="scroll"><table><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div>
     </details>
   </div>`;
-  $("how").innerHTML = `<h2>S\xE5 r\xE4knar kalkylatorn</h2><ul>
+    bind();
+    syncSliders();
+    render();
+    shown = $("plot").clientWidth;
+    resizeObs == null ? void 0 : resizeObs.disconnect();
+    resizeObs = new ResizeObserver(() => {
+      const w = $("plot").clientWidth;
+      if (w !== shown && last) {
+        shown = w;
+        draw(last);
+      }
+    });
+    resizeObs.observe($("plot"));
+  }
+  function applyStatic() {
+    document.documentElement.lang = lang;
+    document.title = tr("FIRE-kalkylator \u2013 frist\xE5ende version", "FIRE calculator \u2013 standalone version");
+    $("meta-desc").setAttribute("content", tr("R\xE4kna ut n\xE4r ditt sparande r\xE4cker f\xF6r att leva p\xE5 avkastningen. Frist\xE5ende version av FIRE-kalkylatorn fr\xE5n pensionslyft.se.", "Work out when your savings are enough to live on the return. Standalone version of the FIRE calculator from pensionslyft.se."));
+    $("eyebrow-main").textContent = tr("Pensionslyft \xB7 Kalkylatorer", "Pensionslyft \xB7 Calculators");
+    $("h1").textContent = tr("FIRE-kalkylator", "FIRE calculator");
+    $("intro").innerHTML = tr(
+      "FIRE st\xE5r f\xF6r <em>Financial Independence, Retire Early</em>: att spara och investera tills avkastningen r\xE4cker att leva p\xE5. Ange din l\xF6n, hur stor del du sparar och vad du r\xE4knar med i avkastning, s\xE5 ser du vid vilken \xE5lder du n\xE5r m\xE5let.",
+      "FIRE stands for <em>Financial Independence, Retire Early</em>: saving and investing until the return is enough to live on. Enter your salary, how much of it you save and the return you expect, and you see at what age you reach the target."
+    );
+    $("how").innerHTML = lang === "en" ? `<h2>How the calculator works</h2><ul>
+  <li>The target is your yearly spending times the FIRE multiple. With 25${NB}\xD7 you can take out 4${NB}% of the portfolio a year, the so-called 4${NB}% rule.</li>
+  <li>You save the same amount every month. Tax and fees are taken on the value of the portfolio at the end of every year.</li>
+  <li>The tax is only paid on what is above the tax-free amount. The Swedish Tax Agency actually calculates on an average of the value during the year plus the deposits, so the real tax can differ somewhat.</li>
+  <li>Salary, spending and target are in today's kronor, without inflation. So enter the return after inflation.</li></ul>
+  <p style="margin:12px 0 0;color:var(--muted-fg)">The result is an estimate, not financial advice. Return is never guaranteed.</p>` : `<h2>S\xE5 r\xE4knar kalkylatorn</h2><ul>
   <li>M\xE5let \xE4r dina \xE5rsutgifter g\xE5nger FIRE-multipeln. Med 25${NB}\xD7 kan du ta ut 4${NB}% av portf\xF6ljen per \xE5r, den s\xE5 kallade 4${NB}%-regeln.</li>
   <li>Du sparar samma belopp varje m\xE5nad. Skatt och avgifter dras p\xE5 portf\xF6ljens v\xE4rde i slutet av varje \xE5r.</li>
   <li>Skatten tas bara ut p\xE5 det som \xF6verstiger det skattefria beloppet. Skatteverket r\xE4knar egentligen p\xE5 ett snitt av v\xE4rdet under \xE5ret plus ins\xE4ttningarna, s\xE5 den verkliga skatten kan skilja sig n\xE5got.</li>
   <li>L\xF6n, utgifter och m\xE5l r\xE4knas i dagens kronor, utan inflation. Ange d\xE4rf\xF6r g\xE4rna avkastningen efter inflation.</li></ul>
   <p style="margin:12px 0 0;color:var(--muted-fg)">Resultatet \xE4r en uppskattning, inte finansiell r\xE5dgivning. Avkastning \xE4r aldrig garanterad.</p>`;
-  $("foot").innerHTML = `Ber\xE4kningen \xE4r en uppskattning och inte individuell r\xE5dgivning. Avkastningen \xE4r inte garanterad. Den h\xE4r filen \xE4r en frist\xE5ende kopia av <a href="https://pensionslyft.se/fire-kalkylator">FIRE-kalkylatorn p\xE5 pensionslyft.se</a>, d\xE4r du alltid hittar den senaste versionen.`;
-  var COLS = [
-    { label: "\xC5r", v: (r) => r.year, plain: true },
-    { label: "\xC5lder", v: (r) => r.age, plain: true },
-    { label: "M\xE5nadsl\xF6n", v: (r) => r.monthlySalary },
-    { label: "M\xE5nadssparande", v: (r) => r.monthlySavings },
-    { label: "\xC5rssparande", v: (r) => r.yearlySavings },
-    { label: "Portf\xF6lj vid \xE5rets start", v: (r) => r.opening },
-    { label: "Avkastning", v: (r) => r.growth },
-    { label: "Skatt", v: (r) => r.tax },
-    { label: "Avgifter", v: (r) => r.fees },
-    { label: "Portf\xF6lj vid \xE5rets slut", v: (r) => r.closing },
-    { label: "FIRE-m\xE5l", v: (r) => r.target },
-    { label: "Kvar till m\xE5let", v: (r) => r.gap }
-  ];
-  var rows = [];
-  var fireYear = null;
-  var last;
+    $("foot").innerHTML = tr(
+      'Ber\xE4kningen \xE4r en uppskattning och inte individuell r\xE5dgivning. Avkastningen \xE4r inte garanterad. Den h\xE4r filen \xE4r en frist\xE5ende kopia av <a href="https://pensionslyft.se/fire-kalkylator">FIRE-kalkylatorn p\xE5 pensionslyft.se</a>, d\xE4r du alltid hittar den senaste versionen.',
+      'The calculation is an estimate and not individual advice. The return is not guaranteed. This file is a standalone copy of the <a href="https://pensionslyft.se/en/calculators">FIRE calculator on pensionslyft.se</a>, where you always find the latest version.'
+    );
+    document.querySelectorAll(".lang-btn").forEach((b) => b.classList.toggle("active", b.dataset.lang === lang));
+  }
   function render() {
     const s = state;
     const r = calculateFire(s);
     rows = r.rows;
-    fireYear = r.fireYear;
+    const years = tr("\xE5r", "years");
     $("o-monthlySalary").textContent = formatSek(s.monthlySalary);
-    $("h-monthlySalary").textContent = `Du sparar ${formatSek(r.monthlySavings)} och lever p\xE5 ${formatSek(r.monthlySpending)} i m\xE5naden.`;
-    $("h-fireMultiple").textContent = `M\xE5let \xE4r ${s.fireMultiple} g\xE5nger dina \xE5rsutgifter. 25${NB}\xD7 motsvarar 4${NB}%-regeln.`;
-    $("net").innerHTML = `<div><dt>Avkastning</dt><dd>${formatPercent(s.annualReturn, 2)}</dd></div><div><dt>\u2212 Skatt</dt><dd>${formatPercent(s.yieldTax, 2)}</dd></div><div><dt>\u2212 Avgifter</dt><dd>${formatPercent(s.annualFee, 2)}</dd></div><div class="tot"><dt>= Netto, ungef\xE4r</dt><dd>${formatPercent(r.netReturn, 2)}</dd></div>`;
-    $("net-note").textContent = s.taxFreeAmount > 0 ? `Skatten tas bara ut p\xE5 det som \xF6verstiger ${formatSek(s.taxFreeAmount)}, s\xE5 den blir l\xE4gre \xE4n s\xE5. Mest m\xE4rks det i b\xF6rjan, n\xE4r portf\xF6ljen \xE4r liten.` : "";
+    $("h-monthlySalary").textContent = tr(`Du sparar ${formatSek(r.monthlySavings)} och lever p\xE5 ${formatSek(r.monthlySpending)} i m\xE5naden.`, `You save ${formatSek(r.monthlySavings)} and live on ${formatSek(r.monthlySpending)} a month.`);
+    $("h-fireMultiple").textContent = tr(`M\xE5let \xE4r ${s.fireMultiple} g\xE5nger dina \xE5rsutgifter. 25${NB}\xD7 motsvarar 4${NB}%-regeln.`, `The target is ${s.fireMultiple} times your yearly spending. 25${NB}\xD7 is the 4${NB}% rule.`);
+    $("net").innerHTML = `<div><dt>${tr("Avkastning", "Return")}</dt><dd>${formatPercent(s.annualReturn, 2)}</dd></div><div><dt>\u2212 ${tr("Skatt", "Tax")}</dt><dd>${formatPercent(s.yieldTax, 2)}</dd></div><div><dt>\u2212 ${tr("Avgifter", "Fees")}</dt><dd>${formatPercent(s.annualFee, 2)}</dd></div><div class="tot"><dt>= ${tr("Netto, ungef\xE4r", "Net, roughly")}</dt><dd>${formatPercent(r.netReturn, 2)}</dd></div>`;
+    $("net-note").textContent = s.taxFreeAmount > 0 ? tr(`Skatten tas bara ut p\xE5 det som \xF6verstiger ${formatSek(s.taxFreeAmount)}, s\xE5 den blir l\xE4gre \xE4n s\xE5. Mest m\xE4rks det i b\xF6rjan, n\xE4r portf\xF6ljen \xE4r liten.`, `Tax is only paid on what is above ${formatSek(s.taxFreeAmount)}, so it is lower than that. It shows most at the start, when the portfolio is small.`) : "";
     $("stats").innerHTML = `
-    <div class="stat hl"><div class="eyebrow">FIRE-\xE5lder</div>${r.fireAge === null ? `<div class="v">N\xE5s inte inom ${FIRE_YEARS} \xE5r</div>` : `<div class="big">${r.fireAge} \xE5r</div><div class="n">om ${r.fireYear} \xE5r</div>`}</div>
-    <div class="stat"><div class="eyebrow">FIRE-m\xE5l</div><div class="v">${formatSek(r.target)}</div><div class="n">${formatSek(r.monthlySpending)}/m\xE5n \xD7 12 \xD7 ${s.fireMultiple}</div></div>
-    <div class="stat"><div class="eyebrow">M\xE5nadssparande</div><div class="v">${formatSek(r.monthlySavings)}</div><div class="n">${formatSek(r.monthlySavings * 12)}/\xE5r</div></div>`;
-    $("ms").innerHTML = r.milestones.map((m) => `<li class="${m.age === null ? "" : "on"}"><b>${m.percent}${NB}%</b><span>${m.age === null ? "\u2013" : `vid ${m.age} \xE5r`}</span></li>`).join("");
-    $("table-title").textContent = `\xC5r f\xF6r \xE5r (${rows.length} \xE5r)`;
-    $("thead").innerHTML = COLS.map((c) => `<th scope="col">${esc(c.label)}</th>`).join("");
-    $("tbody").innerHTML = rows.map((row) => `<tr class="${row.gap <= 0 ? "reached" : ""} ${row.year === r.fireYear ? "fire" : ""}">${COLS.map((c, i) => `<td>${c.plain ? c.v(row) : num.format(Math.round(c.v(row)))}${i === 1 && row.year === r.fireYear ? ' <span role="img" aria-label="FIRE-\xE5ret">\u{1F525}</span>' : ""}</td>`).join("")}</tr>`).join("");
+    <div class="stat hl"><div class="eyebrow">${tr("FIRE-\xE5lder", "FIRE age")}</div>${r.fireAge === null ? `<div class="v">${tr(`N\xE5s inte inom ${FIRE_YEARS} \xE5r`, `Not reached within ${FIRE_YEARS} years`)}</div>` : `<div class="big">${r.fireAge} ${years}</div><div class="n">${tr(`om ${r.fireYear} \xE5r`, `in ${r.fireYear} years`)}</div>`}</div>
+    <div class="stat"><div class="eyebrow">${tr("FIRE-m\xE5l", "FIRE target")}</div><div class="v">${formatSek(r.target)}</div><div class="n">${formatSek(r.monthlySpending)}${tr("/m\xE5n", "/month")} \xD7 12 \xD7 ${s.fireMultiple}</div></div>
+    <div class="stat"><div class="eyebrow">${tr("M\xE5nadssparande", "Monthly saving")}</div><div class="v">${formatSek(r.monthlySavings)}</div><div class="n">${formatSek(r.monthlySavings * 12)}${tr("/\xE5r", "/year")}</div></div>`;
+    $("ms").innerHTML = r.milestones.map((m) => `<li class="${m.age === null ? "" : "on"}"><b>${m.percent}${NB}%</b><span>${m.age === null ? "\u2013" : tr(`vid ${m.age} \xE5r`, `at ${m.age}`)}</span></li>`).join("");
+    const c = cols();
+    $("table-title").textContent = tr(`\xC5r f\xF6r \xE5r (${rows.length} \xE5r)`, `Year by year (${rows.length} years)`);
+    $("thead").innerHTML = c.map((x) => `<th scope="col">${esc(x.label)}</th>`).join("");
+    $("tbody").innerHTML = rows.map((row) => `<tr class="${row.gap <= 0 ? "reached" : ""} ${row.year === r.fireYear ? "fire" : ""}">${c.map((x, i) => `<td>${x.plain ? x.v(row) : num.format(Math.round(x.v(row)))}${i === 1 && row.year === r.fireYear ? ` <span role="img" aria-label="${tr("FIRE-\xE5ret", "The FIRE year")}">\u{1F525}</span>` : ""}</td>`).join("")}</tr>`).join("");
     const lastAge = r.fireAge === null ? 90 : Math.max(r.fireAge + 5, Math.min(r.fireAge + 15, 90));
     const pts = [{ age: s.currentAge, closing: s.startCapital, target: r.target }, ...rows.filter((x) => x.age <= lastAge).map((x) => ({ age: x.age, closing: x.closing, target: x.target }))];
     last = { pts, fireAge: r.fireAge };
@@ -423,7 +460,7 @@ footer {
   }
   function draw(p) {
     const W = Math.max(300, Math.min(800, $("plot").clientWidth || 800));
-    const H = W < 520 ? 290 : 340, L = 70, R = 12, T = 22, B = 28;
+    const H = W < 520 ? 290 : 340, L = lang === "en" ? 84 : 70, R = 12, T = 22, B = 28;
     $("svg").setAttribute("viewBox", `0 0 ${W} ${H}`);
     const n = p.pts.length;
     const hi = Math.max(...p.pts.map((q) => Math.max(q.closing, q.target)), 1);
@@ -440,7 +477,7 @@ footer {
     out += `<path d="${line((q) => q.target)}" fill="none" stroke="#a18142" stroke-width="2" stroke-dasharray="6 4"/>`;
     if (p.fireAge !== null) {
       const i = p.pts.findIndex((q) => q.age === p.fireAge);
-      if (i >= 0) out += `<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}" stroke="var(--fg)" stroke-dasharray="3 3"/><text x="${x(i)}" y="${T - 6}" text-anchor="middle" style="fill:var(--fg)">FIRE vid ${p.fireAge}</text>`;
+      if (i >= 0) out += `<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}" stroke="var(--fg)" stroke-dasharray="3 3"/><text x="${x(i)}" y="${T - 6}" text-anchor="middle" style="fill:var(--fg)">${tr(`FIRE vid ${p.fireAge}`, `FIRE at ${p.fireAge}`)}</text>`;
     }
     out += `<line id="cursor" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="var(--muted-fg)" stroke-opacity="0.6" visibility="hidden"/>`;
     $("svg").innerHTML = out;
@@ -454,9 +491,9 @@ footer {
       cursor.setAttribute("x2", String(x(i)));
       cursor.setAttribute("visibility", "visible");
       const q = p.pts[i];
-      tip.innerHTML = `<b>Vid ${q.age} \xE5r</b>
-      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#0c2a49;margin-right:6px"></i>Portf\xF6lj</span><span>${esc(formatSek(q.closing))}</span></div>
-      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#a18142;margin-right:6px"></i>FIRE-m\xE5l</span><span>${esc(formatSek(q.target))}</span></div>`;
+      tip.innerHTML = `<b>${tr(`Vid ${q.age} \xE5r`, `At age ${q.age}`)}</b>
+      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#0c2a49;margin-right:6px"></i>${tr("Portf\xF6lj", "Portfolio")}</span><span>${esc(formatSek(q.closing))}</span></div>
+      <div class="t"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#a18142;margin-right:6px"></i>${tr("FIRE-m\xE5l", "FIRE target")}</span><span>${esc(formatSek(q.target))}</span></div>`;
       tip.style.display = "block";
       const px = x(i) / W * box.width;
       tip.style.left = `${px > box.width / 2 ? px - tip.offsetWidth - 12 : px + 12}px`;
@@ -471,52 +508,67 @@ footer {
     svg.onpointerleave = hide;
   }
   function syncSliders() {
-    for (const sl of SLIDERS) {
-      $(`s-${sl.key}`).value = String(state[sl.key]);
-      $(`o-${sl.key}`).textContent = sl.show(state[sl.key]);
+    for (const s of sliders()) {
+      $(`s-${s.key}`).value = String(state[s.key]);
+      $(`o-${s.key}`).textContent = s.show(state[s.key]);
     }
   }
-  document.querySelectorAll("input[type=range]").forEach((input) => {
-    input.addEventListener("input", () => {
-      state[input.dataset.key] = parseFloat(input.value);
-      syncSliders();
-      render();
-    });
-  });
+  var currentTab = "inputs";
   var setTab = (tab) => {
+    currentTab = tab;
     document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
     $("col-in").classList.toggle("hide-m", tab !== "inputs");
     $("col-out").classList.toggle("hide-m", tab === "inputs");
-    $("table-card").open = tab === "table";
+    $("table-card").open = tab === "table" ? true : $("table-card").open;
     if (tab === "table") setTimeout(() => $("table-card").scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
-  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
-  setTab("inputs");
-  if (window.matchMedia("(min-width: 621px)").matches) {
-    $("col-in").classList.remove("hide-m");
-    $("col-out").classList.remove("hide-m");
-  }
-  $("csv").addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const csv = [COLS.map((c) => c.label).join(";"), ...rows.map((r) => COLS.map((c) => Math.round(c.v(r))).join(";"))].join("\r\n");
-    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
+  function download(blob, name) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "fire-kalkyl.csv";
+    a.download = name;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1e3);
-  });
-  syncSliders();
-  render();
-  var shown = $("plot").clientWidth;
-  new ResizeObserver(() => {
-    const w = $("plot").clientWidth;
-    if (w !== shown && last) {
-      shown = w;
-      draw(last);
+  }
+  function bind() {
+    document.querySelectorAll("input[type=range]").forEach((input) => {
+      input.addEventListener("input", () => {
+        state[input.dataset.key] = parseFloat(input.value);
+        syncSliders();
+        render();
+      });
+    });
+    document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+    setTab(currentTab);
+    $("csv").addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const c = cols();
+      const csv = [c.map((x) => x.label).join(";"), ...rows.map((r) => c.map((x) => Math.round(x.v(r))).join(";"))].join("\r\n");
+      download(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }), tr("fire-kalkyl.csv", "fire-calculator.csv"));
+    });
+    $("xls").addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const c = cols();
+      const html = '<html><head><meta charset="utf-8"></head><body><table><tr>' + c.map((x) => `<th>${esc(x.label)}</th>`).join("") + "</tr>" + rows.map((r) => "<tr>" + c.map((x) => `<td>${Math.round(x.v(r))}</td>`).join("") + "</tr>").join("") + "</table></body></html>";
+      download(new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" }), tr("fire-kalkyl.xls", "fire-calculator.xls"));
+    });
+  }
+  function setLang(l) {
+    lang = l;
+    try {
+      localStorage.setItem("pension-lang", l);
+    } catch (e) {
     }
-  }).observe($("plot"));
+    applyStatic();
+    buildUI();
+  }
+  document.querySelectorAll(".lang-btn").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
+  var shown = 0;
+  var resizeObs = null;
+  applyStatic();
+  buildUI();
 })();
 
 </script>

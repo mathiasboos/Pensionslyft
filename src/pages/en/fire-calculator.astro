@@ -1,0 +1,22 @@
+---
+import AppFrame from "@/components/AppFrame.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// The Swedish page is /fire-kalkylator. The calculator is the same file, started in English.
+---
+
+<BaseLayout
+  title="FIRE calculator – when can you be financially independent?"
+  description="Work out when your savings are enough to live on the return. The FIRE calculator takes savings rate, return, fees and ISK tax into account."
+  ogTitle="FIRE calculator – Pensionslyft"
+  ogDescription="See at what age you can become financially independent."
+>
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">FIRE calculator</h1>
+    <AppFrame slug="fire" title="FIRE calculator" />
+    <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
+      The calculation is an estimate and not individual advice. The return is not guaranteed. Amounts are in Swedish
+      kronor (kr).
+    </p>
+  </div>
+</BaseLayout>
