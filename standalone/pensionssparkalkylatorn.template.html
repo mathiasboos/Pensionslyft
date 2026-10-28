@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Pensionssparkalkylatorn – fristående version</title>
+<meta name="description" content="Räkna ut ditt pensionskapital och vad du kan ta ut per månad. Fristående version av Pensionssparkalkylatorn från pensionslyft.se." />
+<style>
+:root {
+  --bg: #fff; --fg: #0f2034; --primary: #0c2a49; --primary-fg: #fbf9f4; --muted: #f5f4f1; --muted-fg: #545f6c;
+  --border: #e7e5e0; --input: #d9d6cf; --highlight: #f0c75e; --secondary: #ece0ca;
+  --c1: #0c2a49; --c2: #a18142; --c4: #5fb7ae; --ring: #22507b;
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "IBM Plex Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { font-family: var(--font); -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); line-height: 1.5; }
+a { color: var(--primary); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+header.top { border-bottom: 1px solid var(--border); }
+header.top .wrap { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-top: 14px; padding-bottom: 14px; }
+.brand { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.02em; color: var(--primary); text-decoration: none; }
+.eyebrow { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-fg); }
+h1 { font-size: clamp(1.25rem, 6vw, 2.5rem); line-height: 1.1; letter-spacing: -0.022em; margin: 8px 0 8px; font-weight: 600; overflow-wrap: anywhere; hyphens: auto; }
+.intro { max-width: 46rem; color: var(--muted-fg); margin: 0 0 24px; }
+.layout { display: grid; gap: 24px; grid-template-columns: 1fr; padding-bottom: 40px; }
+@media (min-width: 1024px) { .layout { grid-template-columns: 380px minmax(0, 1fr); gap: 32px; } }
+.card { border: 1px solid var(--border); border-radius: 12px; background: #fff; padding: 24px; }
+.inputs { align-self: start; display: grid; gap: 24px; }
+.field label, .field .lab { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 6px; }
+.row { display: flex; align-items: center; gap: 8px; }
+.num { position: relative; flex: 1; }
+.num input { width: 100%; height: 40px; border: 1px solid var(--input); border-radius: 8px; padding: 0 40px 0 12px; font: inherit; font-variant-numeric: tabular-nums; background: #fff; color: inherit; }
+.num span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted-fg); font-size: 0.875rem; pointer-events: none; }
+button.step { flex: none; width: 36px; height: 36px; border: 1px solid var(--input); border-radius: 6px; background: #fff; color: var(--primary); font-size: 1.125rem; line-height: 1; cursor: pointer; touch-action: manipulation; }
+button.step:hover { background: var(--primary); color: #fff; }
+input:focus-visible, button:focus-visible, summary:focus-visible, .tip:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.sliderhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.sliderhead .lab { margin: 0; font-size: 0.875rem; font-weight: 500; }
+.sliderhead output { font-variant-numeric: tabular-nums; font-size: 0.875rem; font-weight: 600; }
+input[type=range] { width: 100%; accent-color: var(--primary); height: 28px; margin: 0; }
+.tip { position: relative; cursor: help; border-bottom: 1px dotted var(--muted-fg); }
+.tip .pop { display: none; position: absolute; z-index: 5; left: 0; top: calc(100% + 6px); width: min(20rem, 80vw); background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 12px 28px -12px rgba(15, 32, 52, 0.35); padding: 10px 12px; font-size: 0.75rem; font-weight: 400; color: var(--fg); line-height: 1.45; }
+.tip:hover .pop, .tip:focus .pop, .tip.open .pop { display: block; }
+.stats { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .stats { grid-template-columns: 1fr 1fr; } .stats .wide { grid-column: span 2; } }
+.stat { border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; background: #fff; }
+.stat.hl { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+.stat .eyebrow { color: inherit; opacity: 0.75; }
+.stat .v { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.022em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+.stat .n { font-size: 0.75rem; opacity: 0.75; }
+.col { display: grid; gap: 24px; min-width: 0; align-content: start; }
+.chart h2, .table h2 { font-size: 1.25rem; margin: 0; letter-spacing: -0.022em; font-weight: 600; }
+.chart .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; padding: 0; list-style: none; font-size: 0.75rem; color: var(--muted-fg); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.sub { font-size: 0.75rem; color: var(--muted-fg); margin: 4px 0 0; }
+.plot { position: relative; margin-top: 12px; }
+.plot svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.plot text { font-size: 11px; fill: var(--muted-fg); font-family: var(--font); }
+.tooltip { position: absolute; z-index: 3; pointer-events: none; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 0.75rem; box-shadow: 0 12px 28px -12px rgba(15, 32, 52, 0.35); white-space: nowrap; display: none; }
+.tooltip b { display: block; margin-bottom: 2px; }
+.tooltip .t { display: flex; justify-content: space-between; gap: 16px; font-variant-numeric: tabular-nums; }
+details.table { padding: 0; }
+details.table > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 24px; }
+details.table > summary::-webkit-details-marker { display: none; }
+details.table > summary h2::before { content: "▸"; display: inline-block; margin-right: 8px; transition: transform 0.15s; }
+details.table[open] > summary h2::before { transform: rotate(90deg); }
+.btn { height: 32px; border: 1px solid var(--input); border-radius: 6px; background: #fff; color: var(--fg); font: inherit; font-size: 0.8125rem; padding: 0 12px; cursor: pointer; }
+.btn:hover { background: var(--muted); }
+.scroll { max-height: 24rem; overflow: auto; border-top: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+thead th { position: sticky; top: 0; background: var(--muted); font-weight: 500; padding: 8px 12px; white-space: nowrap; }
+td { padding: 6px 12px; border-top: 1px solid var(--border); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+.note { border: 1px solid var(--border); border-radius: 12px; background: rgba(236, 224, 202, 0.35); padding: 24px; font-size: 0.875rem; }
+.note p { margin: 0 0 12px; }
+.note p:last-child { margin: 0; }
+footer { border-top: 1px solid var(--border); background: var(--muted); }
+footer .wrap { padding-top: 20px; padding-bottom: 24px; font-size: 0.8125rem; color: var(--muted-fg); }
+@media print { header.top .brand + .eyebrow, button, .tooltip { display: none; } details.table { display: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="https://pensionslyft.se/pensionskalkylator">Pensionslyft</a>
+    <span class="eyebrow">Fristående version</span>
+  </div>
+</header>
+<main class="wrap">
+  <p class="eyebrow" style="margin-top: 32px">Pensionslyft · Kalkylatorer</p>
+  <h1>Pensionssparkalkylatorn</h1>
+  <p class="intro">Räkna ut hur mycket pensionskapital du kan ha när du går i pension och hur mycket du kan ta ut varje månad. Allt räknas i din webbläsare, och inget skickas någonstans.</p>
+  <div id="app" class="layout"><noscript>Kalkylatorn kräver JavaScript.</noscript></div>
+</main>
+<footer>
+  <div class="wrap">
+    Beräkningen är en uppskattning före skatt och inte individuell rådgivning. Den här filen är en fristående kopia av
+    <a href="https://pensionslyft.se/pensionskalkylator">Pensionssparkalkylatorn på pensionslyft.se</a>, där du alltid hittar den senaste versionen.
+  </div>
+</footer>
+<script>
+/*SCRIPT*/
+</script>
+</body>
+</html>
