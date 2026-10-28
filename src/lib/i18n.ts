@@ -10,6 +10,7 @@ export const PAGE_PAIRS: readonly (readonly [string, string])[] = [
   ["/om-pensionslyft", "/en/about"],
   ["/nyheter", "/en/news"],
   ["/artiklar", "/en/articles"],
+  ["/pensionsmalkalkylatorn", "/en/replacement-rate-calculator"],
 ];
 
 // The English news items and articles name the Swedish one they translate ("translation_of"), which gives their pairs.

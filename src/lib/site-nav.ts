@@ -9,6 +9,7 @@ import {
   Newspaper,
   PiggyBank,
   Receipt,
+  Target,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -37,6 +38,10 @@ export interface NavItem {
   level?: Level;
   /** Search words for a calculator: the page's keywords and its structured data. */
   keywords?: string[];
+  /** The English page, when the calculator has one (the others are in Swedish for now). */
+  enHref?: string;
+  /** Set by navItem for an item whose English page is in English. */
+  english?: boolean;
 }
 
 export interface NavGroup {
@@ -69,6 +74,17 @@ const overview: NavItem = {
   icon: Gauge,
   level: "Medel",
   keywords: ["pensionsöversikt", "räcker pensionen", "pensionsprognos", "allmän pension", "budget pension"],
+};
+
+// Shown as it is in github.com/mathiasboos/Calculators (Replacement rate goal calculator.html), see scripts/sync-apps.mjs.
+const replacement: NavItem = {
+  href: "/pensionsmalkalkylatorn",
+  enHref: "/en/replacement-rate-calculator",
+  title: "Pensionsmålkalkylatorn",
+  description: "Se hur mycket du behöver spara för att nå din önskade pensionsnivå, före eller efter skatt.",
+  icon: Target,
+  level: "Medel",
+  keywords: ["pensionsmål", "pensionsmålkalkylator", "kompensationsgrad", "önskad pension", "månadssparande pension"],
 };
 
 const typfall: NavItem = {
@@ -119,13 +135,13 @@ const fire: NavItem = {
 // The simplest calculator, Ränta på ränta, comes first in the menu: "Lön och sparande" is the left column and starts with it.
 export const calculatorGroups: NavGroup[] = [
   { title: "Lön och sparande", items: [compound, nettolon, fire] },
-  { title: "Pension", items: [pension, lonevaxling, overview, planner, typfall] },
+  { title: "Pension", items: [pension, lonevaxling, replacement, overview, planner, typfall] },
 ];
 
 export const calculators: NavItem[] = calculatorGroups.flatMap((group) => group.items);
 
 /** The calculator shown in the "Utvalt" box of the Kalkylatorer menu: the newest one. */
-export const featuredCalculator: NavItem = overview;
+export const featuredCalculator: NavItem = replacement;
 
 export const insights: NavItem[] = [
   {
@@ -149,9 +165,13 @@ export const insights: NavItem[] = [
 ];
 
 // ── English ──
-// The calculators are in Swedish for now; the English pages show their English names and descriptions and link to
-// the Swedish pages (marked as Swedish). The insights (articles, reports, news) have no English pages yet.
+// Most calculators are in Swedish for now; the English pages show their English names and descriptions and link to the
+// Swedish pages (marked as Swedish). A calculator with an `enHref` has an English page. The insights (articles, reports, news) have no English pages yet.
 const NAV_EN: Record<string, { title: string; description: string }> = {
+  "/pensionsmalkalkylatorn": {
+    title: "Replacement rate calculator",
+    description: "See how much you need to save to reach the pension level you want, before or after tax.",
+  },
   "/pensionsplaneraren": {
     title: "Pension planner",
     description: "Plan your whole retirement: assets, spending, withdrawals and scenarios, year by year.",
@@ -197,7 +217,8 @@ const LEVEL_TEXT_EN: Record<Level, string> = {
 /** A calculator or page as it is called and described in the language. */
 export function navItem(item: NavItem, lang: Lang): NavItem {
   const en = lang === "en" ? NAV_EN[item.href] : undefined;
-  return en ? { ...item, ...en } : item;
+  if (!en) return item;
+  return item.enHref ? { ...item, ...en, href: item.enHref, english: true } : { ...item, ...en };
 }
 export function groupTitle(group: NavGroup, lang: Lang): string {
   return lang === "en" ? (GROUP_EN[group.title] ?? group.title) : group.title;

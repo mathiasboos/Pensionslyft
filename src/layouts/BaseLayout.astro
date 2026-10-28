@@ -2,7 +2,7 @@
 import "@/styles/global.css";
 import SiteFooter from "@/components/SiteFooter.astro";
 import SiteHeader from "@/components/SiteHeader.astro";
-import { calculators } from "@/lib/site-nav";
+import { calculators, navItem } from "@/lib/site-nav";
 import { alternates as pageAlternates, cleanPath, LOCALE, langOf } from "@/lib/i18n";
 import { ui } from "@/i18n/ui";
 import { DEFAULT_IMAGE, DEFAULT_IMAGE_ALT, absolute, breadcrumbs as breadcrumbData, homeData, webApplication } from "@/lib/seo";
@@ -47,16 +47,17 @@ const canonical = new URL(path, Astro.site);
 const imageUrl = absolute(image);
 
 // Structured data: what the page sets itself, plus the home page's site data and the calculators' app data.
-const calculator = calculators.find((c) => c.href === path);
+const found = calculators.find((c) => c.href === path || c.enHref === path);
+const calculator = found ? navItem(found, lang) : undefined;
 const words = tags.length > 0 ? tags : (calculator?.keywords ?? []);
 const data = [
   ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
   ...(path === "/" ? homeData() : path === "/en" ? homeData("en") : []),
   ...(calculator
     ? [
-        webApplication({ name: calculator.title, description, path, keywords: calculator.keywords }),
+        webApplication({ name: calculator.title, description, path, keywords: calculator.keywords, lang }),
         breadcrumbData([
-          { name: "Kalkylatorer", path: "/kalkylatorer" },
+          { name: lang === "en" ? "Calculators" : "Kalkylatorer", path: lang === "en" ? "/en/calculators" : "/kalkylatorer" },
           { name: calculator.title, path },
         ]),
       ]

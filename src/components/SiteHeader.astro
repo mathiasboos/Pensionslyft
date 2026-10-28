@@ -33,7 +33,7 @@ const svHref = en ? target : here;
 const enHref = en ? here : target;
 const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 const calculatorsActive =
-  isActive(calcHref) || calculatorGroups.some((g) => g.items.some((item) => isActive(item.href)));
+  isActive(calcHref) || calculatorGroups.some((g) => g.items.some((item) => isActive(item.href) || (item.enHref !== undefined && isActive(item.enHref))));
 const insightsActive = insights.some((item) => isActive(item.href));
 
 const trigger =
