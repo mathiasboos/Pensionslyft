@@ -64,14 +64,14 @@ export function twinOf(pathname: string): string | null {
 
 /**
  * The embedded tools, which have no English page. The language switch must not take the visitor out of the tool (the page
- * would close and the entries made in it be lost), so on these pages it stays where it is: for the Pensionsplaneraren
- * it sets the planner's own language, for the Typfallsmodellen (Swedish only) it says so.
+ * would close and the entries made in it be lost), so on these pages it stays where it is: in both it sets the tool's own
+ * language (the planner and the Typfallsmodellen each have SV | EN buttons of their own) and follows the tool's buttons.
  */
-const STAY_ON_PAGE: Record<string, "planner" | "swedish-only"> = {
+const STAY_ON_PAGE: Record<string, "planner" | "typfall"> = {
   "/pensionsplaneraren": "planner",
-  "/typfallsmodellen": "swedish-only",
+  "/typfallsmodellen": "typfall",
 };
-export function stayMode(pathname: string): "planner" | "swedish-only" | null {
+export function stayMode(pathname: string): "planner" | "typfall" | null {
   return STAY_ON_PAGE[cleanPath(pathname)] ?? null;
 }
 

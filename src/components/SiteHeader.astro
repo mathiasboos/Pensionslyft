@@ -298,16 +298,6 @@ const FeaturedIcon = featured.icon;
   </div>
 
   {
-    stay === "swedish-only" && (
-      <div id="lang-note" class="border-t border-border bg-muted" role="status" hidden>
-        <p class="mx-auto max-w-7xl px-4 py-2 text-sm">
-          Typfallsmodellen finns bara på svenska ännu. <span lang="en" class="text-muted-foreground">The Typfall model is only available in Swedish for now.</span>
-        </p>
-      </div>
-    )
-  }
-
-  {
     !en && !stay && (
       <div id="lang-hint" class="border-t border-border bg-muted" hidden>
         <p class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-sm">
@@ -538,44 +528,47 @@ const FeaturedIcon = featured.icon;
       if (on) link.setAttribute("aria-current", "true");
       else link.removeAttribute("aria-current");
     });
-  const plannerFrame = () => document.querySelector<HTMLIFrameElement>("iframe");
-  const setPlannerLang = (lang: string) => {
-    store.set(PLANNER_KEY, lang);
-    try {
-      (plannerFrame()?.contentWindow as (Window & { setLang?: (l: string) => void }) | null | undefined)?.setLang?.(lang);
-    } catch {
-      // the frame is not ready; it reads the stored choice when it starts
+  const toolFrame = () => document.querySelector<HTMLIFrameElement>("iframe");
+  // The planner has buttons .lang-btn[data-lang] and the function setLang (and keeps the choice); the Typfallsmodellen has
+  // buttons "SV" and "EN" in .langs and starts in Swedish every time.
+  const toolLangButton = (doc: Document | null | undefined, target: EventTarget | null) =>
+    (target as Element | null)?.closest?.(stayMode === "planner" ? ".lang-btn[data-lang]" : ".langs button") ?? null;
+  const langOfButton = (button: Element) => (button.getAttribute("data-lang") ?? button.textContent ?? "sv").trim().toLowerCase();
+  const setToolLang = (lang: string) => {
+    const frame = toolFrame();
+    if (stayMode === "planner") {
+      store.set(PLANNER_KEY, lang);
+      try {
+        (frame?.contentWindow as (Window & { setLang?: (l: string) => void }) | null | undefined)?.setLang?.(lang);
+      } catch {
+        // the frame is not ready; it reads the stored choice when it starts
+      }
+    } else {
+      const buttons = Array.from(frame?.contentDocument?.querySelectorAll<HTMLButtonElement>(".langs button") ?? []);
+      buttons.find((b) => langOfButton(b) === lang)?.click();
     }
     showLang(lang);
   };
-  if (stayMode === "planner") {
-    showLang(store.get(PLANNER_KEY) === "en" ? "en" : "sv");
-    // A click on EN or SV inside the planner moves the header with it.
+  if (stayMode) {
+    showLang(stayMode === "planner" && store.get(PLANNER_KEY) === "en" ? "en" : "sv");
+    // A click on EN or SV inside the tool moves the header with it.
     const follow = () => {
-      plannerFrame()?.contentDocument?.addEventListener("click", (e) => {
-        const button = (e.target as Element | null)?.closest?.(".lang-btn[data-lang]");
-        if (button) showLang(button.getAttribute("data-lang") ?? "sv");
+      showLang(stayMode === "planner" && store.get(PLANNER_KEY) === "en" ? "en" : "sv");
+      toolFrame()?.contentDocument?.addEventListener("click", (e) => {
+        const button = toolLangButton(toolFrame()?.contentDocument, e.target);
+        if (button) showLang(langOfButton(button));
       });
     };
-    const frame = plannerFrame();
+    const frame = toolFrame();
     frame?.addEventListener("load", follow);
     if (frame?.contentDocument?.readyState === "complete") follow();
-  } else if (stayMode === "swedish-only") {
-    showLang("sv");
   }
   switches.forEach((link) => {
     link.addEventListener("click", (event) => {
       const lang = link.dataset.langSwitch ?? "sv";
-      if (stayMode === "planner") {
+      if (stayMode) {
         event.preventDefault();
-        setPlannerLang(lang);
-      } else if (stayMode === "swedish-only") {
-        event.preventDefault();
-        const note = document.getElementById("lang-note");
-        if (lang === "en" && note) {
-          note.hidden = false;
-          window.setTimeout(() => (note.hidden = true), 6000);
-        }
+        setToolLang(lang);
       } else {
         store.set("pl-lang", lang);
       }

@@ -51,7 +51,7 @@ describe("language helpers", () => {
 describe("the embedded tools", () => {
   it("keep the language switch on the page", () => {
     expect(stayMode("/pensionsplaneraren")).toBe("planner");
-    expect(stayMode("/typfallsmodellen.html")).toBe("swedish-only");
+    expect(stayMode("/typfallsmodellen.html")).toBe("typfall");
     expect(stayMode("/kalkylatorer")).toBeNull();
   });
 });
