@@ -1,6 +1,10 @@
 ---
-import NettolonCalculator from "@/components/calculators/NettolonCalculator";
+import AppFrame from "@/components/AppFrame.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// The calculator is Net_Salary_2026.html of github.com/mathiasboos/Calculators, shown as it is (scripts/sync-apps.mjs; a
+// GitHub Action keeps it up to date). The home page's salary field opens this page as ?lon=45000, which the file reads.
+// English page: /en/net-salary.
 ---
 
 <BaseLayout
@@ -9,17 +13,12 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   ogTitle="Nettolönkalkylator 2026 – Pensionslyft"
   ogDescription="Se vad som blir kvar i handen efter skatt, enligt Skatteverkets formler för 2026."
 >
-  <div class="mx-auto max-w-7xl px-4 py-14">
-    <p class="text-xs font-medium tracking-wider text-primary-soft uppercase">
-      Inkomstår 2026 · Skatteverket SKVFS 2025:20
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">Nettolönkalkylator 2026</h1>
+    <AppFrame slug="nettolon" title="Nettolönkalkylator 2026" />
+    <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
+      Beräkningen följer Skatteverkets tekniska beskrivning för inkomstår 2026 och är en uppskattning, inte
+      skatterådgivning. Preliminärskatten på lönebeskedet kan avvika något.
     </p>
-    <h1 class="mt-2 font-display text-4xl font-semibold">Nettolönkalkylator</h1>
-    <p class="mt-3 max-w-2xl text-muted-foreground">
-      Beräkningsmodell för en privatperson i Sverige 2026. Ange bruttolön, kommunalskattesats och eventuellt
-      bruttolöneavdrag. Modellen följer Skatteverkets formler steg för steg, inklusive jobbskatteavdraget.
-    </p>
-    <div class="mt-10">
-      <NettolonCalculator client:load />
-    </div>
   </div>
 </BaseLayout>

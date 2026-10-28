@@ -13,6 +13,7 @@ export const PAGE_PAIRS: readonly (readonly [string, string])[] = [
   ["/ranta-pa-ranta", "/en/compound-interest"],
   ["/fire-kalkylator", "/en/fire-calculator"],
   ["/lonevaxlingskalkylator", "/en/salary-exchange"],
+  ["/nettolonkalkylator", "/en/net-salary"],
   ["/pensionsoversikt", "/en/pension-overview"],
   ["/pensionskalkylator", "/en/pension-savings-calculator"],
   ["/pensionsmalkalkylatorn", "/en/replacement-rate-calculator"],

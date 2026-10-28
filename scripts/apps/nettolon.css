@@ -1,0 +1,5 @@
+/* The file's footer says that it is a stand-alone copy of the page on pensionslyft.se; on the site it is that page. The
+   page says the same about estimates (src/pages/nettolonkalkylator.astro). */
+footer {
+  display: none;
+}
