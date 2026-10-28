@@ -62,6 +62,19 @@ export function twinOf(pathname: string): string | null {
   return null;
 }
 
+/**
+ * The embedded tools, which have no English page. The language switch must not take the visitor out of the tool (the page
+ * would close and the entries made in it be lost), so on these pages it stays where it is: for the Pensionsplaneraren
+ * it sets the planner's own language, for the Typfallsmodellen (Swedish only) it says so.
+ */
+const STAY_ON_PAGE: Record<string, "planner" | "swedish-only"> = {
+  "/pensionsplaneraren": "planner",
+  "/typfallsmodellen": "swedish-only",
+};
+export function stayMode(pathname: string): "planner" | "swedish-only" | null {
+  return STAY_ON_PAGE[cleanPath(pathname)] ?? null;
+}
+
 /** The Swedish and the English address of a page, for the hreflang links; null when the page has no twin. */
 export function alternates(pathname: string): Record<Lang, string> | null {
   const p = cleanPath(pathname);

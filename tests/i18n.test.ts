@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alternates, cleanPath, langOf, PAIRS, switchTarget, twinOf } from "../src/lib/i18n";
+import { alternates, cleanPath, langOf, PAIRS, stayMode, switchTarget, twinOf } from "../src/lib/i18n";
 import { ui } from "../src/i18n/ui";
 
 describe("language helpers", () => {
@@ -45,6 +45,14 @@ describe("language helpers", () => {
   it("has no path twice", () => {
     const all = PAIRS.flat();
     expect(new Set(all).size).toBe(all.length);
+  });
+});
+
+describe("the embedded tools", () => {
+  it("keep the language switch on the page", () => {
+    expect(stayMode("/pensionsplaneraren")).toBe("planner");
+    expect(stayMode("/typfallsmodellen.html")).toBe("swedish-only");
+    expect(stayMode("/kalkylatorer")).toBeNull();
   });
 });
 
