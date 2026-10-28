@@ -3,9 +3,9 @@
   "apps": {
     "pensionsmal": {
       "file": "Replacement rate goal calculator.html",
-      "commit": "a3d981cbbdfed0fbd94833652bb02d2b1344f85e",
-      "committedAt": "2026-10-28T15:38:19+00:00",
-      "subject": "Replacement rate calculator: rename Total contributed KPI"
+      "commit": "bf308a201ad6cc3866c6e33d866d7b65fb0e08b9",
+      "committedAt": "2026-10-28T15:46:43Z",
+      "subject": "Replacement rate calculator: shorten About the model text"
     }
   }
 }
