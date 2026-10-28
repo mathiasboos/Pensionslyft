@@ -1,4 +1,5 @@
 ---
+import { Download } from "lucide-react";
 import PensionCalculator from "@/components/calculators/PensionCalculator";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 ---
@@ -18,6 +19,17 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
     <div class="mt-10">
       <PensionCalculator client:load />
     </div>
+    <p class="mt-6 text-sm text-muted-foreground">
+      Vill du använda kalkylatorn offline?{" "}
+      <a
+        href="/pensionssparkalkylatorn.html"
+        download="Pensionssparkalkylatorn.html"
+        class="inline-flex items-center gap-1 font-medium text-primary underline underline-offset-2"
+      >
+        <Download className="size-4" aria-hidden="true" /> Ladda ner den som en fristående HTML-fil
+      </a>{" "}
+      (öppnas i webbläsaren, utan internet).
+    </p>
 
     <section class="mt-16 border-t border-border pt-10">
       <h2 class="font-display text-2xl font-semibold">Vad ingår i Pensionssparkalkylatorn?</h2>
