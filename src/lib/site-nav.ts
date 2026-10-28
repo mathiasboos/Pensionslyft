@@ -69,8 +69,10 @@ const pension: NavItem = {
   keywords: ["pensionssparkalkylator", "sparkalkylator", "pensionskapital", "pensionssparande", "ips", "avgifter"],
 };
 
+// Shown as it is in github.com/mathiasboos/Calculators (Pension Overview.html), see scripts/sync-apps.mjs.
 const overview: NavItem = {
   href: "/pensionsoversikt",
+  enHref: "/en/pension-overview",
   title: "Pensionsöversikten",
   description: "Räcker pensionen och sparandet? Se din prognos och hur mycket mer du behöver spara.",
   icon: Gauge,

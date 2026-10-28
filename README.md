@@ -29,7 +29,7 @@ visual editor (Framer, Lovable) is needed.
 | One article | `/artiklar/<slug>` | `src/pages/artiklar/[slug].astro` + `src/content/articles/<slug>.md` |
 | Pensionssparkalkylatorn | `/pensionskalkylator`, `/en/pension-savings-calculator` | `src/components/AppFrame.astro` showing `Pension Savings Calculator.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Pensionsmålkalkylatorn | `/pensionsmalkalkylatorn`, `/en/replacement-rate-calculator` | `src/components/AppFrame.astro` showing `Replacement rate goal calculator.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
-| Pensionsöversikt | `/pensionsoversikt` | `src/pages/pensionsoversikt.astro` + `src/components/calculators/PensionsoversiktCalculator.tsx` (model `src/lib/pensionsoversikt.ts`, pensions from `src/lib/typfall/`) |
+| Pensionsöversikt | `/pensionsoversikt`, `/en/pension-overview` | `src/components/AppFrame.astro` showing `Pension Overview.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Ränta på ränta | `/ranta-pa-ranta`, `/en/compound-interest` | `src/components/AppFrame.astro` showing `Compound Interest Calculator.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
 | Pensionsplaneraren | `/pensionsplaneraren` | `src/pages/pensionsplaneraren.astro` (shows `public/pensionsplaneraren-app.html`, fetched from GitHub every hour by `.github/workflows/pensionsplaneraren.yml` with `scripts/sync-pensionsplaneraren.mjs`) |
