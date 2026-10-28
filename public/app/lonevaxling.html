@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pensionslyft</title>
+<style>
+  :root{
+    /* Palett: #0c2a49 mörkgrön · #2f6f73 grön · #ece0ca beige · #4675a4 blå · #c0a778 gul · #9c4438 orange */
+    --accent:#015d34;          /* mörkgrön – stora tal, rubriker, aktiva element */
+    --accent2:#48b866;         /* grön – sliderfyllnad */
+    --accent-dark:#014426;
+    --accent-soft:#e4f3ea;
+    --beige:#d3c4a5;
+    --blue:#4885c4;
+    --yellow:#fac110;
+    --orange:#ff5b2e;
+    --ink:#2b2b2b;
+    --ink-soft:#5f5f5f;
+    --bg:#f7f4ec;              /* varm offwhite från beigen */
+    --card:#ffffff;
+    --panel:#ece4cf;           /* beige infopaneler */
+    --line:#e3ddcc;
+    --track:#e9e4d6;
+    --good:#1e7a42;  --good-bg:#e8f6ed;   /* från #2f6f73 */
+    --amber:#8f6c00; --amber-bg:#fdf2cf;  /* från #c0a778 */
+    --warn:#cc3a10;  --warn-bg:#ffe7df;   /* från #9c4438 */
+    --radius:10px;
+    --display:Georgia,"Palatino Linotype","Book Antiqua","Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.55;
+       padding:32px 16px 64px}
+  .wrap{max-width:1160px;margin:0 auto}
+  .page-title{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,3vw,2rem);
+              margin-bottom:20px;letter-spacing:-.01em}
+
+  .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+        box-shadow:0 1px 3px rgba(0,0,0,.04);padding:36px;scroll-padding:24px}
+  @media(max-width:640px){.card{padding:24px 20px}}
+
+  h1.lead-title,h2.lead-title{font-family:var(--display);font-weight:700;
+        font-size:clamp(1.45rem,2.6vw,1.95rem);line-height:1.2;letter-spacing:-.01em;
+        margin-bottom:16px;max-width:560px}
+  .intro{font-size:.97rem;color:var(--ink);max-width:540px;margin-bottom:30px}
+
+  /* ===== Movestic-fält: etikett + inputruta, slider under ===== */
+  .field{margin-bottom:30px}
+  .field-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+  .field-head label{font-weight:700;font-size:.98rem}
+  .field-head .inbox{display:flex;align-items:center;gap:8px}
+  .field-head input[type=text]{width:120px;padding:13px 12px;border:1px solid #d9d6cf;border-radius:6px;
+        font:inherit;font-size:1.05rem;text-align:center;color:var(--ink);background:#fff;
+        font-variant-numeric:tabular-nums}
+  .field-head input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+  .field-head .unit{font-size:.95rem;color:var(--ink)}
+  .field-head .val-only{font-weight:700;font-size:1.05rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:999px;
+        background:linear-gradient(to right,var(--accent2) 0%,var(--accent2) var(--fill,50%),var(--track) var(--fill,50%),var(--track) 100%);
+        cursor:pointer;display:block}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:34px;height:34px;border-radius:50%;
+        background:#ffffff;border:2px solid #e7e5e0;box-shadow:0 2px 10px rgba(0,0,0,.18);cursor:grab}
+  input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#fff;
+        border:1px solid #d9d6cf;box-shadow:0 2px 8px rgba(0,0,0,.22)}
+  input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:6px}
+
+  .hint{font-size:.88rem;color:var(--ink);margin-top:12px;display:flex;align-items:center;gap:6px}
+  .hint.exceeded{color:var(--warn);font-weight:600}
+  .max-detail{margin-top:10px;background:var(--panel);border-radius:8px;padding:11px 14px;font-size:.8rem;line-height:1.7;color:var(--ink-soft)}
+  .max-detail .md-row{display:flex;justify-content:space-between;gap:8px}
+  .max-detail .md-row b{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700;white-space:nowrap}
+  .max-detail .md-total{border-top:1px solid var(--line);margin-top:6px;padding-top:6px;font-weight:700;color:var(--accent)}
+  .max-detail .md-total b{color:var(--accent)}
+
+  /* Tooltip */
+  .info{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;
+        border:1.5px solid var(--ink-soft);border-radius:50%;font-size:.7rem;font-weight:700;
+        color:var(--ink-soft);cursor:help;position:relative;flex-shrink:0;font-style:normal}
+  .info::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;
+        transform:translateX(-50%);background:var(--ink);color:#fff;font-size:.78rem;font-weight:400;
+        line-height:1.45;padding:10px 12px;border-radius:8px;width:240px;text-align:left;
+        opacity:0;pointer-events:none;transition:opacity .15s;z-index:50}
+  .info:hover::after,.info:focus::after{opacity:1}
+  @media(max-width:640px){.info::after{left:auto;right:-10px;transform:none}}
+
+  /* ===== Steg 1 ===== */
+
+  /* ===== Steg 2 layout ===== */
+  .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.92fr);gap:24px;align-items:start}
+  .grid2>:first-child{position:sticky;top:24px;max-height:calc(100vh - 48px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scroll-padding-bottom:24px}
+  .grid2>:first-child::-webkit-scrollbar{width:4px}
+  .grid2>:first-child::-webkit-scrollbar-track{background:transparent}
+  .grid2>:first-child::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+  .grid2>:first-child::-webkit-scrollbar-thumb:hover{background:var(--beige)}
+  @media(max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}
+  .grid2>:first-child{position:static;max-height:none;overflow:visible}}
+  .col-right>*{margin-bottom:20px}
+  .col-right>*:last-child{margin-bottom:0}
+
+  /* Resultatkort */
+  .result-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+        box-shadow:0 1px 3px rgba(0,0,0,.04);padding:32px;text-align:center}
+  .result-card .r-label{font-weight:700;font-size:1rem;margin-bottom:6px}
+  .result-card .r-big{font-family:var(--display);color:var(--accent);font-weight:700;
+        font-size:clamp(1.9rem,4vw,2.5rem);font-variant-numeric:tabular-nums;line-height:1.15}
+  .result-card .r-sub{font-size:.85rem;color:var(--ink);margin-top:8px;display:flex;
+        align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+  .result-card hr{border:0;border-top:1px solid var(--line);margin:24px auto;width:70%}
+  .result-card .r-disclaimer{font-size:.82rem;color:var(--ink-soft);margin-top:14px;text-align:center}
+  .footnote{font-size:.8rem;color:var(--ink-soft);text-align:right;padding:0 6px}
+
+  /* Statusruta */
+  .status{border-radius:var(--radius);padding:18px 20px;display:flex;gap:12px;align-items:flex-start;font-size:.9rem}
+  .status .s-icon{font-weight:800;font-size:1.05rem;line-height:1.4}
+  .status b{display:block;margin-bottom:2px}
+  .status.good{background:var(--good-bg);color:var(--good)}
+  .status.amber{background:var(--amber-bg);color:var(--amber)}
+  .status.warn{background:var(--warn-bg);color:var(--warn)}
+
+  /* Grå panel */
+  .panel{background:var(--panel);border-radius:var(--radius);padding:24px 28px;text-align:center}
+  .panel b{display:block;margin-bottom:8px;font-size:.98rem}
+  .panel p{font-size:.9rem;color:var(--ink)}
+
+  .tip{background:#fbf6e8;border-radius:var(--radius);padding:16px 20px;display:flex;gap:12px;
+       align-items:flex-start;font-size:.88rem;border-left:4px solid var(--yellow)}
+  .tip .bulb{font-size:1.1rem;line-height:1.4}
+
+  /* Avancerade inställningar */
+  details.adv{margin-top:8px;border-top:1px solid var(--line);padding-top:18px}
+  details.adv summary{cursor:pointer;font-weight:700;font-size:.95rem;color:var(--accent);
+        list-style:none;display:flex;align-items:center;gap:8px}
+  details.adv summary::-webkit-details-marker{display:none}
+  details.adv summary::before{content:"▸";transition:transform .15s;font-size:.85rem}
+  details.adv[open] summary::before{transform:rotate(90deg)}
+  details.adv .field{margin-top:22px;margin-bottom:0}
+  .adv-sub{font-size:.83rem;color:var(--ink-soft);margin-top:6px}
+
+  select,input[type=number]{width:100%;padding:12px;border:1px solid #d9d6cf;border-radius:6px;
+        font:inherit;font-size:.95rem;background:#fff;color:var(--ink)}
+  select:focus,input[type=number]:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+  .sel-label{font-weight:700;font-size:.95rem;display:block;margin-bottom:8px}
+  .small-hint{font-size:.8rem;color:var(--ink-soft);margin-top:6px}
+  .avsk-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .avsk-head .sel-label{margin-bottom:0}
+  .avsk-presets{display:flex;gap:6px;flex-shrink:0}
+  .preset-btn{border:1.5px solid var(--accent);background:transparent;color:var(--accent);border-radius:999px;
+       padding:4px 12px;font:inherit;font-size:.75rem;font-weight:700;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap}
+  .preset-btn:hover{background:var(--accent);color:#fff}
+  .preset-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--panel);border-radius:999px;
+        padding:5px;margin-bottom:24px}
+  .toggle button{border:0;border-radius:999px;padding:11px 6px;font:inherit;font-weight:700;font-size:.9rem;
+        background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .15s}
+  .toggle button.active{background:var(--accent);color:#fff}
+
+  /* Kommun-sök */
+  .kom-wrap{position:relative}
+  .kom-wrap input[type=text]{width:100%;padding:12px 36px 12px 12px;border:1px solid #d9d6cf;
+        border-radius:6px;font:inherit;font-size:.95rem;background:#fff;color:var(--ink)}
+  .kom-wrap input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+  .kom-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;
+        cursor:pointer;color:var(--ink-soft);font-size:1.05rem;line-height:1;padding:2px 4px;display:none}
+  .kom-clear.vis{display:block}
+  .kom-dropdown{position:absolute;z-index:99;left:0;right:0;top:calc(100% + 4px);background:#fff;
+        border:1px solid var(--accent);border-radius:8px;max-height:240px;overflow-y:auto;
+        box-shadow:0 8px 24px rgba(0,0,0,.14);display:none}
+  .kom-dropdown.open{display:block}
+  .kom-dropdown li{list-style:none;padding:9px 14px;cursor:pointer;font-size:.92rem;display:flex;
+        justify-content:space-between;gap:8px}
+  .kom-dropdown li:hover{background:var(--accent-soft)}
+  .kom-dropdown li .k-rate{color:var(--ink-soft);font-variant-numeric:tabular-nums;font-size:.85rem;white-space:nowrap}
+  .kom-selected{margin-top:6px;font-size:.83rem;color:var(--accent);font-weight:700;display:none}
+  .kom-selected.vis{display:block}
+  .kom-manual{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .kom-manual label{font-size:.82rem;color:var(--ink-soft);white-space:nowrap;font-weight:600}
+  .kom-manual input{width:90px;padding:8px 9px;border:1px solid #d9d6cf;border-radius:6px;font:inherit;
+        font-size:.9rem;text-align:right;color:var(--ink);background:#fff}
+  .kom-manual input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+
+  /* Detaljerad tabell */
+  details.calc-details{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+        box-shadow:0 1px 3px rgba(0,0,0,.04);padding:22px 28px}
+  details.calc-details summary{cursor:pointer;font-weight:700;font-size:.95rem;color:var(--ink);
+        list-style:none;display:flex;align-items:center;gap:8px}
+  details.calc-details summary::-webkit-details-marker{display:none}
+  details.calc-details summary::before{content:"▸";color:var(--accent);transition:transform .15s;font-size:.85rem}
+  details.calc-details[open] summary::before{transform:rotate(90deg)}
+  table{width:100%;border-collapse:collapse;font-size:.89rem;margin-top:16px}
+  td{padding:9px 4px;border-bottom:1px solid #f5f4f1;vertical-align:top}
+  td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  tr.total td{font-weight:800;border-bottom:none;border-top:2px solid var(--ink);font-size:.93rem}
+  tr.section td{padding-top:16px;font-weight:800;font-size:.78rem;text-transform:uppercase;
+        letter-spacing:.05em;border-bottom:none;color:var(--accent)}
+  td .small{display:block;font-size:.76rem;color:var(--ink-soft);font-weight:400}
+
+
+  /* År för år-tabell */
+  .yr-dl{margin-left:auto;display:flex;gap:6px}
+  .yr-btn{font:inherit;font-size:.78rem;font-weight:600;padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);cursor:pointer}
+  .yr-btn:hover{background:var(--panel)}
+  .yr-scroll{max-height:24rem;overflow:auto;margin-top:12px;border-top:1px solid var(--line)}
+  table.yr{margin-top:0;font-size:.8rem}
+  table.yr th,table.yr td{text-align:right;white-space:nowrap;padding:6px 10px;font-weight:500;border-bottom:1px solid #f5f4f1}
+  table.yr th:first-child,table.yr td:first-child{text-align:left}
+  table.yr thead th{position:sticky;top:0;background:var(--panel);font-weight:700}
+
+  /* Graf */
+  .chart-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+        box-shadow:0 1px 3px rgba(0,0,0,.04);padding:26px 28px}
+  .chart-card h3{font-family:var(--display);font-weight:700;font-size:1.1rem;margin-bottom:4px}
+  .chart-card .c-sub{font-size:.84rem;color:var(--ink-soft);margin-bottom:16px}
+  .chart-wrap{position:relative}
+  .chart-wrap canvas{width:100%!important;display:block;touch-action:pan-y}
+  .chart-tip{position:absolute;top:0;left:0;background:#fff;border:1px solid var(--line);
+        border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.14);padding:9px 12px;font-size:.8rem;
+        line-height:1.6;pointer-events:none;white-space:nowrap;display:none;z-index:20}
+  .chart-tip.vis{display:block}
+  .chart-tip .t-year{font-weight:800;display:block;margin-bottom:2px}
+  .chart-tip .t-row{display:flex;align-items:center;gap:6px}
+  .chart-tip .t-row .leg-dot{width:9px;height:9px;border-radius:50%}
+  .chart-tip .t-row b{font-variant-numeric:tabular-nums;margin-left:auto;padding-left:14px}
+  .chart-legend{display:flex;gap:18px;font-size:.82rem;color:var(--ink-soft);margin-top:12px;flex-wrap:wrap}
+  .chart-legend span{display:inline-flex;align-items:center;gap:6px}
+  .leg-dot{display:inline-block;width:12px;height:12px;border-radius:3px}
+
+  /* Scenariotabell */
+  .scenario-block{margin-top:22px;border-top:1px solid var(--line);padding-top:18px}
+  .scenario-block h4{font-family:var(--display);font-weight:700;font-size:1rem;margin-bottom:2px}
+  .scenario-table{width:100%;border-collapse:collapse;font-size:.89rem;margin-top:10px}
+  .scenario-table th{text-align:right;font-weight:700;font-size:.78rem;text-transform:uppercase;
+        letter-spacing:.04em;color:var(--ink-soft);padding:6px 4px;border-bottom:2px solid var(--accent)}
+  .scenario-table th:first-child{text-align:left}
+  .scenario-table td{padding:10px 4px;border-bottom:1px solid #f5f4f1;text-align:right;
+        font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .scenario-table td:first-child{text-align:left;font-weight:700;color:var(--accent)}
+  .scen-check{display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
+  .scen-check input{accent-color:var(--accent);width:16px;height:16px;cursor:pointer;margin:0}
+  .scen-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .scenario-table tbody tr:last-child td{border-bottom:none}
+  .scenario-table tr.is-current td{background:var(--accent-soft)}
+  @media(max-width:640px){
+    .scenario-block{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .scenario-table{font-size:.78rem}
+    .scenario-table td,.scenario-table th{padding:8px 3px}
+  }
+
+  /* Gränsvärden */
+  .rules{margin-top:24px;background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+        box-shadow:0 1px 3px rgba(0,0,0,.04);padding:32px}
+  .rules h2{font-family:var(--display);font-weight:700;font-size:1.25rem;margin-bottom:12px}
+  .rules p{font-size:.92rem;margin-bottom:10px;max-width:760px}
+  .limits{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+  @media(max-width:620px){.limits{grid-template-columns:1fr}}
+  .limit{border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+  .limit .ln{font-family:var(--display);font-size:1.4rem;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+  .limit .lt{font-size:.84rem;color:var(--ink-soft);margin-top:4px}
+  .rules a{color:var(--accent);font-weight:700;text-decoration:none}
+  .rules a:hover{text-decoration:underline}
+
+  /* Begränsningsregel-kryssruta */
+  .boundary-label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+        font-size:.88rem;color:var(--accent);font-weight:700;margin-top:12px;user-select:none}
+  .boundary-label input{accent-color:var(--accent);width:16px;height:16px;cursor:pointer;margin:0;flex-shrink:0}
+
+  /* Modal overlay */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
+        display:none;align-items:center;justify-content:center;padding:16px}
+  .modal-overlay.open{display:flex}
+  .modal-box{background:#fff;border-radius:14px;box-shadow:0 12px 48px rgba(0,0,0,.22);
+        width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;gap:12px;
+        padding:24px 28px 16px;border-bottom:1px solid var(--line)}
+  .modal-title{font-family:var(--display);font-weight:700;font-size:1.25rem;color:var(--accent)}
+  .modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-soft);
+        padding:4px 8px;border-radius:6px;line-height:1}
+  .modal-close:hover{background:var(--panel)}
+  .modal-intro{padding:14px 28px 0;font-size:.88rem;color:var(--ink-soft)}
+  .modal-section{padding:20px 28px 0}
+  .modal-section-title{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+        color:var(--accent);margin-bottom:14px}
+  .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:500px){.modal-grid{grid-template-columns:1fr}}
+  .modal-field label{display:block;font-size:.82rem;font-weight:700;margin-bottom:5px;color:var(--ink)}
+  .modal-input-wrap{display:flex;align-items:center;gap:6px}
+  .modal-input-wrap input{flex:1;padding:9px 10px;border:2px solid var(--beige);border-radius:7px;
+        font:inherit;font-size:.9rem;color:var(--ink);background:var(--accent-soft);min-width:0;
+        font-variant-numeric:tabular-nums;transition:border-color .12s}
+  .modal-input-wrap input:focus{outline:none;border-color:var(--accent)}
+  .modal-unit{font-size:.78rem;color:var(--ink-soft);white-space:nowrap}
+
+  /* Beräknade värden */
+  .modal-calc{background:var(--panel);border-radius:10px;margin:20px 28px 0;padding:16px 20px}
+  .modal-calc .modal-section-title{margin-bottom:10px}
+  .calc-row{display:flex;justify-content:space-between;align-items:center;gap:8px;
+        padding:5px 0;font-size:.85rem;border-bottom:1px solid var(--line)}
+  .calc-row:last-child{border-bottom:none}
+  .calc-row b{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;color:var(--ink)}
+  .calc-row-total{padding-top:10px;font-weight:800;color:var(--accent)}
+  .calc-row-total b{color:var(--accent);font-size:.95rem}
+
+  .modal-footer{display:flex;gap:10px;padding:20px 28px 24px;justify-content:flex-end}
+  .modal-save{background:var(--accent);color:#fff;border:none;border-radius:999px;
+        padding:11px 28px;font:inherit;font-weight:700;font-size:.9rem;cursor:pointer}
+  .modal-save:hover{background:var(--accent-dark)}
+  .modal-cancel{background:none;border:2px solid var(--line);border-radius:999px;
+        padding:11px 24px;font:inherit;font-weight:700;font-size:.9rem;cursor:pointer;color:var(--ink-soft)}
+  .modal-cancel:hover{border-color:var(--accent);color:var(--accent)}
+
+  footer{max-width:1160px;margin:28px auto 0;font-size:.78rem;color:var(--ink-soft)}
+
+  /* Språkväxlare */
+  .lang-bar{display:flex;justify-content:flex-end;margin-bottom:12px}
+  .lang-btn{display:inline-flex;gap:0;border:2px solid var(--accent);border-radius:999px;overflow:hidden;font:inherit;font-size:.83rem;font-weight:700;cursor:pointer}
+  .lang-btn span{padding:7px 18px;background:transparent;color:var(--accent);transition:background .15s,color .15s;user-select:none}
+  .lang-btn span.active{background:var(--accent);color:#fff}
+  .lang-btn span:first-child{border-right:2px solid var(--accent)}
+
+  .hidden{display:none!important}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+<!-- pensionslyft:begin -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<style id="pensionslyft-theme">
+/*
+ * The look of a calculator from github.com/mathiasboos/Calculators on pensionslyft.se. The calculators that are shown
+ * as they are already have the site's palette and fonts; the site only takes away what the page around them already
+ * has: their own header (the name of the site, the SV | EN switch, "stand-alone version") and shows the file once its
+ * language is set (scripts/apps-site.js). Every rule hangs on a stable name and does nothing if the file changes it.
+ */
+html:not(.pl-ready) body {
+  visibility: hidden;
+}
+.lang-toggle,
+.lang-bar,
+header.top {
+  display: none !important;
+}
+/* The frame is as high as the file; the file does not scroll inside it. */
+html,
+body {
+  background: #ffffff;
+  overflow-y: hidden;
+}
+
+/*
+ * Löneväxlingskalkylatorn (Salary_Exchange.html in github.com/mathiasboos/Calculators) on pensionslyft.se: the site's
+ * palette and fonts instead of the file's green and beige. The file writes its colours in :root variables, set here,
+ * and in a few places in its code (scripts/apps-colors.mjs). Site tokens: navy #0c2a49, ink #0f2034, muted-foreground
+ * #545f6c, border #e7e5e0, muted #f5f4f1, sand #ece0ca, highlight #f0c75e, destructive #cc2827, gold #a18142,
+ * steel #4675a4, dark teal #2f6f73, brick #9c4438.
+ */
+:root {
+  --accent: #0c2a49;
+  --accent2: #0c2a49;
+  --accent-dark: #081d33;
+  --accent-soft: #eef2f6;
+  --beige: #ece0ca;
+  --blue: #4675a4;
+  --yellow: #f0c75e;
+  --orange: #9c4438;
+  --ink: #0f2034;
+  --ink-soft: #545f6c;
+  --bg: #ffffff;
+  --card: #ffffff;
+  --panel: #f5f4f1;
+  --line: #e7e5e0;
+  --track: #e7e5e0;
+  --good: #2f6f73;
+  --good-bg: #e6f0ef;
+  --amber: #795f28;
+  --amber-bg: #fbf6e8;
+  --warn: #cc2827;
+  --warn-bg: #fbeceb;
+  --radius: 12px;
+  --display: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+body {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.page-title,
+h1,
+h2,
+h3 {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 600;
+}
+.card {
+  box-shadow: none;
+}
+footer {
+  margin-top: 16px;
+}
+</style>
+<script id="pensionslyft-site">
+/*
+ * What pensionslyft.se adds to a calculator that it shows straight from github.com/mathiasboos/Calculators
+ * (scripts/sync-apps.mjs puts it in the file's <head>).
+ *
+ * - The language is the site's: the page puts it in the address of the frame (?lang=sv or ?lang=en). When the file has
+ *   started, its own switch is used to change to it (the file's SV | EN buttons are hidden on the site, whose own
+ *   switch changes the page and with it the language of the frame). Until then the file stays hidden, so the wrong
+ *   language does not flash; after 1.5 seconds it is shown whatever happens.
+ * - A link in the file to the site opens in the whole window, and a link to another site in a new one, instead of
+ *   replacing the calculator inside its frame.
+ */
+(function () {
+  var root = document.documentElement;
+  var wanted = /[?&]lang=(sv|en)\b/.exec(location.search);
+  var lang = wanted ? wanted[1] : "sv";
+
+  function show() {
+    root.classList.add("pl-ready");
+  }
+  var fallback = setTimeout(show, 1500);
+
+  function switchTo(code) {
+    var buttons = document.querySelectorAll(".lang-btn");
+    for (var i = 0; i < buttons.length; i++) {
+      var button = buttons[i];
+      var named = button.getAttribute("data-lang");
+      var handler = button.getAttribute("onclick") || "";
+      if (named === code || handler.indexOf("'" + code + "'") >= 0 || handler.indexOf('"' + code + '"') >= 0) {
+        if (!button.classList.contains("active")) button.click();
+        return;
+      }
+    }
+    if (typeof window.setLang === "function") window.setLang(code);
+  }
+
+  function links() {
+    var anchors = document.querySelectorAll("a[href]");
+    for (var i = 0; i < anchors.length; i++) {
+      var a = anchors[i];
+      var href = a.getAttribute("href") || "";
+      if (!/^https?:/i.test(href)) continue;
+      var host = "";
+      try {
+        host = new URL(href).hostname;
+      } catch (e) {
+        continue;
+      }
+      if (host === "pensionslyft.se" || host === "www.pensionslyft.se") a.target = "_top";
+      else {
+        a.target = "_blank";
+        a.rel = "noopener";
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // This handler was added before the file's own ones and runs first; the timeout lets them run before the switch.
+    setTimeout(function () {
+      try {
+        switchTo(lang);
+        links();
+      } finally {
+        clearTimeout(fallback);
+        show();
+      }
+    }, 0);
+  });
+})();
+</script>
+<!-- pensionslyft:end -->
+</head>
+<body>
+<div class="wrap">
+  <div class="lang-bar">
+    <div class="lang-btn" id="langBtn" role="group" aria-label="Välj språk / Choose language">
+      <span id="btnSV" class="active" tabindex="0" role="button" aria-pressed="true">SV</span>
+      <span id="btnEN" tabindex="0" role="button" aria-pressed="false">EN</span>
+    </div>
+  </div>
+  <div class="page-title" id="pageTitle">Löneväxlingskalkylator</div>
+
+  <!-- ================= KALKYLATOR ================= -->
+  <section id="step2">
+    <div class="grid2">
+
+      <!-- Vänster: inställningar -->
+      <div class="card">
+        <h1 class="lead-title">Öka din framtida pension med löneväxling</h1>
+        <p class="intro">Löneväxling innebär att du sparar extra till pensionen genom att avsätta en del
+          av din bruttolön till ett sparande. Fyll i dina uppgifter och se hur mycket du kan boosta ditt
+          pensionskapital genom löneväxling.</p>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="lonNum1">Ange din månadslön, före skatt</label>
+            <span class="inbox"><input type="text" id="lonNum1" inputmode="numeric" aria-label="Månadslön i kronor"><span class="unit">kr</span></span>
+          </div>
+          <input type="range" id="lon1" min="30000" max="150000" step="500" value="60000" aria-label="Månadslön före skatt">
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="beloppNum1">Hur mycket vill du löneväxla?</label>
+            <span class="inbox"><input type="text" id="beloppNum1" inputmode="numeric" aria-label="Växlat belopp i kronor"><span class="unit">kr</span></span>
+          </div>
+          <input type="range" id="belopp2" min="500" max="30000" step="100" value="3000" aria-label="Växlat belopp per månad">
+          <div class="hint" id="maxHint2">Du kan löneväxla upp till <b>&nbsp;–&nbsp;</b>
+            <span class="info" tabindex="0" id="maxHintInfo" data-tip="">i</span>
+          </div>
+          <div class="max-detail" id="maxDetail"></div>
+          <label class="boundary-label" id="boundaryCheckLabel">
+            <input type="checkbox" id="useBoundary">
+            <span id="boundaryCheckText">Inför begränsningsregel</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="alder">Hur gammal är du?</label>
+            <span class="val-only" id="alderVal">40 år</span>
+          </div>
+          <input type="range" id="alder" min="18" max="70" step="1" value="40" aria-label="Din ålder">
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="pensionsalder">När planerar du gå i pension?</label>
+            <span class="val-only" id="pAlderVal">67 år</span>
+          </div>
+          <input type="range" id="pensionsalder" min="55" max="75" step="1" value="67" aria-label="Planerad pensionsålder">
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="avkastning">Förväntad avkastning per år</label>
+            <span class="val-only" id="avkVal">6,0 %</span>
+          </div>
+          <input type="range" id="avkastning" min="0" max="12" step="0.5" value="6" aria-label="Förväntad årlig avkastning i procent">
+        </div>
+
+        <details class="adv" id="advBox">
+          <summary>Fler inställningar – avtal, semester och skatt</summary>
+
+          <div class="field" style="margin-top:22px">
+            <span class="sel-label">Typ av växling</span>
+            <div class="toggle" style="margin-bottom:0">
+              <button type="button" id="btnLon" class="active">Löneväxling</button>
+              <button type="button" id="btnBonus">Bonusväxling</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="sel-label" for="avtal">Ditt pensionsavtal</label>
+            <select id="avtal">
+              <option value="ITP1">ITP1</option>
+              <option value="ITP2">ITP2 (kostnad för tjänstepension = 0)</option>
+              <option value="TryggPlan" selected>Löneväxling för företag med TryggPlan</option>
+            </select>
+            <div class="small-hint" id="avtalHint"></div>
+          </div>
+
+          <div class="field" id="tjpKostnadField">
+            <label class="sel-label" for="tjpKostnad">Kostnad för tjänstepension (%)</label>
+            <input type="text" inputmode="decimal" id="tjpKostnad" min="0" max="60" step="0.1" value="0">
+            <div class="small-hint">Anges när TryggPlan valts – företagets premienivå för tjänstepension.</div>
+          </div>
+
+          <div class="field">
+            <label class="sel-label" for="semTyp" id="semTypLabel">Semestertillägg</label>
+            <select id="semTyp">
+              <option value="Kollektivavtal - ITP">Kollektivavtal – ITP</option>
+              <option value="Semesterlag">Semesterlag</option>
+              <option value="Ej kompensation" selected>Ej kompensation</option>
+              <option value="Annat">Annat (eget belopp)</option>
+            </select>
+          </div>
+
+          <div class="field hidden" id="annatField">
+            <label class="sel-label" for="annatBelopp">Eget semestertillägg (kr)</label>
+            <input type="text" inputmode="decimal" id="annatBelopp" min="0" step="10" value="0">
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <label for="semDagar">Antal semesterdagar</label>
+              <span class="val-only" id="semDagarVal">0 dagar</span>
+            </div>
+            <input type="range" id="semDagar" min="0" max="35" step="1" value="0" aria-label="Antal semesterdagar">
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <label for="flex">Flexpension</label>
+              <span class="val-only" id="flexVal">0,0 %</span>
+            </div>
+            <input type="range" id="flex" min="0" max="2" step="0.1" value="0" aria-label="Flexpension i procent">
+            <div class="small-hint">T.ex. 0,7 eller 1,5 beroende på avtal. Sätt 0 om flexpension saknas.</div>
+          </div>
+
+          <div class="field">
+            <span class="sel-label">Kommunalskatt 2026 <span style="color:var(--accent)" id="kommunalVal"></span></span>
+            <div class="kom-wrap" id="komWrap">
+              <input type="text" id="komSearch" autocomplete="off" placeholder="Sök din kommun…" spellcheck="false" aria-label="Sök kommun">
+              <button class="kom-clear" id="komClear" title="Rensa" aria-label="Rensa val" type="button">✕</button>
+              <ul class="kom-dropdown" id="komDropdown" role="listbox"></ul>
+            </div>
+            <div class="kom-selected" id="komSelected"></div>
+            <div class="kom-manual">
+              <label for="kommunalNum">Eller ange direkt:</label>
+              <input type="text" id="kommunalNum" inputmode="decimal" placeholder="32,38" aria-label="Kommunalskatt i procent">
+              <span style="font-size:.82rem;color:var(--ink-soft)">%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="sel-label" for="agAvgift">Arbetsgivaravgift (%)</label>
+            <input type="text" inputmode="decimal" id="agAvgift" min="0" max="60" step="0.01" value="31.42">
+          </div>
+          <div class="field">
+            <label class="sel-label" for="slp">Särskild löneskatt (%)</label>
+            <input type="text" inputmode="decimal" id="slp" min="0" max="60" step="0.01" value="24.26">
+          </div>
+          <div class="field">
+            <label class="sel-label" for="fondavgift">Fondavgift per år (%)</label>
+            <input type="text" inputmode="decimal" id="fondavgift" min="0" max="5" step="0.01" value="0">
+            <div class="small-hint">Avgiften reducerar den effektiva avkastningen. Standard är 0 % (avgiftsfria fonder).</div>
+          </div>
+          <div class="field">
+            <div class="avsk-head">
+              <label class="sel-label" for="avkastningsskatt">Avkastningsskatt per år (%)</label>
+              <span class="avsk-presets">
+                <button type="button" class="preset-btn" data-val="0.375" title="Schablon vid 2,5 % prognosränta: 1,5 × statslåneränta × 0,258 (se nedan)">Sätt 0,375 %</button>
+                <button type="button" class="preset-btn" data-val="0" title="Nollställ">Nollställ</button>
+              </span>
+            </div>
+            <input type="text" inputmode="decimal" id="avkastningsskatt" min="0" max="3" step="0.001" value="0">
+            <div class="small-hint">Skatten dras från sparkapitalet vid ingången av år 2 och framåt (ej år 1). Formel: Kapital (1 jan) × Max(0,5&nbsp;%, föregående års genomsnittliga statslåneränta) × 15&nbsp;%. Golvregeln innebär en minsta skatt på 0,075&nbsp;% per år (0,5&nbsp;% × 15&nbsp;%). Vid statslåneränta 2,5&nbsp;%: 2,5&nbsp;% × 15&nbsp;% = 0,375&nbsp;%.</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Höger: resultat -->
+      <div class="col-right" aria-live="polite">
+
+        <div class="result-card">
+          <div class="r-label" id="resPremieLabel">Ditt månadssparande</div>
+          <div class="r-big" id="resPremie">–</div>
+          <div class="r-sub">Inklusive <b id="resUplift">–</b>&nbsp;som arbetsgivaren skjuter till
+            <span class="info" tabindex="0" data-tip="Arbetsgivaren betalar lägre särskild löneskatt på pensionspremier (24,26 %) än arbetsgivaravgift på lön (31,42 %). Beräkningen utgår från att arbetsgivaren växlar hela sin besparing – inklusive semestertillägg, tjänstepensionspremie och flexpension enligt dina inställningar – till din pensionspremie.">i</span>
+          </div>
+          <hr>
+          <div class="r-label">Förväntat extra sparkapital när du går i pension om <span id="resYears">–</span> år*</div>
+          <div class="r-big" id="resKapital">–</div>
+          <p class="r-disclaimer" id="resDisclaimer">Vi har räknat med en avkastning på 6 %. Viktigt att komma ihåg vid allt
+            sparande är att historisk avkastning inte är en garanti för framtida avkastning. En investering i fonder kan
+            både öka och minska i värde och det är inte säkert att du får tillbaka det investerade kapitalet.</p>
+        </div>
+        <div class="footnote">*Räkneexemplet tar inte hänsyn till eventuella skatteeffekter eller avgifter.</div>
+
+        <div class="status" id="statusBox">
+          <div class="s-icon" id="statusIcon"></div>
+          <div><b id="statusTitle"></b><span id="statusText"></span></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Så växer ditt sparande</h3>
+          <div class="c-sub">Utveckling fram till pension vid <b id="cReturn">6,0</b>&nbsp;% avkastning per år.</div>
+          <div class="chart-wrap">
+            <canvas id="growthChart" height="240"></canvas>
+            <div class="chart-tip" id="chartTip" role="status" aria-hidden="true"></div>
+          </div>
+          <div class="chart-legend" id="chartLegend"></div>
+
+          <div class="scenario-block">
+            <h4 id="scenTitle">Förväntat sparkapital vid olika avkastning</h4>
+            <p class="c-sub" id="scenSub">Beräknat på ditt månadssparande.</p>
+            <p class="c-sub" id="scenHintP" style="margin-top:-12px">Bocka i ett scenario för att visa det i diagrammet ovan.</p>
+            <table class="scenario-table">
+              <thead>
+                <tr><th>Avkastning per år</th><th>10 år</th><th>20 år</th><th>30 år</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><label class="scen-check"><input type="checkbox" class="scShow" data-pct="4"><span class="scen-dot" style="background:#c0a778"></span>4 %</label></td><td id="sc4-10"></td><td id="sc4-20"></td><td id="sc4-30"></td></tr>
+                <tr><td><label class="scen-check"><input type="checkbox" class="scShow" data-pct="6"><span class="scen-dot" style="background:#2f6f73"></span>6 %</label></td><td id="sc6-10"></td><td id="sc6-20"></td><td id="sc6-30"></td></tr>
+                <tr><td><label class="scen-check"><input type="checkbox" class="scShow" data-pct="8"><span class="scen-dot" style="background:#9c4438"></span>8 %</label></td><td id="sc8-10"></td><td id="sc8-20"></td><td id="sc8-30"></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <details class="calc-details" id="yrCard">
+  <summary><span id="yrTitle">År för år</span><span class="yr-dl"><button type="button" class="yr-btn" id="yrCsv">Ladda ner CSV</button><button type="button" class="yr-btn" id="yrXls">Ladda ner Excel</button></span></summary>
+  <div class="yr-scroll"><table class="yr"><thead id="yrHead"></thead><tbody id="yrBody"></tbody></table></div>
+</details>
+
+        <details class="calc-details">
+          <summary>Visa detaljerad beräkning</summary>
+          <table>
+            <tr class="section"><td colspan="2">Arbetsgivarens kostnad utan växling</td></tr>
+            <tr><td>Växlat belopp</td><td id="rBelopp"></td></tr>
+            <tr><td id="rSemLabel">Semestertillägg</td><td id="rSem"></td></tr>
+            <tr><td>Arbetsgivaravgift</td><td id="rAg"></td></tr>
+            <tr><td>Tjänstepensionspremie</td><td id="rTjp"></td></tr>
+            <tr><td>Flexpensionspremie</td><td id="rFlex"></td></tr>
+            <tr><td>Särskild löneskatt på tjänstepension + flexpension</td><td id="rSlpPre"></td></tr>
+            <tr class="total"><td>Summa kostnad</td><td id="rSumma"></td></tr>
+            <tr class="section"><td colspan="2">Omräknat till pension</td></tr>
+            <tr><td>Pensionspremie<span class="small">Summa / (1 + särskild löneskatt)</span></td><td id="rPremie"></td></tr>
+            <tr><td>Särskild löneskatt</td><td id="rSlp"></td></tr>
+            <tr class="total"><td>Omräkningsfaktor</td><td id="rFaktor"></td></tr>
+            <tr class="section"><td colspan="2">Din privatekonomi</td></tr>
+            <tr><td>Marginalskatt vid din lönenivå</td><td id="rMarginal"></td></tr>
+            <tr><td>Motsvarande nettolön för växlat belopp</td><td id="rNetto"></td></tr>
+            <tr><td>Pension efter skatt<span class="small">Om pensionen beskattas med endast kommunalskatt</span></td><td id="rPensionNetto"></td></tr>
+            <tr class="total"><td>Fördel löneväxling vs nettolön</td><td id="rFordel"></td></tr>
+          </table>
+        </details>
+
+        <div class="panel">
+          <b>Vill du börja löneväxla?</b>
+          <p>Prata med din arbetsgivare för att ta reda på om de erbjuder löneväxling och hur upplägget ser ut.
+             Kom också ihåg att din arbetsgivare kan ha en begränsning för hur stort belopp du kan löneväxla.</p>
+        </div>
+
+        <div class="tip">
+          <span class="bulb">💡</span>
+          <span>Erbjuder inte din arbetsgivare löneväxling? Då kan ett eget månadssparande i t.ex.
+            kapitalförsäkring eller ISK vara ett alternativ för din pension.</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="rules">
+      <h2>När är löneväxling lämpligt?</h2>
+      <p>Löneväxling är som regel bara lämpligt om din månadslön <b>efter växling</b> överstiger båda gränserna nedan.
+         Annars sänks din pensionsgrundande inkomst och socialförsäkringsförmåner kan påverkas.</p>
+      <div class="limits">
+        <div class="limit">
+          <div class="ln">56 087 kr/mån</div>
+          <div class="lt">Avgiftstaket i allmän pension: 8,07 inkomstbasbelopp ÷ 12. Under denna nivå minskar din intjäning till allmän pension om du löneväxlar.</div>
+        </div>
+        <div class="limit">
+          <div class="ln">55 033 kr/mån</div>
+          <div class="lt">Brytpunkten för statlig inkomstskatt. Över denna nivå är marginalskatten ca 20 procentenheter högre, vilket gör löneväxling extra förmånlig.</div>
+        </div>
+      </div>
+      <p>Källa: <a href="https://www.pensionsmyndigheten.se/forsta-din-pension/om-pensionssystemet/sa-beraknas-din-pension-basbelopp-berakningsfaktorer-och-varderegler" target="_blank" rel="noopener">Pensionsmyndigheten – basbelopp och beräkningsfaktorer</a>.
+         Kommunalskatt: <a href="https://www.scb.se/hitta-statistik/statistik-efter-amne/offentlig-ekonomi/finanser-for-den-kommunala-sektorn/kommunalskatterna/pong/tabell-och-diagram/totala-kommunala-skattesatser-2026-kommunvis/" target="_blank" rel="noopener">SCB 2026</a>.</p>
+    </section>
+  </section>
+</div>
+
+<footer>
+  Kalkylatorn är ett förenklat beräkningsverktyg och utgör inte finansiell rådgivning. Beräkningarna bygger på
+  arbetsgivaravgift 31,42 %, särskild löneskatt 24,26 % samt aktuella gränsvärden (avgiftstak 8,07 inkomstbasbelopp
+  och brytpunkt för statlig skatt). Kommunalskatter enligt SCB 2026. Kontrollera alltid aktuella belopp och villkor
+  i ditt pensionsavtal.
+</footer>
+
+<!-- ===== Begränsningsregel Modal ===== -->
+<div class="modal-overlay" id="boundaryModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">Begränsningsregel – variabler</h2>
+      <button class="modal-close" id="modalClose" aria-label="Stäng" type="button">✕</button>
+    </div>
+    <p class="modal-intro" id="modalIntro">Justera de markerade variablerna nedan. Kalkylatorn använder dessa värden för att beräkna hur mycket du maximalt kan löneväxla.</p>
+
+    <div class="modal-section">
+      <div class="modal-section-title" id="modalSecVars">Variabler (redigerbara)</div>
+      <div class="modal-grid">
+        <div class="modal-field">
+          <label for="mPBB" id="lPBB">Prisbasbelopp (PBB)</label>
+          <div class="modal-input-wrap"><input type="text" inputmode="numeric" id="mPBB" value="59 200"><span class="modal-unit">kr</span></div>
+        </div>
+        <div class="modal-field">
+          <label for="mIBB" id="lIBB">Inkomstbasbelopp (IBB)</label>
+          <div class="modal-input-wrap"><input type="text" inputmode="numeric" id="mIBB" value="83 400"><span class="modal-unit">kr</span></div>
+        </div>
+        <div class="modal-field">
+          <label for="mIBBG1" id="lIBBG1">IBB-gräns 1 (multipel)</label>
+          <div class="modal-input-wrap"><input type="text" inputmode="decimal" id="mIBBG1" value="7,5"><span class="modal-unit">× IBB</span></div>
+        </div>
+        <div class="modal-field">
+          <label for="mIBBG2" id="lIBBG2">IBB-gräns 2 (multipel)</label>
+          <div class="modal-input-wrap"><input type="text" inputmode="decimal" id="mIBBG2" value="30"><span class="modal-unit">× IBB</span></div>
+        </div>
+        <div class="modal-field">
+          <label for="mAvs1" id="lAvs1">Avsättning under gräns 1</label>
+          <div class="modal-input-wrap"><input type="text" inputmode="decimal" id="mAvs1" value="4,5"><span class="modal-unit">%</span></div>
+        </div>
+        <div class="modal-field">
+          <label for="mAvs2" id="lAvs2">Avsättning gräns 1–2</label>
+          <div class="modal-input-wrap"><input type="text" inputmode="decimal" id="mAvs2" value="30"><span class="modal-unit">%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section modal-calc">
+      <div class="modal-section-title" id="modalSecCalc">Beräknade värden (din lön <span id="mLonDisplay">–</span>)</div>
+      <div class="modal-calc-rows">
+        <div class="calc-row"><span id="lIBBkr1">IBB-gräns 1 i kronor</span><b id="mIBBkr1">–</b></div>
+        <div class="calc-row"><span id="lIBBkr2">IBB-gräns 2 i kronor</span><b id="mIBBkr2">–</b></div>
+        <div class="calc-row"><span id="lMaxPension">Max pensionssparande/år</span><b id="mMaxPension">–</b></div>
+        <div class="calc-row"><span id="lAvsTjp">Avsättning tjänstepension/år</span><b id="mAvsTjp">–</b></div>
+        <div class="calc-row calc-row-total"><span id="lMaxLvxlAr">Maximal löneväxling/år</span><b id="mMaxLvxlAr">–</b></div>
+        <div class="calc-row calc-row-total"><span id="lMaxLvxlMan">Maximal löneväxling/mån</span><b id="mMaxLvxlMan">–</b></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-save" id="modalSave" type="button">Tillämpa</button>
+      <button class="modal-cancel" id="modalCancel" type="button">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ==================== TRANSLATIONS ====================
+let LANG = "sv";
+
+const T = {
+  sv: {
+    pageTitle:       "Löneväxlingskalkylator",
+    docTitle:        "Löneväxlingskalkylator 2026",
+    leadTitle:       "Öka din framtida pension med löneväxling",
+    intro:           "Löneväxling innebär att du sparar extra till pensionen genom att avsätta en del av din bruttolön till ett sparande. Fyll i dina uppgifter och se hur mycket du kan boosta ditt pensionskapital genom löneväxling.",
+    labelLon:        "Ange din månadslön, före skatt",
+    ariaLon:         "Månadslön i kronor",
+    ariaLonSlider:   "Månadslön före skatt",
+    labelBelopp:     "Hur mycket vill du löneväxla?",
+    ariaBelopp:      "Växlat belopp i kronor",
+    ariaBeloppSlider:"Växlat belopp per månad",
+    hintUpTo:        "Du kan löneväxla upp till",
+    tipMaxHint:      "Taket beräknas enligt skattelagen: max 35\u00a0% av din årslön eller 10 prisbasbelopp (592\u00a0000\u00a0kr/år 2026), minus din befintliga tjänstepensionsavsättning. Löneväxling ovanför avgiftstaket (56\u00a0087\u00a0kr/mån) minskar även intjäningen till allmän pension.",
+    tipMaxHintBase:   "Beloppet motsvarar den del av din lön som överstiger avgiftstaket i allmän pension (8,07 inkomstbasbelopp ÷ 12 = 56 087 kr/mån år 2026). Löneväxlar du mer minskar din intjäning till allmän pension.",
+    labelAlder:      "Hur gammal är du?",
+    unitAr:          "år",
+    labelPAlder:     "När planerar du gå i pension?",
+    labelAvk:        "Förväntad avkastning per år",
+    advSummary:      "Fler inställningar – avtal, semester och skatt",
+    labelTyp:        "Typ av växling",
+    btnLon:          "Löneväxling",
+    btnBonus:        "Bonusväxling",
+    labelAvtal:      "Ditt pensionsavtal",
+    avtalITP1:       "ITP1",
+    avtalITP2:       "ITP2 (kostnad för tjänstepension = 0)",
+    avtalTrygg:      "Löneväxling för företag med TryggPlan",
+    avtalHintITP1:   "Beräkningen utgår från att arbetsgivaren rapporterar både växlad och oväxlad lön till Collectum.",
+    avtalHintITP2:   "Kostnad för tjänstepension sätts till 0. Förutsätter att oväxlad lön rapporteras till Collectum.",
+    avtalHintTrygg:  "Förutsätter att oväxlad lön rapporteras till försäkringsgivaren.",
+    labelTjp:        "Kostnad för tjänstepension (%)",
+    hintTjp:         "Anges när TryggPlan valts – företagets premienivå för tjänstepension.",
+    labelSemTyp:     "Semestertillägg",
+    labelSemTypBonus:"Semesterersättning",
+    semKollek:       "Kollektivavtal – ITP",
+    semLag:          "Semesterlag",
+    semEj:           "Ej kompensation",
+    semAnnat:        "Annat (eget belopp)",
+    labelAnnat:      "Eget semestertillägg (kr)",
+    labelSemDagar:   "Antal semesterdagar",
+    unitDagar:       "dagar",
+    labelFlex:       "Flexpension",
+    hintFlex:        "T.ex. 0,7 eller 1,5 beroende på avtal. Sätt 0 om flexpension saknas.",
+    labelKommunal:   "Kommunalskatt 2026",
+    placeholderKom:  "Sök din kommun…",
+    ariaKomSearch:   "Sök kommun",
+    titleKomClear:   "Rensa",
+    ariaKomClear:    "Rensa val",
+    komManualLabel:  "Eller ange direkt:",
+    ariaKommunalNum: "Kommunalskatt i procent",
+    labelAg:         "Arbetsgivaravgift (%)",
+    labelSlp:        "Särskild löneskatt (%)",
+    labelFond:       "Fondavgift per år (%)",
+    hintFond:        "Avgiften reducerar den effektiva avkastningen. Standard är 0 % (avgiftsfria fonder).",
+    labelAvsk:       "Avkastningsskatt per år (%)",
+    btnAvsk:         "Sätt 0,375 %",
+    btnAvskReset:    "Nollställ",
+    titleAvsk:       "Schablon vid 2,5 % prognosränta",
+    hintAvsk:        "Skatten dras från sparkapitalet vid ingången av år 2 och framåt (ej år 1). Formel: Kapital (1 jan) × Max(0,5 %, föregående års genomsnittliga statslåneränta) × 15 %. Golvregeln innebär en minsta skatt på 0,075 % per år (0,5 % × 15 %). Vid statslåneränta 2,5 %: 2,5 % × 15 % = 0,375 %.",
+    resPremieLabel:  "Ditt månadssparande",
+    resPremieLabelBonus: "Din pensionspremie (engångs)",
+    resInklusive:    "Inklusive",
+    resUpliftSuffix: "som arbetsgivaren skjuter till",
+    tipUplift:       "Arbetsgivaren betalar lägre särskild löneskatt på pensionspremier (24,26 %) än arbetsgivaravgift på lön (31,42 %). Beräkningen utgår från att arbetsgivaren växlar hela sin besparing – inklusive semestertillägg, tjänstepensionspremie och flexpension enligt dina inställningar – till din pensionspremie.",
+    resCapLabel:     "Förväntat extra sparkapital när du går i pension om",
+    resCapSuffix:    "år*",
+    footnote:        "*Räkneexemplet tar inte hänsyn till eventuella skatteeffekter eller avgifter.",
+    chartTitle:      "Så växer ditt sparande",
+    chartSub1:       "Utveckling fram till pension vid",
+    chartSub2:       "% avkastning per år.",
+    scenTitle:       "Förväntat sparkapital vid olika avkastning",
+    scenHint:        "Bocka i ett scenario för att visa det i diagrammet ovan.",
+    scenThReturn:    "Avkastning per år",
+    scenTh10:        "10 år",
+    scenTh20:        "20 år",
+    scenTh30:        "30 år",
+    detailsSummary:  "Visa detaljerad beräkning",
+    detSection1:     "Arbetsgivarens kostnad utan växling",
+    detBelopp:       "Växlat belopp",
+    detSem:          "Semestertillägg",
+    detSemBonus:     "Semesterersättning",
+    detAg:           "Arbetsgivaravgift",
+    detTjp:          "Tjänstepensionspremie",
+    detFlex:         "Flexpensionspremie",
+    detSlpPre:       "Särskild löneskatt på tjänstepension + flexpension",
+    detSumma:        "Summa kostnad",
+    detSection2:     "Omräknat till pension",
+    detPremie:       "Pensionspremie",
+    detPremieSmall:  "Summa / (1 + särskild löneskatt)",
+    detSlp:          "Särskild löneskatt",
+    detFaktor:       "Omräkningsfaktor",
+    detSection3:     "Din privatekonomi",
+    detMarginal:     "Marginalskatt vid din lönenivå",
+    detNetto:        "Motsvarande nettolön för växlat belopp",
+    detPensionNetto: "Pension efter skatt",
+    detPensionNettoSmall: "Om pensionen beskattas med endast kommunalskatt",
+    detFordel:       "Fördel löneväxling vs nettolön",
+    panelTitle:      "Vill du börja löneväxla?",
+    panelText:       "Prata med din arbetsgivare för att ta reda på om de erbjuder löneväxling och hur upplägget ser ut. Kom också ihåg att din arbetsgivare kan ha en begränsning för hur stort belopp du kan löneväxla.",
+    tipText:         "Erbjuder inte din arbetsgivare löneväxling? Då kan ett eget månadssparande i t.ex. kapitalförsäkring eller ISK vara ett alternativ för din pension.",
+    rulesTitle:      "När är löneväxling lämpligt?",
+    rulesP1:         "Löneväxling är som regel bara lämpligt om din månadslön <b>efter växling</b> överstiger båda gränserna nedan. Annars sänks din pensionsgrundande inkomst och socialförsäkringsförmåner kan påverkas.",
+    limit1Sub:       "Avgiftstaket i allmän pension: 8,07 inkomstbasbelopp ÷ 12. Under denna nivå minskar din intjäning till allmän pension om du löneväxlar.",
+    limit2Sub:       "Brytpunkten för statlig inkomstskatt. Över denna nivå är marginalskatten ca 20 procentenheter högre, vilket gör löneväxling extra förmånlig.",
+    rulesSource:     'Källa: <a href="https://www.pensionsmyndigheten.se/forsta-din-pension/om-pensionssystemet/sa-beraknas-din-pension-basbelopp-berakningsfaktorer-och-varderegler" target="_blank" rel="noopener">Pensionsmyndigheten – basbelopp och beräkningsfaktorer</a>. Kommunalskatt: <a href="https://www.scb.se/hitta-statistik/statistik-efter-amne/offentlig-ekonomi/finanser-for-den-kommunala-sektorn/kommunalskatterna/pong/tabell-och-diagram/totala-kommunala-skattesatser-2026-kommunvis/" target="_blank" rel="noopener">SCB 2026</a>.',
+    footerText:      "Kalkylatorn är ett förenklat beräkningsverktyg och utgör inte finansiell rådgivning. Beräkningarna bygger på arbetsgivaravgift 31,42 %, särskild löneskatt 24,26 % samt aktuella gränsvärden (avgiftstak 8,07 inkomstbasbelopp och brytpunkt för statlig skatt). Kommunalskatter enligt SCB 2026. Kontrollera alltid aktuella belopp och villkor i ditt pensionsavtal.",
+    statusGoodTitle: "Löneväxling är lämpligt för din lönenivå",
+    statusAmberTitle:"Gränsfall – din allmänna pension kan påverkas",
+    statusWarnTitle: "Löneväxling avråds vid din lönenivå",
+    statusGoodText:  (v,av,bv)=>`Lön efter växling: ${v}/mån – över avgiftstaket ${av} och brytpunkten ${bv}.`,
+    statusAmberText: (v,av,bv)=>`Lön efter växling: ${v}/mån. Över brytpunkten (${bv}) men under avgiftstaket ${av}.`,
+    statusWarnText:  (v,av,bv)=>`Lön efter växling: ${v}/mån – under både avgiftstaket ${av} och brytpunkten ${bv}.`,
+    tipYear0:        "Idag",
+    tipYearN:        n=>`Om ${n} år`,
+    scenSubMonthly:  p=>`Beräknat på ditt månadssparande ${p}.`,
+    scenSubLump:     p=>`Beräknat på din engångspremie ${p}.`,
+    legInbetalt:     "Inbetalt kapital",
+    legVarde:        r=>`Värde vid ${r} %`,
+    legScenario:     p=>`Scenario ${p} %`,
+    discBase:        r=>`Vi har räknat med en avkastning på ${r} %.`,
+    discFond:        f=>`Fondavgift ${f} %/år reducerar den effektiva avkastningen.`,
+    discAvsk:        a=>`Avkastningsskatt ${a} %/år dras från sparkapitalet vid ingången av år 2 och framåt.`,
+    discTail:        "Historisk avkastning är inte en garanti för framtida avkastning. En investering i fonder kan både öka och minska i värde.",
+    maxDetailHTML: (d) => {
+      var fmt = function(n){ return Math.round(n).toLocaleString("sv-SE") + "\u00a0kr"; };
+      var isPBBtak = (0.35*(window.lon||60000)*12) > (10*59200);
+      var tak = isPBBtak ? "10 PBB" : "35\u00a0% av l\u00f6n";
+      var html = '<div class="md-row"><span>Max pensionssparande/\u00e5r <span style="font-size:.72rem">(' + tak + ')</span></span><b>' + fmt(d.maxPensionAr) + '</b></div>';
+      if(d.tjpAr > 0) html += '<div class="md-row"><span>Minus befintlig tj\u00e4nstepensionsavs\u00e4ttning/\u00e5r enligt ITP1</span><b>\u2212' + fmt(d.tjpAr) + '</b></div>';
+      html += '<div class="md-row md-total"><span>Kvar f\u00f6r l\u00f6nev\u00e4xling/\u00e5r \u2192 per m\u00e5n</span><b>' + fmt(d.maxLvxlAr) + ' \u2192 ' + fmt(d.maxLvxlAr/12) + '</b></div>';
+      return html;
+    },
+    boundaryCheckText: "Inför begränsningsregel",
+    modalTitle:    "Begränsningsregel – variabler",
+    modalIntro:    "Justera de markerade variablerna nedan. Kalkylatorn använder dessa värden för att beräkna hur mycket du maximalt kan löneväxla.",
+    modalSecVars:  "Variabler (redigerbara)",
+    lPBB:   "Prisbasbelopp (PBB)", lIBB:   "Inkomstbasbelopp (IBB)",
+    lIBBG1: "IBB-gräns 1 (multipel)", lIBBG2: "IBB-gräns 2 (multipel)",
+    lAvs1:  "Avsättning under gräns 1", lAvs2: "Avsättning gräns 1–2",
+    modalSecCalc:  "Beräknade värden (din lön",
+    lIBBkr1: "IBB-gräns 1 i kronor", lIBBkr2: "IBB-gräns 2 i kronor",
+    lMaxPension: "Max pensionssparande/år",
+    lAvsTjp: "Avsättning tjänstepension/år",
+    lMaxLvxlAr: "Maximal löneväxling/år",
+    lMaxLvxlMan: "Maximal löneväxling/mån",
+    modalSave: "Tillämpa", modalCancel: "Avbryt",
+    komDefaultLabel: "Riksgenomsnitt – 32,38 %",
+    komManualSuffix: n=>`Manuellt angivet – ${n} %`,
+    yearUnit:        n=>`${n} år`,
+    dayUnit:         n=>`${n} dagar`,
+  },
+  en: {
+    pageTitle:       "Salary Exchange Calculator",
+    docTitle:        "Salary Exchange Calculator 2026",
+    leadTitle:       "Boost your future pension with salary exchange",
+    intro:           "Salary exchange means you save extra for retirement by redirecting part of your gross salary into a pension savings plan. Fill in your details to see how much you can grow your pension capital.",
+    labelLon:        "Your monthly salary, before tax",
+    ariaLon:         "Monthly salary in SEK",
+    ariaLonSlider:   "Monthly salary before tax",
+    labelBelopp:     "How much do you want to exchange?",
+    ariaBelopp:      "Exchange amount in SEK",
+    ariaBeloppSlider:"Exchange amount per month",
+    hintUpTo:        "You can exchange up to",
+    tipMaxHint:      "The ceiling is based on tax law: max 35\u00a0% of your annual salary or 10 price base amounts (SEK 592,000/year 2026), minus your existing occupational pension contribution. Exchanging above the national pension ceiling (SEK 56,087/month) may also reduce your state pension accrual.",
+    tipMaxHintBase:   "The amount corresponds to the portion of your salary above the ceiling for the national pension contribution (8.07 income base amounts ÷ 12 = SEK 56,087/month in 2026). Exchanging more reduces your national pension accrual.",
+    labelAlder:      "How old are you?",
+    unitAr:          "years",
+    labelPAlder:     "When do you plan to retire?",
+    labelAvk:        "Expected annual return",
+    advSummary:      "More settings – agreement, holiday and tax",
+    labelTyp:        "Type of exchange",
+    btnLon:          "Salary exchange",
+    btnBonus:        "Bonus exchange",
+    labelAvtal:      "Your pension agreement",
+    avtalITP1:       "ITP1",
+    avtalITP2:       "ITP2 (occupational pension cost = 0)",
+    avtalTrygg:      "Salary exchange for companies with TryggPlan",
+    avtalHintITP1:   "The calculation assumes the employer reports both exchanged and non-exchanged salary to Collectum.",
+    avtalHintITP2:   "Occupational pension cost is set to 0. Assumes non-exchanged salary is reported to Collectum.",
+    avtalHintTrygg:  "Assumes non-exchanged salary is reported to the insurer.",
+    labelTjp:        "Occupational pension cost (%)",
+    hintTjp:         "Used when TryggPlan is selected – the company's premium level for occupational pension.",
+    labelSemTyp:     "Holiday pay supplement",
+    labelSemTypBonus:"Holiday pay compensation",
+    semKollek:       "Collective agreement – ITP",
+    semLag:          "Holiday Pay Act",
+    semEj:           "No compensation",
+    semAnnat:        "Other (custom amount)",
+    labelAnnat:      "Custom holiday supplement (SEK)",
+    labelSemDagar:   "Number of holiday days",
+    unitDagar:       "days",
+    labelFlex:       "Flexible pension (Flexpension)",
+    hintFlex:        "E.g. 0.7 or 1.5 depending on agreement. Set to 0 if not applicable.",
+    labelKommunal:   "Municipal tax rate 2026",
+    placeholderKom:  "Search your municipality…",
+    ariaKomSearch:   "Search municipality",
+    titleKomClear:   "Clear",
+    ariaKomClear:    "Clear selection",
+    komManualLabel:  "Or enter directly:",
+    ariaKommunalNum: "Municipal tax rate in percent",
+    labelAg:         "Employer social contributions (%)",
+    labelSlp:        "Special payroll tax on pension (%)",
+    labelFond:       "Annual fund fee (%)",
+    hintFond:        "The fee reduces the effective return. Default is 0% (fee-free funds).",
+    labelAvsk:       "Annual yield tax (%)",
+    btnAvsk:         "Set 0.375%",
+    btnAvskReset:    "Reset",
+    titleAvsk:       "Standard rate at 2.5% projected return",
+    hintAvsk:        "Tax is deducted from the capital at the start of year 2 onwards (not year 1). Formula: Capital (1 Jan) × Max(0.5 %, prior year avg. government bond rate) × 15 %. The floor rule gives a minimum annual tax of 0.075 % (0.5 % × 15 %). At a bond rate of 2.5 %: 2.5 % × 15 % = 0.375 %.",
+    resPremieLabel:  "Your monthly savings",
+    resPremieLabelBonus: "Your pension premium (lump sum)",
+    resInklusive:    "Including",
+    resUpliftSuffix: "added by the employer",
+    tipUplift:       "The employer pays a lower special payroll tax on pension premiums (24.26%) than employer contributions on wages (31.42%). The calculation assumes the employer passes on the full saving – including holiday supplement, occupational pension premium and flexible pension – as your pension premium.",
+    resCapLabel:     "Expected additional pension capital at retirement in",
+    resCapSuffix:    "years*",
+    footnote:        "*The example does not account for potential tax effects or fees.",
+    chartTitle:      "How your savings grow",
+    chartSub1:       "Projected to retirement at",
+    chartSub2:       "% annual return.",
+    scenTitle:       "Expected capital at different return rates",
+    scenHint:        "Check a scenario to display it in the chart above.",
+    scenThReturn:    "Annual return",
+    scenTh10:        "10 yr",
+    scenTh20:        "20 yr",
+    scenTh30:        "30 yr",
+    detailsSummary:  "Show detailed calculation",
+    detSection1:     "Employer cost without exchange",
+    detBelopp:       "Exchanged amount",
+    detSem:          "Holiday pay supplement",
+    detSemBonus:     "Holiday pay compensation",
+    detAg:           "Employer contributions",
+    detTjp:          "Occupational pension premium",
+    detFlex:         "Flexible pension premium",
+    detSlpPre:       "Special payroll tax on occ. pension + flex pension",
+    detSumma:        "Total cost",
+    detSection2:     "Converted to pension",
+    detPremie:       "Pension premium",
+    detPremieSmall:  "Total cost / (1 + special payroll tax)",
+    detSlp:          "Special payroll tax",
+    detFaktor:       "Conversion factor",
+    detSection3:     "Your personal finances",
+    detMarginal:     "Marginal tax at your salary level",
+    detNetto:        "Equivalent net pay for exchanged amount",
+    detPensionNetto: "Pension after tax",
+    detPensionNettoSmall: "If pension is taxed at municipal rate only",
+    detFordel:       "Advantage: salary exchange vs. net pay",
+    panelTitle:      "Ready to start salary exchange?",
+    panelText:       "Talk to your employer to find out if they offer salary exchange and how it works. Also note that your employer may have a cap on how much you can exchange.",
+    tipText:         "Does your employer not offer salary exchange? A personal savings plan such as an endowment insurance or investment savings account (ISK) may be an alternative for your retirement.",
+    rulesTitle:      "When is salary exchange suitable?",
+    rulesP1:         "Salary exchange is generally only suitable if your monthly salary <b>after exchange</b> exceeds both thresholds below. Otherwise your pensionable income and social insurance benefits may be reduced.",
+    limit1Sub:       "National pension contribution ceiling: 8.07 income base amounts ÷ 12. Below this level your national pension accrual is reduced if you exchange salary.",
+    limit2Sub:       "The threshold for national income tax. Above this level the marginal tax rate is approx. 20 percentage points higher, making salary exchange particularly beneficial.",
+    rulesSource:     'Source: <a href="https://www.pensionsmyndigheten.se/forsta-din-pension/om-pensionssystemet/sa-beraknas-din-pension-basbelopp-berakningsfaktorer-och-varderegler" target="_blank" rel="noopener">Swedish Pensions Agency – base amounts</a>. Municipal tax rates: <a href="https://www.scb.se/hitta-statistik/statistik-efter-amne/offentlig-ekonomi/finanser-for-den-kommunala-sektorn/kommunalskatterna/pong/tabell-och-diagram/totala-kommunala-skattesatser-2026-kommunvis/" target="_blank" rel="noopener">Statistics Sweden 2026</a>.',
+    footerText:      "This calculator is a simplified tool and does not constitute financial advice. Calculations are based on employer contributions of 31.42 %, special payroll tax of 24.26 %, and current thresholds (national pension ceiling of 8.07 income base amounts and national income tax threshold). Municipal tax rates from Statistics Sweden 2026. Always verify current amounts and terms in your pension agreement.",
+    statusGoodTitle: "Salary exchange is suitable at your income level",
+    statusAmberTitle:"Borderline – your national pension may be affected",
+    statusWarnTitle: "Salary exchange is not recommended at your income level",
+    statusGoodText:  (v,av,bv)=>`Salary after exchange: ${v}/month – above the pension ceiling ${av} and tax threshold ${bv}.`,
+    statusAmberText: (v,av,bv)=>`Salary after exchange: ${v}/month. Above the tax threshold (${bv}) but below the pension ceiling ${av}.`,
+    statusWarnText:  (v,av,bv)=>`Salary after exchange: ${v}/month – below both the pension ceiling ${av} and the tax threshold ${bv}.`,
+    tipYear0:        "Today",
+    tipYearN:        n=>`In ${n} yr`,
+    scenSubMonthly:  p=>`Based on your monthly savings of ${p}.`,
+    scenSubLump:     p=>`Based on your lump-sum premium of ${p}.`,
+    legInbetalt:     "Contributed capital",
+    legVarde:        r=>`Value at ${r} %`,
+    legScenario:     p=>`Scenario ${p} %`,
+    discBase:        r=>`Calculated at an annual return of ${r} %.`,
+    discFond:        f=>`Fund fee of ${f} %/year reduces the effective return.`,
+    discAvsk:        a=>`Yield tax of ${a} %/year is deducted from capital at the start of year 2 onwards.`,
+    discTail:        "Past returns are not a guarantee of future returns. The value of fund investments may rise or fall.",
+    maxDetailHTML: (d) => {
+      var fmt = function(n){ return "SEK\u00a0" + Math.round(n).toLocaleString("sv-SE"); };
+      var isPBBtak = (0.35*(window.lon||60000)*12) > (10*59200);
+      var tak = isPBBtak ? "10 price base amts" : "35\u00a0% of salary";
+      var html = '<div class="md-row"><span>Max pension savings/year <span style="font-size:.72rem">(' + tak + ')</span></span><b>' + fmt(d.maxPensionAr) + '</b></div>';
+      if(d.tjpAr > 0) html += '<div class="md-row"><span>Less existing occ. pension contribution/year (ITP1)</span><b>\u2212' + fmt(d.tjpAr) + '</b></div>';
+      html += '<div class="md-row md-total"><span>Room for salary exchange/year \u2192 per month</span><b>' + fmt(d.maxLvxlAr) + ' \u2192 ' + fmt(d.maxLvxlAr/12) + '</b></div>';
+      return html;
+    },
+    boundaryCheckText: "Apply salary exchange cap",
+    modalTitle:    "Salary exchange cap – variables",
+    modalIntro:    "Adjust the editable variables below. The calculator uses these values to determine the maximum amount you can exchange.",
+    modalSecVars:  "Variables (editable)",
+    lPBB:   "Price base amount (PBB)", lIBB:   "Income base amount (IBB)",
+    lIBBG1: "IBB threshold 1 (multiple)", lIBBG2: "IBB threshold 2 (multiple)",
+    lAvs1:  "Contribution below threshold 1", lAvs2: "Contribution between thresholds",
+    modalSecCalc:  "Calculated values (your salary",
+    lIBBkr1: "IBB threshold 1 in SEK", lIBBkr2: "IBB threshold 2 in SEK",
+    lMaxPension: "Max pension savings/year",
+    lAvsTjp: "Occupational pension contribution/year",
+    lMaxLvxlAr: "Max salary exchange/year",
+    lMaxLvxlMan: "Max salary exchange/month",
+    modalSave: "Apply", modalCancel: "Cancel",
+    komDefaultLabel: "National average – 32.38%",
+    komManualSuffix: n=>`Entered manually – ${n} %`,
+    yearUnit:        n=>`${n} years`,
+    dayUnit:         n=>`${n} days`,
+  }
+};
+
+// ==================== applyLang() ====================
+function applyLang(){
+  const t = T[LANG];
+  document.documentElement.lang = LANG;
+  document.title = t.docTitle;
+  $("pageTitle").textContent = t.pageTitle;
+  $("btnSV").classList.toggle("active", LANG==="sv");
+  $("btnEN").classList.toggle("active", LANG==="en");
+  $("btnSV").setAttribute("aria-pressed", LANG==="sv");
+  $("btnEN").setAttribute("aria-pressed", LANG==="en");
+
+  // Vänster kort
+  document.querySelector(".lead-title").textContent = t.leadTitle;
+  document.querySelector(".intro").textContent = t.intro;
+  document.querySelector('label[for="lonNum1"]').textContent = t.labelLon;
+  $("lonNum1").setAttribute("aria-label", t.ariaLon);
+  $("lon1").setAttribute("aria-label", t.ariaLonSlider);
+  document.querySelector('label[for="beloppNum1"]').textContent = t.labelBelopp;
+  $("beloppNum1").setAttribute("aria-label", t.ariaBelopp);
+  $("belopp2").setAttribute("aria-label", t.ariaBeloppSlider);
+  document.querySelector('label[for="alder"]').textContent = t.labelAlder;
+  document.querySelector('label[for="pensionsalder"]').textContent = t.labelPAlder;
+  document.querySelector('label[for="avkastning"]').textContent = t.labelAvk;
+
+  // Avancerade inställningar
+  document.querySelector("#advBox summary").textContent = t.advSummary;
+  document.querySelector(".toggle").previousElementSibling.textContent = t.labelTyp;
+  $("btnLon").textContent = t.btnLon;
+  $("btnBonus").textContent = t.btnBonus;
+  document.querySelector('label[for="avtal"]').textContent = t.labelAvtal;
+  const avtalSel = $("avtal");
+  avtalSel.options[0].textContent = t.avtalITP1;
+  avtalSel.options[1].textContent = t.avtalITP2;
+  avtalSel.options[2].textContent = t.avtalTrygg;
+  document.querySelector('label[for="tjpKostnad"]').textContent = t.labelTjp;
+  document.querySelector('#tjpKostnadField .small-hint').textContent = t.hintTjp;
+  $("semTypLabel").textContent = typ==="Löneväxling" ? t.labelSemTyp : t.labelSemTypBonus;
+  const semSel = $("semTyp");
+  semSel.options[0].textContent = t.semKollek;
+  semSel.options[1].textContent = t.semLag;
+  semSel.options[2].textContent = t.semEj;
+  semSel.options[3].textContent = t.semAnnat;
+  document.querySelector('label[for="annatBelopp"]').textContent = t.labelAnnat;
+  document.querySelector('label[for="semDagar"]').textContent = t.labelSemDagar;
+  $("alder").setAttribute("aria-label", t.labelAlder);
+  $("pensionsalder").setAttribute("aria-label", t.labelPAlder);
+  $("semDagar").setAttribute("aria-label", t.labelSemDagar);
+  $("flex").setAttribute("aria-label", t.labelFlex);
+  document.querySelector('label[for="flex"]').textContent = t.labelFlex;
+  document.querySelector('#flex ~ .small-hint') && (document.querySelector('#flex ~ .small-hint').textContent = t.hintFlex);
+  document.querySelector('.sel-label[for="flex"] ~ .small-hint');
+  // flex hint – sibling
+  const flexHint = $("flex").nextElementSibling;
+  if(flexHint && flexHint.classList.contains("small-hint")) flexHint.textContent = t.hintFlex;
+  // kommunalskatt label
+  const komLabel = document.querySelector('.sel-label:not(label)');
+  if(komLabel) komLabel.firstChild.textContent = t.labelKommunal + " ";
+  $("komSearch").setAttribute("placeholder", t.placeholderKom);
+  $("komSearch").setAttribute("aria-label", t.ariaKomSearch);
+  $("komClear").setAttribute("title", t.titleKomClear);
+  $("komClear").setAttribute("aria-label", t.ariaKomClear);
+  document.querySelector('.kom-manual label').textContent = t.komManualLabel;
+  $("kommunalNum").setAttribute("aria-label", t.ariaKommunalNum);
+  document.querySelector('label[for="agAvgift"]').textContent = t.labelAg;
+  document.querySelector('label[for="slp"]').textContent = t.labelSlp;
+  document.querySelector('label[for="fondavgift"]').textContent = t.labelFond;
+  document.querySelector('#fondavgift ~ .small-hint').textContent = t.hintFond;
+  document.querySelector('label[for="avkastningsskatt"]').textContent = t.labelAvsk;
+  const presets = document.querySelectorAll(".preset-btn");
+  presets[0].textContent = t.btnAvsk;
+  presets[0].setAttribute("title", t.titleAvsk);
+  presets[1].textContent = t.btnAvskReset;
+  document.querySelector('#avkastningsskatt ~ .small-hint').textContent = t.hintAvsk;
+
+  // maxHint
+  const mv = maxVaxling();
+  const hb = $("maxHint2");
+  hb.childNodes[0].textContent = t.hintUpTo + " ";
+  $("maxHintInfo").setAttribute("data-tip", t.tipMaxHintBase);
+  // Modal-texter
+  $("boundaryCheckText").textContent = t.boundaryCheckText;
+  $("modalTitle").textContent   = t.modalTitle;
+  $("modalIntro").textContent   = t.modalIntro;
+  $("modalSecVars").textContent = t.modalSecVars;
+  ["PBB","IBB","IBBG1","IBBG2","Avs1","Avs2"].forEach(k => {
+    const el = $("l"+k); if(el) el.textContent = t["l"+k];
+  });
+  $("lIBBkr1").textContent = t.lIBBkr1; $("lIBBkr2").textContent = t.lIBBkr2;
+  $("lMaxPension").textContent = t.lMaxPension; $("lAvsTjp").textContent = t.lAvsTjp;
+  $("lMaxLvxlAr").textContent = t.lMaxLvxlAr; $("lMaxLvxlMan").textContent = t.lMaxLvxlMan;
+  $("modalSave").textContent = t.modalSave; $("modalCancel").textContent = t.modalCancel;
+  $("modalSecCalc").innerHTML = t.modalSecCalc + ' <span id="mLonDisplay">' + fmtKr(lon*12) + '/år</span>)';
+  renderMaxDetail();
+
+  // Resultatkortet
+  $("resPremieLabel").textContent = typ==="Löneväxling" ? t.resPremieLabel : t.resPremieLabelBonus;
+  // r-sub (inklusive X% som arbetsgivaren...)
+  const rsub = document.querySelector(".r-sub");
+  rsub.childNodes[0].textContent = t.resInklusive + " ";
+  rsub.childNodes[2].textContent = " " + t.resUpliftSuffix;
+  rsub.querySelector(".info").setAttribute("data-tip", t.tipUplift);
+  // Kapitalrad
+  const rlabels = document.querySelectorAll(".r-label");
+  rlabels[1].innerHTML = t.resCapLabel + ' <span id="resYears">' + ($("resYears").textContent) + '</span> ' + t.resCapSuffix;
+  document.querySelector(".footnote").textContent = t.footnote;
+
+  // Diagram
+  document.querySelector(".chart-card h3").textContent = t.chartTitle;
+  // Rebuild chart subtitle with current avkastning value
+  { const r = +$("avkastning").value;
+    document.querySelector(".chart-card .c-sub").innerHTML = t.chartSub1 + " <b id=\"cReturn\">" + r.toLocaleString("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1}) + "</b>\u00a0" + t.chartSub2; }
+
+  // Scenariotabell
+  $("scenTitle").textContent = t.scenTitle;
+  $("scenHintP").textContent = t.scenHint;
+  const ths = document.querySelectorAll(".scenario-table th");
+  if(ths.length===4){ ths[0].textContent=t.scenThReturn; ths[1].textContent=t.scenTh10; ths[2].textContent=t.scenTh20; ths[3].textContent=t.scenTh30; }
+
+  // Detaljtabell
+  document.querySelector(".calc-details summary").textContent = t.detailsSummary;
+  const detRows = document.querySelectorAll(".calc-details tr");
+  detRows[0].cells[0].textContent = t.detSection1;
+  detRows[1].cells[0].textContent = t.detBelopp;
+  $("rSemLabel").textContent = typ==="Löneväxling" ? t.detSem : t.detSemBonus;
+  detRows[3].cells[0].textContent = t.detAg;
+  detRows[4].cells[0].textContent = t.detTjp;
+  detRows[5].cells[0].textContent = t.detFlex;
+  detRows[6].cells[0].textContent = t.detSlpPre;
+  detRows[7].cells[0].textContent = t.detSumma;
+  detRows[8].cells[0].textContent = t.detSection2;
+  detRows[9].cells[0].innerHTML = t.detPremie + '<span class="small">' + t.detPremieSmall + '</span>';
+  detRows[10].cells[0].textContent = t.detSlp;
+  detRows[11].cells[0].textContent = t.detFaktor;
+  detRows[12].cells[0].textContent = t.detSection3;
+  detRows[13].cells[0].textContent = t.detMarginal;
+  detRows[14].cells[0].textContent = t.detNetto;
+  detRows[15].cells[0].innerHTML = t.detPensionNetto + '<span class="small">' + t.detPensionNettoSmall + '</span>';
+  detRows[16].cells[0].textContent = t.detFordel;
+
+  // Panel + tip
+  document.querySelector(".panel b").textContent = t.panelTitle;
+  document.querySelector(".panel p").textContent = t.panelText;
+  document.querySelector(".tip span:last-child").textContent = t.tipText;
+
+  // Rules-sektion
+  document.querySelector(".rules h2").textContent = t.rulesTitle;
+  document.querySelector(".rules p:first-of-type").innerHTML = t.rulesP1;
+  document.querySelectorAll(".limit .lt")[0].textContent = t.limit1Sub;
+  document.querySelectorAll(".limit .lt")[1].textContent = t.limit2Sub;
+  document.querySelector(".rules p:last-of-type").innerHTML = t.rulesSource;
+  document.querySelector("footer").textContent = t.footerText;
+
+  // Uppdatera dynamiska värden (slider-texter, status, chart)
+  const a = +$("alder").value, pa = +$("pensionsalder").value, sd = +$("semDagar").value, fl = +$("flex").value;
+  const avk = +$("avkastning").value;
+  $("alderVal").textContent = t.yearUnit(a);
+  $("pAlderVal").textContent = t.yearUnit(pa);
+  $("semDagarVal").textContent = t.dayUnit(sd);
+  $("flexVal").textContent = fl.toLocaleString("sv-SE",{minimumFractionDigits:1}) + " %";
+  $("avkVal").textContent = avk.toLocaleString("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1}) + " %";
+
+  // Kom-selected text
+  if($("komSelected").classList.contains("vis") && !$("komSelected").textContent.includes("–")){
+    // keep existing (municipality name is same in both langs)
+  }
+
+  calc();
+}
+
+// ===== Alla 290 kommuner med total kommunalskatt 2026 (källa: SCB) =====
+const KOMMUNER = [
+  ["Ale",32.80],["Alingsås",32.84],["Alvesta",33.42],["Aneby",33.85],
+  ["Arboga",33.29],["Arjeplog",34.84],["Arvidsjaur",34.14],["Arvika",34.03],
+  ["Askersund",34.15],["Avesta",33.95],["Bengtsfors",34.40],["Berg",34.22],
+  ["Bjurholm",35.00],["Bjuv",32.17],["Boden",33.94],["Bollebygd",33.07],
+  ["Bollnäs",33.37],["Borgholm",33.44],["Borlänge",34.40],["Borås",32.79],
+  ["Botkyrka",32.23],["Boxholm",33.37],["Bromölla",33.74],["Bräcke",35.09],
+  ["Burlöv",31.27],["Båstad",31.41],["Dals-Ed",34.69],["Danderyd",30.58],
+  ["Degerfors",35.30],["Dorotea",35.65],["Eda",34.55],["Ekerö",31.45],
+  ["Eksjö",34.02],["Emmaboda",33.82],["Enköping",33.05],["Eskilstuna",32.85],
+  ["Eslöv",31.72],["Essunga",33.05],["Fagersta",32.99],["Falkenberg",32.50],
+  ["Falköping",33.43],["Falun",34.05],["Filipstad",34.55],["Finspång",33.70],
+  ["Flen",33.10],["Forshaga",34.63],["Färgelanda",34.39],["Gagnef",34.27],
+  ["Gislaved",33.75],["Gnesta",32.95],["Gnosjö",34.00],["Gotland",33.60],
+  ["Grums",34.78],["Grästorp",33.47],["Gullspång",33.97],["Gällivare",33.89],
+  ["Gävle",33.77],["Göteborg",32.60],["Götene",33.60],["Habo",33.93],
+  ["Hagfors",34.30],["Hallsberg",33.85],["Hallstahammar",32.69],["Halmstad",32.38],
+  ["Hammarö",35.05],["Haninge",31.28],["Haparanda",33.84],["Heby",34.21],
+  ["Hedemora",34.15],["Helsingborg",31.39],["Herrljunga",33.62],["Hjo",33.48],
+  ["Hofors",34.37],["Huddinge",31.71],["Hudiksvall",33.12],["Hultsfred",33.77],
+  ["Hylte",33.85],["Håbo",33.30],["Hällefors",34.35],["Härjedalen",34.17],
+  ["Härnösand",34.63],["Härryda",31.98],["Hässleholm",32.38],["Höganäs",30.91],
+  ["Högsby",34.07],["Hörby",32.26],["Höör",32.63],["Jokkmokk",34.29],
+  ["Järfälla",31.52],["Jönköping",33.40],["Kalix",33.89],["Kalmar",33.67],
+  ["Karlsborg",32.80],["Karlshamn",33.80],["Karlskoga",34.30],["Karlskrona",33.69],
+  ["Karlstad",33.55],["Katrineholm",32.95],["Kil",34.63],["Kinda",33.00],
+  ["Kiruna",34.39],["Klippan",31.93],["Knivsta",32.62],["Kramfors",34.43],
+  ["Kristianstad",32.64],["Kristinehamn",34.25],["Krokom",33.87],["Kumla",33.84],
+  ["Kungsbacka",32.58],["Kungsör",32.91],["Kungälv",32.92],["Kävlinge",29.59],
+  ["Köping",33.04],["Laholm",32.80],["Landskrona",31.42],["Laxå",35.00],
+  ["Lekeberg",33.73],["Leksand",33.80],["Lerum",32.03],["Lessebo",33.81],
+  ["Lidingö",29.67],["Lidköping",32.74],["Lilla Edet",33.85],["Lindesberg",34.60],
+  ["Linköping",31.75],["Ljungby",33.07],["Ljusdal",33.87],["Ljusnarsberg",33.80],
+  ["Lomma",30.72],["Ludvika",34.05],["Luleå",33.84],["Lund",32.42],
+  ["Lycksele",34.90],["Lysekil",33.94],["Malmö",32.42],["Malung-Sälen",34.45],
+  ["Malå",35.20],["Mariestad",32.74],["Mark",32.99],["Markaryd",33.31],
+  ["Mellerud",34.08],["Mjölby",33.45],["Mora",34.32],["Motala",33.25],
+  ["Mullsjö",34.10],["Munkedal",34.86],["Munkfors",34.30],["Mölndal",31.99],
+  ["Mönsterås",34.07],["Mörbylånga",34.07],["Nacka",30.11],["Nora",34.55],
+  ["Norberg",33.54],["Nordanstig",34.02],["Nordmaling",35.10],["Norrköping",33.30],
+  ["Norrtälje",32.05],["Norsjö",35.20],["Nybro",34.19],["Nykvarn",32.30],
+  ["Nyköping",32.25],["Nynäshamn",32.18],["Nässjö",34.30],["Ockelbo",34.27],
+  ["Olofström",33.75],["Orsa",34.30],["Orust",33.69],["Osby",33.99],
+  ["Oskarshamn",34.21],["Ovanåker",33.37],["Oxelösund",33.05],["Pajala",34.74],
+  ["Partille",31.36],["Perstorp",31.99],["Piteå",33.59],["Ragunda",34.92],
+  ["Robertsfors",35.00],["Ronneby",33.68],["Rättvik",33.80],["Sala",33.19],
+  ["Salem",32.00],["Sandviken",33.12],["Sigtuna",31.83],["Simrishamn",31.69],
+  ["Sjöbo",32.10],["Skara",33.38],["Skellefteå",34.45],["Skinnskatteberg",33.34],
+  ["Skurup",31.60],["Skövde",33.09],["Smedjebacken",34.44],["Sollefteå",34.68],
+  ["Sollentuna",30.45],["Solna",29.70],["Sorsele",35.45],["Sotenäs",33.47],
+  ["Staffanstorp",30.12],["Stenungsund",33.12],["Stockholm",30.55],["Storfors",34.98],
+  ["Storuman",34.95],["Strängnäs",32.50],["Strömstad",33.39],["Strömsund",34.92],
+  ["Sundbyberg",31.58],["Sundsvall",33.88],["Sunne",33.75],["Surahammar",33.19],
+  ["Svalöv",31.92],["Svedala",31.42],["Svenljunga",33.53],["Säffle",33.80],
+  ["Säter",34.30],["Sävsjö",33.68],["Söderhamn",33.17],["Söderköping",33.53],
+  ["Södertälje",32.38],["Sölvesborg",33.86],["Tanum",33.04],["Tibro",33.19],
+  ["Tidaholm",33.55],["Tierp",33.00],["Timrå",34.38],["Tingsryd",34.00],
+  ["Tjörn",33.19],["Tomelilla",31.79],["Torsby",34.30],["Torsås",33.79],
+  ["Tranemo",32.98],["Tranås",33.77],["Trelleborg",31.58],["Trollhättan",33.84],
+  ["Trosa",32.03],["Tyresö",31.83],["Täby",29.88],["Töreboda",33.20],
+  ["Uddevalla",33.64],["Ulricehamn",32.53],["Umeå",34.65],["Upplands Väsby",31.75],
+  ["Upplands-Bro",31.73],["Uppsala",32.85],["Uppvidinge",33.80],["Vadstena",34.35],
+  ["Vaggeryd",33.25],["Valdemarsvik",34.03],["Vallentuna",31.23],["Vansbro",34.28],
+  ["Vara",33.25],["Varberg",31.73],["Vaxholm",31.63],["Vellinge",29.68],
+  ["Vetlanda",33.77],["Vilhelmina",35.50],["Vimmerby",34.22],["Vindeln",35.20],
+  ["Vingåker",33.50],["Vårgårda",33.09],["Vänersborg",33.69],["Vännäs",35.20],
+  ["Värmdö",31.31],["Värnamo",33.28],["Västervik",33.02],["Västerås",31.24],
+  ["Växjö",32.19],["Ydre",34.10],["Ystad",31.29],["Åmål",33.94],
+  ["Ånge",34.62],["Åre",33.92],["Årjäng",34.25],["Åsele",35.45],
+  ["Åstorp",31.47],["Åtvidaberg",33.94],["Älmhult",33.86],["Älvdalen",34.77],
+  ["Älvkarleby",34.40],["Älvsbyn",33.79],["Ängelholm",31.35],["Öckerö",33.04],
+  ["Ödeshög",33.95],["Örebro",33.65],["Örkelljunga",30.24],["Örnsköldsvik",33.85],
+  ["Östersund",33.72],["Österåker",28.93],["Östhammar",33.30],["Östra Göinge",32.17],
+  ["Överkalix",34.14],["Övertorneå",33.84]
+];
+
+// ===== Konstanter =====
+const LIMIT_AVGIFTSTAK = 56087;   // 8,07 IBB / 12 (2026)
+const LIMIT_BRYTPUNKT  = 55033;   // brytpunkt statlig skatt (2026)
+const STATLIG_SKATT    = 20;
+const PBB   = 59200;              // Prisbasbelopp 2026
+const IBB   = 83400;              // Inkomstbasbelopp 2026
+const ITP1_GRANS1 = 7.5 * IBB;   // 625 500 kr/år
+const ITP1_GRANS2 = 30 * IBB;    // 2 502 000 kr/år
+const ITP1_PCT1   = 0.045;        // 4,5 % under 7,5 IBB
+const ITP1_PCT2   = 0.30;         // 30 % mellan 7,5–30 IBB
+const MAX_PBB_MULTIPEL = 10;      // Tak: 10 PBB
+const MAX_ANDEL   = 0.35;         // 35 % av lön
+
+// ===== State =====
+let typ = "Löneväxling";
+let selectedKommunal = 32.38;
+let lon = 60000;
+let belopp = 3000;
+
+// ===== Helpers =====
+const $ = id => document.getElementById(id);
+const fmtKr = n => Math.round(n).toLocaleString("sv-SE") + "\u00a0kr";
+const fmtPct = n => n.toLocaleString("sv-SE",{minimumFractionDigits:2,maximumFractionDigits:2}) + "\u00a0%";
+const fmtFaktor = n => n.toLocaleString("sv-SE",{minimumFractionDigits:4,maximumFractionDigits:4});
+const parseNum = s => parseFloat(String(s).replace(/\s/g,"").replace(",","."));
+const clamp = (v,mn,mx) => Math.min(mx,Math.max(mn,v));
+
+function rangeFill(el){
+  const pct = (+el.value - +el.min) / (+el.max - +el.min) * 100;
+  el.style.setProperty("--fill", clamp(pct,0,100) + "%");
+}
+
+// Befintlig ITP1-avsättning på grundlönen (per år)
+function itp1AvsattningAr(lonAr){
+  return ITP1_PCT1 * Math.min(lonAr, ITP1_GRANS1)
+       + ITP1_PCT2 * Math.max(0, Math.min(lonAr, ITP1_GRANS2) - ITP1_GRANS1);
+}
+
+// Max löneväxling/mån:
+// Om begränsningsregel (kryssruta) är aktiv → använd boundaryVars
+// Annars → baserat på avgiftstaket för allmän pension
+function maxVaxling(){
+  if(typ !== "Löneväxling") return Math.max(0, Math.floor((lon - LIMIT_AVGIFTSTAK)/100)*100);
+  if(useBoundaryRule){
+    const d = calcBoundaryVars(boundaryVars, lon * 12);
+    return Math.floor(d.maxLvxlMan / 100) * 100;
+  }
+  return Math.max(0, Math.floor((lon - LIMIT_AVGIFTSTAK)/100)*100);
+}
+
+function maxVaxlingDetaljer(){
+  if(useBoundaryRule){
+    const d = calcBoundaryVars(boundaryVars, lon * 12);
+    return { maxPensionAr: d.maxPen, tjpAr: d.tjp, maxLvxlAr: d.maxLvxlAr };
+  }
+  const lonAr = lon * 12;
+  const maxPensionAr = Math.min(MAX_ANDEL * lonAr, MAX_PBB_MULTIPEL * PBB);
+  const tjpAr = itp1AvsattningAr(lonAr);
+  return { maxPensionAr, tjpAr, maxLvxlAr: Math.max(0, maxPensionAr - tjpAr) };
+}
+
+function updateMaxHints(){
+  const mv = maxVaxling();
+  // Uppdatera slider-max dynamiskt
+  const sl = $("belopp2");
+  const newMax = Math.max(mv, 500);
+  if(+sl.max !== newMax){ sl.max = newMax; }
+  const el = $("maxHint2");
+  el.querySelector("b").textContent = "\u00a0" + Math.round(mv).toLocaleString("sv-SE") + "\u00a0kr\u00a0";
+  const exceeded = typ==="Löneväxling" && belopp > mv;
+  el.classList.toggle("exceeded", exceeded);
+  // Detaljruta
+  renderMaxDetail();
+}
+
+function renderMaxDetail(){
+  const box = $("maxDetail");
+  if(!box) return;
+  if(!useBoundaryRule || typ==="Bonusväxling"){
+    box.style.display = "none";
+    return;
+  }
+  const d = maxVaxlingDetaljer();
+  box.innerHTML = T[LANG].maxDetailHTML(d);
+  box.style.display = "";
+}
+
+// ===== Semestertillägg (VBA-modellen) =====
+function semestertillagg(modell, vaxlingstyp, dagar, bel){
+  if(vaxlingstyp === "Löneväxling"){
+    if(modell === "Kollektivavtal - ITP") return 0.8/100/12 * dagar * bel;
+    if(modell === "Semesterlag")          return 0.43/100/12 * dagar * bel;
+    return 0;
+  } else {
+    if(modell === "Kollektivavtal - ITP") return bel * 0.5/100 * dagar;
+    if(modell === "Semesterlag")          return 12/100 * bel;
+    return 0;
+  }
+}
+
+// ===== Lön =====
+function setLon(v){
+  lon = v;
+  window.lon = v;
+  const sl = $("lon1");
+  sl.value = clamp(v, +sl.min, +sl.max);
+  rangeFill(sl);
+  $("lonNum1").value = Math.round(v).toLocaleString("sv-SE");
+  updateMaxHints();
+}
+$("lon1").addEventListener("input", () => { setLon(+$("lon1").value); calc(); });
+$("lonNum1").addEventListener("change", () => {
+  const v = parseNum($("lonNum1").value);
+  if(!isNaN(v)) setLon(clamp(v, 0, 500000)); else setLon(lon);
+  calc();
+});
+$("lonNum1").addEventListener("blur", () => { $("lonNum1").value = Math.round(lon).toLocaleString("sv-SE"); });
+
+// ===== Belopp =====
+function setBelopp(v){
+  belopp = v;
+  const sl = $("belopp2");
+  sl.value = clamp(v, +sl.min, +sl.max);
+  rangeFill(sl);
+  $("beloppNum1").value = Math.round(v).toLocaleString("sv-SE");
+  updateMaxHints();
+}
+$("belopp2").addEventListener("input", () => { setBelopp(+$("belopp2").value); calc(); });
+$("beloppNum1").addEventListener("change", () => {
+  const v = parseNum($("beloppNum1").value);
+  if(!isNaN(v)) setBelopp(clamp(v, 0, 200000)); else setBelopp(belopp);
+  calc();
+});
+$("beloppNum1").addEventListener("blur", () => { $("beloppNum1").value = Math.round(belopp).toLocaleString("sv-SE"); });
+
+// ===== Ålder / pensionsålder / avkastning =====
+function syncAges(){
+  const a  = +$("alder").value;
+  let pa = +$("pensionsalder").value;
+  if(pa <= a){ pa = a + 1; $("pensionsalder").value = pa; }
+  $("alderVal").textContent  = T[LANG].yearUnit(a);
+  $("pAlderVal").textContent = T[LANG].yearUnit(pa);
+  rangeFill($("alder")); rangeFill($("pensionsalder"));
+}
+$("alder").addEventListener("input", () => { syncAges(); calc(); });
+$("pensionsalder").addEventListener("input", () => { syncAges(); calc(); });
+$("avkastning").addEventListener("input", () => {
+  const r = +$("avkastning").value;
+  $("avkVal").textContent = r.toLocaleString("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1}) + " %";
+  $("cReturn").textContent = r.toLocaleString("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1});
+  document.querySelector(".c-sub").innerHTML = T[LANG].chartSub1 + " <b id=\"cReturn\">" + r.toLocaleString("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1}) + "</b>\u00a0" + T[LANG].chartSub2;
+  rangeFill($("avkastning"));
+  calc();
+});
+
+// ===== Avancerat: sliders =====
+$("semDagar").addEventListener("input", () => {
+  $("semDagarVal").textContent = T[LANG].dayUnit(+$("semDagar").value);
+  rangeFill($("semDagar")); calc();
+});
+$("flex").addEventListener("input", () => {
+  $("flexVal").textContent = (+$("flex").value).toLocaleString("sv-SE",{minimumFractionDigits:1}) + " %";
+  rangeFill($("flex")); calc();
+});
+["avtal","semTyp"].forEach(id => $(id).addEventListener("change", () => { updateMaxHints(); calc(); }));
+["agAvgift","slp","annatBelopp","fondavgift","avkastningsskatt"].forEach(id => {
+  $(id).addEventListener("change", calc);
+  $(id).addEventListener("input", calc);
+});
+["tjpKostnad"].forEach(id => {
+  $(id).addEventListener("change", () => { updateMaxHints(); calc(); });
+  $(id).addEventListener("input", () => { updateMaxHints(); calc(); });
+});
+
+// ===== Preset-knappar avkastningsskatt =====
+document.querySelectorAll(".preset-btn").forEach(btn => btn.addEventListener("click", () => {
+  const v = parseFloat(btn.dataset.val);
+  $("avkastningsskatt").value = v === 0 ? "0,000" : v.toLocaleString("sv-SE",{minimumFractionDigits:3,maximumFractionDigits:3});
+  calc();
+}));
+
+// ===== Toggle växlingstyp =====
+function setTyp(t){
+  typ = t;
+  $("btnLon").classList.toggle("active", t==="Löneväxling");
+  $("btnBonus").classList.toggle("active", t==="Bonusväxling");
+  $("semTypLabel").textContent = t==="Löneväxling" ? T[LANG].labelSemTyp : T[LANG].labelSemTypBonus;
+  updateMaxHints();
+  calc();
+}
+$("btnLon").addEventListener("click", () => setTyp("Löneväxling"));
+$("btnBonus").addEventListener("click", () => setTyp("Bonusväxling"));
+
+// ===== Kommunal dropdown =====
+const komSearch = $("komSearch"), komDrop = $("komDropdown"),
+      komClear = $("komClear"), komSel = $("komSelected"), kommunalNum = $("kommunalNum");
+const normStr = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+
+function renderDrop(q){
+  const hits = q ? KOMMUNER.filter(k => normStr(k[0]).startsWith(normStr(q))) : KOMMUNER;
+  komDrop.innerHTML = "";
+  if(!hits.length){
+    komDrop.innerHTML = '<li style="color:var(--ink-soft);cursor:default">Ingen träff</li>';
+  } else {
+    hits.forEach(([namn,skatt]) => {
+      const li = document.createElement("li");
+      li.setAttribute("role","option");
+      li.innerHTML = `<span>${namn}</span><span class="k-rate">${skatt.toLocaleString("sv-SE",{minimumFractionDigits:2})} %</span>`;
+      li.addEventListener("mousedown", e => { e.preventDefault(); pickKommun(namn, skatt); });
+      komDrop.appendChild(li);
+    });
+  }
+}
+function pickKommun(namn, skatt){
+  selectedKommunal = skatt;
+  komSearch.value = "";
+  komClear.classList.remove("vis");
+  komDrop.classList.remove("open");
+  komSel.textContent = namn + " – " + skatt.toLocaleString("sv-SE",{minimumFractionDigits:2}) + " %";
+  komSel.classList.add("vis");
+  kommunalNum.value = skatt.toLocaleString("sv-SE",{minimumFractionDigits:2});
+  applyLang();
+}
+komSearch.addEventListener("input", () => { renderDrop(komSearch.value.trim()); komDrop.classList.add("open"); komClear.classList.toggle("vis", komSearch.value.length>0); });
+komSearch.addEventListener("focus", () => { renderDrop(komSearch.value.trim()); komDrop.classList.add("open"); });
+komSearch.addEventListener("blur",  () => setTimeout(() => komDrop.classList.remove("open"), 150));
+komClear.addEventListener("click",  () => { komSearch.value=""; komClear.classList.remove("vis"); komDrop.classList.remove("open"); komSel.classList.remove("vis"); selectedKommunal=32.38; kommunalNum.value="32,38"; calc(); });
+kommunalNum.addEventListener("input", () => {
+  const v = parseNum(kommunalNum.value);
+  if(!isNaN(v) && v>0 && v<50){
+    selectedKommunal = v;
+    komSel.textContent = "Manuellt angivet – " + v.toLocaleString("sv-SE",{minimumFractionDigits:2}) + " %";
+    komSel.classList.add("vis");
+    calc();
+  }
+});
+kommunalNum.addEventListener("blur", () => {
+  const v = parseNum(kommunalNum.value);
+  if(!isNaN(v) && v>0 && v<50) kommunalNum.value = v.toLocaleString("sv-SE",{minimumFractionDigits:2});
+});
+
+// ===== Huvudberäkning (Excel-modellen) =====
+let chartData = null;
+
+function calc(){
+  const dagar   = +$("semDagar").value;
+  const flexPct = +$("flex").value;
+  const avtal   = $("avtal").value;
+  const semModell = $("semTyp").value;
+  const annat   = parseNum($("annatBelopp").value) || 0;
+  const kommunal = selectedKommunal;
+  const fondavgiftRaw = parseNum($("fondavgift").value);
+  const fondavgift    = (!isNaN(fondavgiftRaw) && fondavgiftRaw >= 0) ? fondavgiftRaw : 0;
+  const avskRaw       = parseNum($("avkastningsskatt").value);
+  const avkastningsskatt = (!isNaN(avskRaw) && avskRaw >= 0) ? avskRaw : 0;
+  const agRaw = parseNum($("agAvgift").value), slpRaw = parseNum($("slp").value);
+  const agPct  = (!isNaN(agRaw)  ? agRaw  : 31.42)/100;
+  const slpPct = (!isNaN(slpRaw) ? slpRaw : 24.26)/100;
+  const tjpRaw = parseNum($("tjpKostnad").value);
+  const tjpInput = (!isNaN(tjpRaw) ? tjpRaw : 0)/100;
+
+  $("annatField").classList.toggle("hidden", semModell!=="Annat");
+  $("tjpKostnadField").classList.toggle("hidden", avtal!=="TryggPlan");
+  { const t=T[LANG]; $("avtalHint").textContent = avtal==="ITP1"?t.avtalHintITP1:avtal==="ITP2"?t.avtalHintITP2:t.avtalHintTrygg; }
+  $("kommunalVal").textContent = kommunal.toLocaleString("sv-SE",{minimumFractionDigits:2}) + " %";
+
+  // Arbetsgivarens kostnad och pensionspremie
+  const tjpKostnad = avtal==="ITP1" ? 0.30 : (avtal==="TryggPlan" ? tjpInput : 0);
+  const sem      = semModell==="Annat" ? annat : semestertillagg(semModell, typ, dagar, belopp);
+  const agAvg    = (belopp + sem) * agPct;
+  const tjpPrem  = (belopp + sem) * tjpKostnad;
+  const flexPrem = flexPct/100 * belopp;
+  const slpPre   = (tjpPrem + flexPrem) * slpPct;
+  const summa    = belopp + sem + agAvg + tjpPrem + flexPrem + slpPre;
+  const premie   = summa / (1 + slpPct);
+  const slpTot   = summa - premie;
+  const faktor   = belopp > 0 ? premie/belopp : 0;
+
+  // Privatekonomi
+  const marginal     = kommunal + (lon > LIMIT_BRYTPUNKT ? STATLIG_SKATT : 0);
+  const netto        = belopp * (1 - marginal/100);
+  const pensionNetto = premie * (1 - kommunal/100);
+  const fordel       = pensionNetto - netto;
+
+  // Sparkapital till pension
+  const aIn = +$("alder").value, aUt = +$("pensionsalder").value;
+  const years = Math.max(1, aUt - aIn);
+  const retPct = +$("avkastning").value;
+  // Använd simSeries för att ta hänsyn till fondavgift och avkastningsskatt
+  const mainSeries = simSeries(premie, retPct, years, typ, fondavgift, avkastningsskatt);
+  const fv = mainSeries[years];
+  const inbetalt = typ === "Löneväxling" ? premie * years * 12 : premie;
+
+  // ===== Resultatkort =====
+  $("resPremieLabel").textContent = typ==="Löneväxling" ? T[LANG].resPremieLabel : T[LANG].resPremieLabelBonus;
+  $("resPremie").textContent = fmtKr(premie);
+  $("resUplift").textContent = ((faktor-1)*100).toLocaleString("sv-SE",{maximumFractionDigits:1}) + " %";
+  { const rsub = document.querySelector(".r-sub");
+    rsub.childNodes[0].textContent = T[LANG].resInklusive + " ";
+    rsub.childNodes[2].textContent = "\u00a0" + T[LANG].resUpliftSuffix; }
+  $("resYears").textContent  = years;
+  { const rl = document.querySelectorAll(".r-label"); if(rl[1]) rl[1].innerHTML = T[LANG].resCapLabel + ' <span id="resYears">' + years + '</span> ' + T[LANG].resCapSuffix; }
+  $("resKapital").textContent = fmtKr(fv);
+  { const t=T[LANG]; let dp=[t.discBase(retPct.toLocaleString("sv-SE",{maximumFractionDigits:1}))];
+    if(fondavgift>0) dp.push(t.discFond(fondavgift.toLocaleString("sv-SE",{minimumFractionDigits:2})));
+    if(avkastningsskatt>0) dp.push(t.discAvsk(avkastningsskatt.toLocaleString("sv-SE",{minimumFractionDigits:3})));
+    dp.push(t.discTail); $("resDisclaimer").textContent = dp.join(" "); }
+
+
+  // ===== Lämplighetsindikator =====
+  const lonEfter = typ==="Löneväxling" ? lon - belopp : lon;
+  const box = $("statusBox");
+  box.classList.remove("good","warn","amber");
+  { const st=T[LANG];
+  if(lonEfter > LIMIT_AVGIFTSTAK){
+    box.classList.add("good");  $("statusIcon").textContent="✓";
+    $("statusTitle").textContent=st.statusGoodTitle;
+    $("statusText").textContent=st.statusGoodText(fmtKr(lonEfter),fmtKr(LIMIT_AVGIFTSTAK),fmtKr(LIMIT_BRYTPUNKT));
+  } else if(lonEfter > LIMIT_BRYTPUNKT){
+    box.classList.add("amber"); $("statusIcon").textContent="!";
+    $("statusTitle").textContent=st.statusAmberTitle;
+    $("statusText").textContent=st.statusAmberText(fmtKr(lonEfter),fmtKr(LIMIT_AVGIFTSTAK),fmtKr(LIMIT_BRYTPUNKT));
+  } else {
+    box.classList.add("warn");  $("statusIcon").textContent="✕";
+    $("statusTitle").textContent=st.statusWarnTitle;
+    $("statusText").textContent=st.statusWarnText(fmtKr(lonEfter),fmtKr(LIMIT_AVGIFTSTAK),fmtKr(LIMIT_BRYTPUNKT));
+  }}
+
+  // ===== Detaljtabell =====
+  $("rSemLabel").textContent = typ==="Löneväxling" ? T[LANG].detSem : T[LANG].detSemBonus;
+  $("rBelopp").textContent = fmtKr(belopp);
+  $("rSem").textContent = fmtKr(sem);
+  $("rAg").textContent = fmtKr(agAvg);
+  $("rTjp").textContent = fmtKr(tjpPrem);
+  $("rFlex").textContent = fmtKr(flexPrem);
+  $("rSlpPre").textContent = fmtKr(slpPre);
+  $("rSumma").textContent = fmtKr(summa);
+  $("rPremie").textContent = fmtKr(premie);
+  $("rSlp").textContent = fmtKr(slpTot);
+  $("rFaktor").textContent = fmtFaktor(faktor);
+  $("rMarginal").textContent = fmtPct(marginal);
+  $("rNetto").textContent = fmtKr(netto);
+  $("rPensionNetto").textContent = fmtKr(pensionNetto);
+  $("rFordel").textContent = (fordel>=0?"+":"") + fmtKr(fordel);
+
+  // ===== Scenariotabell (4/6/8 % – 10/20/30 år) =====
+  $("scenSub").textContent = typ==="Löneväxling" ? T[LANG].scenSubMonthly(fmtKr(premie)) : T[LANG].scenSubLump(fmtKr(premie));
+  [4,6,8].forEach(pct => {
+    [10,20,30].forEach(yrs => {
+      const v = fvAt(premie, pct, yrs, typ, fondavgift, avkastningsskatt);
+      $("sc"+pct+"-"+yrs).textContent = fmtKr(v);
+    });
+    // Markera raden som matchar vald avkastning
+    const row = $("sc"+pct+"-10").parentElement;
+    row.classList.toggle("is-current", Math.abs(retPct - pct) < 0.01);
+  });
+
+  // ===== Graf =====
+  chartData = { premie, years, retPct, typ, fondavgift, avkastningsskatt };
+  drawChart();
+}
+
+// ===== Canvas-graf =====
+const SCEN_COLORS = {4:"#c0a778", 6:"#2f6f73", 8:"#9c4438"};
+const PAD_L = 8, PAD_R = 8, PAD_T = 12, PAD_B = 26, CH_H = 240;
+let hoverIdx = null;
+
+// ===== År-för-år-tabell med nedladdning (CSV / Excel) =====
+let yrCols = [], yrRows = [], yrKey = "";
+function renderYearTable(){
+  const d = (function(){
+    if(!chartData) return null;
+    const sv = LANG === "sv", {years, retPct} = chartData;
+    const {main, inb, scen, active} = buildSeries();
+    const cols = [sv?"År":"Year", sv?"Inbetalt":"Paid in", sv?"Avkastning":"Return", (sv?"Kapital ":"Capital ") + retPct + " %", ...active.map(p => (sv?"Kapital ":"Capital ") + p + " %")];
+    const rows = [];
+    for(let y = 1; y <= years; y++) rows.push([y, inb[y], main[y] - inb[y], main[y], ...active.map(p => scen[p][y])]);
+    return {sig: [chartData, active], cols, rows};
+  })();
+  if(!d) return;
+  const key = JSON.stringify([d.sig, LANG]);
+  if(key === yrKey) return;
+  yrKey = key;
+  yrCols = d.cols; yrRows = d.rows;
+  document.getElementById("yrTitle").textContent = ((sv, en) => LANG === "en" ? en : sv)("År för år (" + d.rows.length + " år)", "Year by year (" + d.rows.length + " years)");
+  document.getElementById("yrCsv").textContent = ((sv, en) => LANG === "en" ? en : sv)("Ladda ner CSV", "Download CSV");
+  document.getElementById("yrXls").textContent = ((sv, en) => LANG === "en" ? en : sv)("Ladda ner Excel", "Download Excel");
+  document.getElementById("yrHead").innerHTML = "<tr>" + yrCols.map(c => "<th>" + c + "</th>").join("") + "</tr>";
+  document.getElementById("yrBody").innerHTML = yrRows.map(r => "<tr>" + r.map((v,i) => "<td>" + (i === 0 ? v : Math.round(v).toLocaleString("sv-SE")) + "</td>").join("") + "</tr>").join("");
+}
+function yrDownload(name, type, content){
+  const url = URL.createObjectURL(new Blob([content], {type}));
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+document.getElementById("yrCsv").addEventListener("click", e => {
+  e.preventDefault(); e.stopPropagation();
+  const csv = [yrCols.join(";"), ...yrRows.map(r => r.map(Math.round).join(";"))].join("\r\n");
+  yrDownload(((sv, en) => LANG === "en" ? en : sv)("lonevaxling-ar-for-ar.csv", "salary-exchange-year-by-year.csv"), "text/csv;charset=utf-8", "\uFEFF" + csv);
+});
+document.getElementById("yrXls").addEventListener("click", e => {
+  e.preventDefault(); e.stopPropagation();
+  const html = '<html><head><meta charset="utf-8"></head><body><table><tr>' + yrCols.map(c => "<th>" + c + "</th>").join("") + "</tr>" +
+    yrRows.map(r => "<tr>" + r.map(v => "<td>" + Math.round(v) + "</td>").join("") + "</tr>").join("") + "</table></body></html>";
+  yrDownload(((sv, en) => LANG === "en" ? en : sv)("lonevaxling-ar-for-ar.xls", "salary-exchange-year-by-year.xls"), "application/vnd.ms-excel;charset=utf-8", html);
+});
+
+// ===== Simuleringsmotor: år-för-år med fondavgift + avkastningsskatt =====
+// Returnerar array [kapital vid år0=0, år1, år2, ..., årtotalYears]
+function simSeries(premie, grossPct, totalYears, t, fondavgift, avkastningsskatt){
+  const netAnnual = Math.pow(1 + grossPct/100, 1) * (1 - fondavgift/100) - 1;
+  const r = Math.pow(1 + Math.max(netAnnual, -0.99), 1/12) - 1;
+  const avsk = avkastningsskatt / 100;
+  const pts = [0];
+  let cap = 0;
+  for(let y = 1; y <= totalYears; y++){
+    if(y > 1 && avsk > 0) cap *= (1 - avsk);          // avkastningsskatt ingången av år
+    if(t === "Löneväxling"){
+      cap *= Math.pow(1+r, 12);                         // tillväxt på befintligt kapital
+      cap += r > 0 ? premie * ((Math.pow(1+r,12)-1)/r) * (1+r) : premie * 12; // premie förskott
+    } else {
+      if(y === 1) cap = premie;                         // bonusväxling: engångsbelopp år 1
+      cap *= Math.pow(1+r, 12);
+    }
+    pts.push(cap);
+  }
+  return pts;
+}
+
+function fvAt(premie, pct, yrs, t, fondavgift, avkastningsskatt){
+  return simSeries(premie, pct, yrs, t, fondavgift, avkastningsskatt)[yrs];
+}
+
+function checkedScen(){
+  return [...document.querySelectorAll(".scShow:checked")].map(cb => +cb.dataset.pct);
+}
+
+function buildSeries(){
+  const {premie, years, retPct, typ:t, fondavgift, avkastningsskatt} = chartData;
+  const main = simSeries(premie, retPct, years, t, fondavgift, avkastningsskatt);
+  const inb = [];
+  for(let y = 0; y <= years; y++) inb.push(t === "Löneväxling" ? premie * y * 12 : premie);
+  const active = checkedScen();
+  const scen = {};
+  active.forEach(p => { scen[p] = simSeries(premie, p, years, t, fondavgift, avkastningsskatt); });
+  return {main, inb, scen, active};
+}
+
+function drawChart(){
+  if(!chartData) return;
+  renderYearTable();
+  const cv = $("growthChart");
+  const ctx = cv.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const W = cv.clientWidth || cv.parentElement.clientWidth;
+  cv.width = W*dpr; cv.height = CH_H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,CH_H);
+
+  const {years, retPct} = chartData;
+  const {main, inb, scen, active} = buildSeries();
+  let maxV = main[main.length-1];
+  active.forEach(p => { maxV = Math.max(maxV, scen[p][years]); });
+  maxV = Math.max(maxV, 1);
+
+  const iw = W-PAD_L-PAD_R, ih = CH_H-PAD_T-PAD_B;
+  const X = i => PAD_L + iw*i/years;
+  const Y = v => PAD_T + ih*(1 - v/maxV);
+
+  // Gridlinjer
+  ctx.strokeStyle = "#f5f4f1"; ctx.lineWidth = 1;
+  ctx.fillStyle = "#8a929c"; ctx.font = "11px system-ui,sans-serif"; ctx.textAlign = "left";
+  for(let g=1; g<=4; g++){
+    const v = maxV*g/4, y = Y(v);
+    ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(W-PAD_R,y); ctx.stroke();
+    ctx.fillText(Math.round(v/1000).toLocaleString("sv-SE") + " tkr", PAD_L+2, y-4);
+  }
+
+  // Area: huvudserie
+  ctx.beginPath();
+  ctx.moveTo(X(0), Y(main[0]));
+  main.forEach((v,i) => ctx.lineTo(X(i), Y(v)));
+  ctx.lineTo(X(years), Y(0)); ctx.lineTo(X(0), Y(0)); ctx.closePath();
+  ctx.fillStyle = "rgba(12,42,73,.10)"; ctx.fill();
+
+  // Scenariolinjer
+  active.forEach(p => {
+    ctx.beginPath();
+    scen[p].forEach((v,i) => i ? ctx.lineTo(X(i),Y(v)) : ctx.moveTo(X(i),Y(v)));
+    ctx.strokeStyle = SCEN_COLORS[p]; ctx.lineWidth = 2; ctx.stroke();
+  });
+
+  // Huvudlinje (vald avkastning)
+  ctx.beginPath();
+  main.forEach((v,i) => i ? ctx.lineTo(X(i),Y(v)) : ctx.moveTo(X(i),Y(v)));
+  ctx.strokeStyle = "#0c2a49"; ctx.lineWidth = 2.5; ctx.stroke();
+
+  // Inbetalt (blå streckad)
+  ctx.beginPath();
+  inb.forEach((v,i) => i ? ctx.lineTo(X(i),Y(v)) : ctx.moveTo(X(i),Y(v)));
+  ctx.strokeStyle = "#4675a4"; ctx.lineWidth = 2; ctx.setLineDash([5,4]); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // X-axel
+  ctx.fillStyle = "#8a929c";
+  const stepX = years > 30 ? 10 : years > 12 ? 5 : years > 6 ? 2 : 1;
+  for(let y=0; y<=years; y+=stepX){
+    ctx.textAlign = y===0 ? "left" : "center";
+    ctx.fillText(y===0 ? T[LANG].tipYear0 : "+"+y+" "+(LANG==="sv"?"år":"yr"), X(y), CH_H-8);
+  }
+
+  // Hover: guidelinje + punkter
+  if(hoverIdx !== null){
+    const i = hoverIdx;
+    ctx.strokeStyle = "#b9b5ac"; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(X(i), PAD_T); ctx.lineTo(X(i), CH_H-PAD_B); ctx.stroke();
+    ctx.setLineDash([]);
+    const dot = (v,c) => {
+      ctx.beginPath(); ctx.arc(X(i), Y(v), 4.5, 0, Math.PI*2);
+      ctx.fillStyle = "#fff"; ctx.fill();
+      ctx.lineWidth = 2.5; ctx.strokeStyle = c; ctx.stroke();
+    };
+    active.forEach(p => dot(scen[p][i], SCEN_COLORS[p]));
+    dot(main[i], "#0c2a49");
+    dot(inb[i], "#4675a4");
+  }
+
+  // Legend
+  const fmtPctSv = retPct.toLocaleString("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1});
+  const tL = T[LANG];
+  let leg = '<span><span class="leg-dot" style="background:var(--blue)"></span>' + tL.legInbetalt + '</span>' +
+            '<span><span class="leg-dot" style="background:var(--accent)"></span>' + tL.legVarde(fmtPctSv) + '</span>';
+  active.forEach(p => {
+    if(Math.abs(p - retPct) < 0.01) return;
+    leg += '<span><span class="leg-dot" style="background:' + SCEN_COLORS[p] + '"></span>' + tL.legScenario(p) + '</span>';
+  });
+  $("chartLegend").innerHTML = leg;
+}
+
+// ===== Tooltip-interaktion =====
+const chartTip = $("chartTip");
+
+function showTip(clientX){
+  if(!chartData) return;
+  const cv = $("growthChart");
+  const rect = cv.getBoundingClientRect();
+  const W = rect.width;
+  const iw = W-PAD_L-PAD_R;
+  const {years, retPct} = chartData;
+  const x = clientX - rect.left;
+  const i = Math.round(clamp((x-PAD_L)/iw, 0, 1) * years);
+  if(i === hoverIdx && chartTip.classList.contains("vis")){ positionTip(i); return; }
+  hoverIdx = i;
+  drawChart();
+
+  const {main, inb, scen, active} = buildSeries();
+  const fmtPctSv = retPct.toLocaleString("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1});
+  let html = '<span class="t-year">' + (i===0 ? T[LANG].tipYear0 : T[LANG].tipYearN(i)) + '</span>';
+  // Sortera serierna fallande på värde för läsbarhet
+  const rows = [{c:"#0c2a49", l:T[LANG].legVarde(fmtPctSv), v:main[i]}];
+  active.forEach(p => { if(Math.abs(p - retPct) >= 0.01) rows.push({c:SCEN_COLORS[p], l:T[LANG].legScenario(p), v:scen[p][i]}); });
+  rows.sort((a,b) => b.v - a.v);
+  rows.push({c:"#4675a4", l:T[LANG].legInbetalt, v:inb[i]});
+  rows.forEach(r => {
+    html += '<span class="t-row"><span class="leg-dot" style="background:' + r.c + '"></span>' + r.l + '<b>' + fmtKr(r.v) + '</b></span>';
+  });
+  chartTip.innerHTML = html;
+  chartTip.classList.add("vis");
+  chartTip.setAttribute("aria-hidden","false");
+  positionTip(i);
+}
+
+function positionTip(i){
+  const cv = $("growthChart");
+  const W = cv.getBoundingClientRect().width;
+  const iw = W-PAD_L-PAD_R;
+  const px = PAD_L + iw*i/chartData.years;
+  const tw = chartTip.offsetWidth;
+  let left = px + 14;
+  if(left + tw > W) left = px - tw - 14;
+  chartTip.style.left = Math.max(0, left) + "px";
+  chartTip.style.top = "6px";
+}
+
+function hideTip(){
+  hoverIdx = null;
+  chartTip.classList.remove("vis");
+  chartTip.setAttribute("aria-hidden","true");
+  drawChart();
+}
+
+const gcv = $("growthChart");
+gcv.addEventListener("mousemove", e => showTip(e.clientX));
+gcv.addEventListener("mouseleave", hideTip);
+gcv.addEventListener("touchstart", e => showTip(e.touches[0].clientX), {passive:true});
+gcv.addEventListener("touchmove",  e => showTip(e.touches[0].clientX), {passive:true});
+gcv.addEventListener("touchend", hideTip);
+
+// Checkboxar för scenarier
+document.querySelectorAll(".scShow").forEach(cb => cb.addEventListener("change", drawChart));
+
+// ==================== BEGRÄNSNINGSREGEL MODAL ====================
+// Sparade variabelvärden (initierade med Excel-standardvärden)
+let boundaryVars = {
+  pbb:   59200,
+  ibb:   83400,
+  ibbG1: 7.5,
+  ibbG2: 30,
+  avs1:  4.5,   // procent
+  avs2:  30     // procent
+};
+let useBoundaryRule = false;
+
+function calcBoundaryVars(vars, lonAr){
+  const g1kr   = vars.ibb * vars.ibbG1;
+  const g2kr   = vars.ibb * vars.ibbG2;
+  const maxPen = Math.min(0.35 * lonAr, 10 * vars.pbb);
+  const tjp    = (vars.avs1/100) * Math.min(lonAr, g1kr)
+               + (vars.avs2/100) * Math.max(0, Math.min(lonAr, g2kr) - g1kr);
+  const maxLvxlAr  = Math.max(0, maxPen - tjp);
+  return { g1kr, g2kr, maxPen, tjp, maxLvxlAr, maxLvxlMan: maxLvxlAr / 12 };
+}
+
+function updateModalCalc(){
+  const pbb   = parseNum($("mPBB").value)   || boundaryVars.pbb;
+  const ibb   = parseNum($("mIBB").value)   || boundaryVars.ibb;
+  const ibbG1 = parseNum($("mIBBG1").value) || boundaryVars.ibbG1;
+  const ibbG2 = parseNum($("mIBBG2").value) || boundaryVars.ibbG2;
+  const avs1  = parseNum($("mAvs1").value);
+  const avs2  = parseNum($("mAvs2").value);
+  const vars  = { pbb, ibb, ibbG1, ibbG2, avs1: isNaN(avs1)?4.5:avs1, avs2: isNaN(avs2)?30:avs2 };
+  const d     = calcBoundaryVars(vars, lon * 12);
+  $("mLonDisplay").textContent = fmtKr(lon * 12) + "/år";
+  $("mIBBkr1").textContent     = fmtKr(d.g1kr);
+  $("mIBBkr2").textContent     = fmtKr(d.g2kr);
+  $("mMaxPension").textContent  = fmtKr(d.maxPen);
+  $("mAvsTjp").textContent      = fmtKr(d.tjp);
+  $("mMaxLvxlAr").textContent   = fmtKr(d.maxLvxlAr);
+  $("mMaxLvxlMan").textContent  = fmtKr(d.maxLvxlMan);
+}
+
+function openModal(){
+  // Fyll inputs med aktuella variabelvärden
+  $("mPBB").value   = Math.round(boundaryVars.pbb).toLocaleString("sv-SE");
+  $("mIBB").value   = Math.round(boundaryVars.ibb).toLocaleString("sv-SE");
+  $("mIBBG1").value = boundaryVars.ibbG1.toLocaleString("sv-SE",{maximumFractionDigits:2});
+  $("mIBBG2").value = boundaryVars.ibbG2.toLocaleString("sv-SE",{maximumFractionDigits:2});
+  $("mAvs1").value  = boundaryVars.avs1.toLocaleString("sv-SE",{maximumFractionDigits:2});
+  $("mAvs2").value  = boundaryVars.avs2.toLocaleString("sv-SE",{maximumFractionDigits:2});
+  updateModalCalc();
+  $("boundaryModal").classList.add("open");
+  $("boundaryModal").focus();
+}
+
+function closeModal(save){
+  if(save){
+    const pbb   = parseNum($("mPBB").value);
+    const ibb   = parseNum($("mIBB").value);
+    const ibbG1 = parseNum($("mIBBG1").value);
+    const ibbG2 = parseNum($("mIBBG2").value);
+    const avs1  = parseNum($("mAvs1").value);
+    const avs2  = parseNum($("mAvs2").value);
+    if(!isNaN(pbb)   && pbb > 0)    boundaryVars.pbb   = pbb;
+    if(!isNaN(ibb)   && ibb > 0)    boundaryVars.ibb   = ibb;
+    if(!isNaN(ibbG1) && ibbG1 > 0)  boundaryVars.ibbG1 = ibbG1;
+    if(!isNaN(ibbG2) && ibbG2 > 0)  boundaryVars.ibbG2 = ibbG2;
+    if(!isNaN(avs1)  && avs1 >= 0)  boundaryVars.avs1  = avs1;
+    if(!isNaN(avs2)  && avs2 >= 0)  boundaryVars.avs2  = avs2;
+    updateMaxHints();
+    calc();
+  } else {
+    // Avbryt → avbocka om regel inte var aktiv
+    if(!useBoundaryRule) $("useBoundary").checked = false;
+  }
+  $("boundaryModal").classList.remove("open");
+}
+
+// Checkbox
+$("useBoundary").addEventListener("change", function(){
+  useBoundaryRule = this.checked;
+  if(this.checked){ openModal(); }
+  else { updateMaxHints(); calc(); }
+});
+
+// Modal-knappar
+$("modalClose").addEventListener("click",  () => closeModal(false));
+$("modalCancel").addEventListener("click", () => closeModal(false));
+$("modalSave").addEventListener("click",   () => closeModal(true));
+$("boundaryModal").addEventListener("click", e => { if(e.target === $("boundaryModal")) closeModal(false); });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && $("boundaryModal").classList.contains("open")) closeModal(false); });
+
+// Live-uppdatering i modal
+["mPBB","mIBB","mIBBG1","mIBBG2","mAvs1","mAvs2"].forEach(id => {
+  $(id).addEventListener("input", updateModalCalc);
+});
+
+// ===== Språkväxlare =====
+function setLang(lang){
+  LANG = lang;
+  applyLang();
+}
+$("btnSV").addEventListener("click", () => setLang("sv"));
+$("btnEN").addEventListener("click", () => setLang("en"));
+[$("btnSV"),$("btnEN")].forEach(btn => btn.addEventListener("keydown", e => {
+  if(e.key==="Enter"||e.key===" "){ e.preventDefault(); btn.click(); }
+}));
+
+window.addEventListener("resize", () => { hoverIdx = null; chartTip.classList.remove("vis"); drawChart(); });
+
+// ===== Init =====
+komSel.textContent = "Riksgenomsnitt – 32,38 %";
+// Initiala värden för text-inputs med decimalkomma
+[["agAvgift","31,42"],["slp","24,26"],["tjpKostnad","0"],
+ ["fondavgift","0,00"],["avkastningsskatt","0,000"],["annatBelopp","0"]
+].forEach(([id,v]) => $(id).value = v);
+komSel.classList.add("vis");
+kommunalNum.value = "32,38";
+setLon(60000);
+setBelopp(3000);
+syncAges();
+rangeFill($("avkastning"));
+rangeFill($("semDagar"));
+rangeFill($("flex"));
+calc();
+</script>
+</body>
+</html>

@@ -1,6 +1,10 @@
 ---
-import LonevaxlingCalculator from "@/components/calculators/LonevaxlingCalculator";
+import AppFrame from "@/components/AppFrame.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// The calculator is Salary_Exchange.html of github.com/mathiasboos/Calculators, shown as it is with the site's colours
+// and fonts (scripts/sync-apps.mjs, scripts/apps-colors.mjs, scripts/apps/lonevaxling.css; a GitHub Action keeps it up
+// to date). English page: /en/salary-exchange.
 ---
 
 <BaseLayout
@@ -9,14 +13,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   ogTitle="Löneväxlingskalkylator – Pensionslyft"
   ogDescription="Se hur mycket extra pensionskapital löneväxling kan ge och om det passar din lönenivå."
 >
-  <div class="mx-auto max-w-7xl px-4 py-14">
-    <h1 class="font-display text-4xl font-semibold">Löneväxlingskalkylator 2026</h1>
-    <p class="mt-3 max-w-2xl text-muted-foreground">
-      Ränta på ränta gör att varje krona du löneväxlar idag är värd mer än en krona imorgon. Fyll i din lön och hur
-      mycket du vill växla, så ser du effekten direkt.
-    </p>
-    <div class="mt-10">
-      <LonevaxlingCalculator client:load />
-    </div>
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">Löneväxlingskalkylator 2026</h1>
+    <AppFrame slug="lonevaxling" title="Löneväxlingskalkylator 2026" />
   </div>
 </BaseLayout>

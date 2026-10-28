@@ -57,7 +57,11 @@ try {
         await page.waitForTimeout(300);
         const state = await page.evaluate(() => ({
           heading: document.querySelector("h1")?.textContent?.trim() ?? "",
-          active: document.querySelector(".lang-btn.active")?.textContent?.trim().toLowerCase() ?? "",
+          // The switch marks the language in use: a button with the class "active", or a part of it that has it; the page's
+          // own lang attribute is the fallback.
+          active:
+            (document.querySelector(".lang-btn.active") ?? document.querySelector(".lang-btn .active"))?.textContent?.trim().toLowerCase() ??
+            document.documentElement.lang,
           header: document.querySelector("header.top") ? getComputedStyle(document.querySelector("header.top")).display : "none",
           figures: (document.body.innerText.match(/\d[\d  ]{2,}/g) ?? []).length,
           wide: document.documentElement.scrollWidth - document.documentElement.clientWidth,

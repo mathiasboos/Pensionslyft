@@ -57,7 +57,7 @@ jobs:
 
       - name: Check the calculators in a browser
         if: steps.diff.outputs.changed == 'true'
-        run: node scripts/check-apps.mjs
+        run: node scripts/check-apps.mjs --only "$(git diff --name-only -- public/app | sed 's#public/app/##; s#\.html##' | paste -sd, -)"
 
       - name: Tests and build
         if: steps.diff.outputs.changed == 'true'
