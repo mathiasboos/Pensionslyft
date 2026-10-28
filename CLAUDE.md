@@ -178,6 +178,7 @@ look at on the preview.
 - Sliders are native range inputs (the `.range` class in `global.css`). The
   Radix slider that was used before did not follow a finger on a phone, so do not bring it back; test any
   new slider with touch events (Playwright with an iPhone profile and CDP `Input.dispatchTouchEvent`).
+- **The language switch on the embedded tools** (`stayMode` in `src/lib/i18n.ts`): on `/pensionsplaneraren` and `/typfallsmodellen`, which have no English page, the header's SV | EN does not navigate (it would close the tool). On the planner it sets the app's own language (`setLang`, key `pensionslyft.planner.lang`) and follows the app's own buttons; on the Typfallsmodellen (Swedish only) it shows a note. A new embedded tool without a twin is added to `STAY_ON_PAGE`.
 - Never commit `.env` files or secrets. The repository is public.
 
 ## Before opening a PR

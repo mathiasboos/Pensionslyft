@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { coverOf, getArticles } from "@/lib/articles";
 import CalculatorLevel from "@/components/CalculatorLevel.astro";
 import { calculatorGroups, featuredCalculator, groupTitle, insightsFor, navItem } from "@/lib/site-nav";
-import { articlePath, articlesListPath, cleanPath, HOME, langOf, newsListPath, switchTarget } from "@/lib/i18n";
+import { articlePath, articlesListPath, cleanPath, HOME, langOf, newsListPath, stayMode, switchTarget } from "@/lib/i18n";
 import { ui } from "@/i18n/ui";
 import { cn } from "@/lib/utils";
 
@@ -29,8 +29,9 @@ const aboutHref = en ? "/en/about" : "/om-pensionslyft";
 // The other language: the same page if it exists there, else the front page of that language.
 const target = switchTarget(Astro.url.pathname);
 const here = cleanPath(Astro.url.pathname);
-const svHref = en ? target : here;
-const enHref = en ? here : target;
+const stay = stayMode(Astro.url.pathname);
+const svHref = stay ? here : en ? target : here;
+const enHref = stay ? here : en ? here : target;
 const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 const calculatorsActive =
   isActive(calcHref) || calculatorGroups.some((g) => g.items.some((item) => isActive(item.href) || (item.enHref !== undefined && isActive(item.enHref))));
@@ -259,6 +260,7 @@ const FeaturedIcon = featured.icon;
           lang="sv"
           hreflang="sv"
           data-lang-switch="sv"
+          data-stay={stay}
           title={t["lang.toSwedish"]}
           aria-current={en ? undefined : "true"}
           class:list={["rounded-md px-2 py-1.5 transition-colors hover:text-primary", en ? "text-foreground/70" : "font-semibold text-primary"]}>SV</a
@@ -269,6 +271,7 @@ const FeaturedIcon = featured.icon;
           lang="en"
           hreflang="en"
           data-lang-switch="en"
+          data-stay={stay}
           title={t["lang.toEnglish"]}
           aria-current={en ? "true" : undefined}
           class:list={["rounded-md px-2 py-1.5 transition-colors hover:text-primary", en ? "font-semibold text-primary" : "text-foreground/70"]}>EN</a
@@ -295,7 +298,17 @@ const FeaturedIcon = featured.icon;
   </div>
 
   {
-    !en && (
+    stay === "swedish-only" && (
+      <div id="lang-note" class="border-t border-border bg-muted" role="status" hidden>
+        <p class="mx-auto max-w-7xl px-4 py-2 text-sm">
+          Typfallsmodellen finns bara på svenska ännu. <span lang="en" class="text-muted-foreground">The Typfall model is only available in Swedish for now.</span>
+        </p>
+      </div>
+    )
+  }
+
+  {
+    !en && !stay && (
       <div id="lang-hint" class="border-t border-border bg-muted" hidden>
         <p class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-sm">
           <span lang="en">{ui.en["hint.text"]}</span>
@@ -512,7 +525,63 @@ const FeaturedIcon = featured.icon;
       }
     },
   };
-  document.querySelectorAll<HTMLElement>("[data-lang-switch]").forEach((link) => {
+  // On an embedded tool without an English page the switch stays on the page (see stayMode in src/lib/i18n.ts).
+  const PLANNER_KEY = "pensionslyft.planner.lang"; // the key scripts/pensionsplaneraren-site.js keeps the planner's language in
+  const switches = Array.from(document.querySelectorAll<HTMLAnchorElement>("[role=group] [data-lang-switch]"));
+  const stayMode = switches[0]?.dataset.stay;
+  const showLang = (lang: string) =>
+    switches.forEach((link) => {
+      const on = link.dataset.langSwitch === lang;
+      link.classList.toggle("font-semibold", on);
+      link.classList.toggle("text-primary", on);
+      link.classList.toggle("text-foreground/70", !on);
+      if (on) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
+  const plannerFrame = () => document.querySelector<HTMLIFrameElement>("iframe");
+  const setPlannerLang = (lang: string) => {
+    store.set(PLANNER_KEY, lang);
+    try {
+      (plannerFrame()?.contentWindow as (Window & { setLang?: (l: string) => void }) | null | undefined)?.setLang?.(lang);
+    } catch {
+      // the frame is not ready; it reads the stored choice when it starts
+    }
+    showLang(lang);
+  };
+  if (stayMode === "planner") {
+    showLang(store.get(PLANNER_KEY) === "en" ? "en" : "sv");
+    // A click on EN or SV inside the planner moves the header with it.
+    const follow = () => {
+      plannerFrame()?.contentDocument?.addEventListener("click", (e) => {
+        const button = (e.target as Element | null)?.closest?.(".lang-btn[data-lang]");
+        if (button) showLang(button.getAttribute("data-lang") ?? "sv");
+      });
+    };
+    const frame = plannerFrame();
+    frame?.addEventListener("load", follow);
+    if (frame?.contentDocument?.readyState === "complete") follow();
+  } else if (stayMode === "swedish-only") {
+    showLang("sv");
+  }
+  switches.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const lang = link.dataset.langSwitch ?? "sv";
+      if (stayMode === "planner") {
+        event.preventDefault();
+        setPlannerLang(lang);
+      } else if (stayMode === "swedish-only") {
+        event.preventDefault();
+        const note = document.getElementById("lang-note");
+        if (lang === "en" && note) {
+          note.hidden = false;
+          window.setTimeout(() => (note.hidden = true), 6000);
+        }
+      } else {
+        store.set("pl-lang", lang);
+      }
+    });
+  });
+  document.querySelectorAll<HTMLElement>("#lang-hint [data-lang-switch]").forEach((link) => {
     link.addEventListener("click", () => store.set("pl-lang", link.dataset.langSwitch ?? "sv"));
   });
   const hint = document.getElementById("lang-hint");
