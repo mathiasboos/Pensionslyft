@@ -1,6 +1,9 @@
 ---
-import PensionCalculator from "@/components/calculators/PensionCalculator";
+import AppFrame from "@/components/AppFrame.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// The calculator is Pension Savings Calculator.html of github.com/mathiasboos/Calculators, shown as it is
+// (scripts/sync-apps.mjs; a GitHub Action keeps it up to date). English page: /en/pension-savings-calculator.
 ---
 
 <BaseLayout
@@ -9,17 +12,11 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   ogTitle="Pensionssparkalkylatorn – Pensionslyft"
   ogDescription="Se ditt framtida pensionskapital och månadsbelopp efter avgifter."
 >
-  <div class="mx-auto max-w-7xl px-4 py-14">
-    <h1 class="font-display text-[1.75rem] font-semibold break-words hyphens-auto sm:text-4xl">Pensionssparkalkylatorn</h1>
-    <p class="mt-3 max-w-2xl text-muted-foreground">
-      Fyll i ditt nuvarande pensionskapital och ditt månadssparande. Kalkylatorn räknar fram kapitalet
-      vid pension och visar hur det betalas ut: som ett månadsbelopp under ett antal år.
-    </p>
-    <div class="mt-10">
-      <PensionCalculator client:load />
-    </div>
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">Pensionssparkalkylatorn</h1>
+    <AppFrame slug="pensionssparande" title="Pensionssparkalkylatorn" />
 
-    <section class="mt-16 border-t border-border pt-10">
+    <section class="mt-12 border-t border-border pt-10">
       <h2 class="font-display text-2xl font-semibold">Vad ingår i Pensionssparkalkylatorn?</h2>
       <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
         <p>
@@ -37,6 +34,9 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
           <a href="/pensionsoversikt" class="text-primary underline underline-offset-2">Pensionsöversikt</a>,{" "}
           <a href="/typfallsmodellen" class="text-primary underline underline-offset-2">Typfallsmodellen</a> eller{" "}
           <a href="/pensionsplaneraren" class="text-primary underline underline-offset-2">Pensionsplaneraren</a>.
+        </p>
+        <p>
+          Beräkningen är en uppskattning före skatt och inte individuell rådgivning. Avkastningen är inte garanterad.
         </p>
       </div>
     </section>

@@ -27,10 +27,10 @@ visual editor (Framer, Lovable) is needed.
 | Reports | `/rapporter` | `src/pages/rapporter.astro` + `src/data/rapporter.ts` (the list of links) |
 | Articles | `/artiklar` | `src/pages/artiklar/index.astro` |
 | One article | `/artiklar/<slug>` | `src/pages/artiklar/[slug].astro` + `src/content/articles/<slug>.md` |
-| Pensionssparkalkylatorn (the older pension calculator) | `/pensionskalkylator` | `src/pages/pensionskalkylator.astro` + `src/components/calculators/PensionCalculator.tsx` |
+| Pensionssparkalkylatorn | `/pensionskalkylator`, `/en/pension-savings-calculator` | `src/components/AppFrame.astro` showing `Pension Savings Calculator.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Pensionsmålkalkylatorn | `/pensionsmalkalkylatorn`, `/en/replacement-rate-calculator` | `src/components/AppFrame.astro` showing `Replacement rate goal calculator.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Pensionsöversikt | `/pensionsoversikt` | `src/pages/pensionsoversikt.astro` + `src/components/calculators/PensionsoversiktCalculator.tsx` (model `src/lib/pensionsoversikt.ts`, pensions from `src/lib/typfall/`) |
-| Compound interest | `/ranta-pa-ranta` | `src/pages/ranta-pa-ranta.astro` + `src/components/calculators/CompoundCalculator.tsx` |
+| Ränta på ränta | `/ranta-pa-ranta`, `/en/compound-interest` | `src/components/AppFrame.astro` showing `Compound Interest Calculator.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | FIRE calculator | `/fire-kalkylator` | `src/pages/fire-kalkylator.astro` + `src/components/calculators/FireCalculator.tsx` |
 | Pensionsplaneraren | `/pensionsplaneraren` | `src/pages/pensionsplaneraren.astro` (shows `public/pensionsplaneraren-app.html`, fetched from GitHub every hour by `.github/workflows/pensionsplaneraren.yml` with `scripts/sync-pensionsplaneraren.mjs`) |
 | Typfallsmodellen | `/typfallsmodellen` | `src/pages/typfallsmodellen.astro` (shows `public/typfallsmodellen-app.html`, built from `main` on GitHub every hour by `.github/workflows/typfallsmodellen.yml` with `scripts/sync-typfallsmodellen.mjs`) |
