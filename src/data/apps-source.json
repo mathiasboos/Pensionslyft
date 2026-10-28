@@ -1,6 +1,12 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "apps": {
+    "ranta-pa-ranta": {
+      "file": "Compound Interest Calculator.html",
+      "commit": "26d5dec77f22946114b7778c96a1b3a1623645da",
+      "committedAt": "2026-10-28T14:35:35+00:00",
+      "subject": "Add Excel download next to CSV in Compound Interest, Pension Savings and Pension Overview"
+    },
     "pensionssparande": {
       "file": "Pension Savings Calculator.html",
       "commit": "26d5dec77f22946114b7778c96a1b3a1623645da",

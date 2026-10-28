@@ -3,67 +3,11 @@ import { toCsv } from "../src/lib/export";
 import { formatPercent, formatSek, formatSekShort, groupDigits, parseAmount, stepValue } from "../src/lib/format";
 import fireWeb from "./fixtures/fire-web.json";
 import {
-  calculateCompound,
   calculateFire,
-  requiredMonthlyDeposit,
 } from "../src/lib/pension";
 
 // Regression values: the calculators must keep giving the same numbers as the
 // original Lovable site for its default inputs.
-
-describe("calculateCompound", () => {
-  const base = { startCapital: 50000, monthlyDeposit: 2500, years: 20, annualReturn: 7, annualFee: 0.3, yieldTax: 1.05 };
-
-  it("is plain monthly compounding when there is no fee and no tax", () => {
-    const result = calculateCompound({ ...base, annualFee: 0, yieldTax: 0 });
-    const rate = Math.pow(1.07, 1 / 12) - 1;
-    let capital = 50000;
-    for (let m = 0; m < 240; m++) capital = capital * (1 + rate) + 2500;
-    expect(result.finalCapital).toBeCloseTo(capital, 4);
-    expect(result.totalFees).toBe(0);
-    expect(result.totalTax).toBe(0);
-  });
-
-  it("adds up: start + deposits + interest - fees - tax = final capital", () => {
-    for (const input of [base, { ...base, years: 1 }, { ...base, annualReturn: 0 }, { ...base, startCapital: 0 }]) {
-      const r = calculateCompound(input);
-      expect(r.startCapital + r.totalDeposits + r.totalGrowth - r.totalFees - r.totalTax).toBeCloseTo(
-        r.finalCapital,
-        4,
-      );
-    }
-  });
-
-  it("splits the net growth into simple interest and interest on interest", () => {
-    const r = calculateCompound(base);
-    for (const row of r.rows) {
-      const netGrowth = row.closing - base.startCapital - row.cumulativeDeposits;
-      expect(row.simpleInterest + row.compoundInterest).toBeCloseTo(Math.max(netGrowth, 0), 6);
-      expect(row.simpleInterest).toBeLessThanOrEqual(Math.max(netGrowth, 0) + 1e-9);
-      expect(row.compoundInterest).toBeGreaterThanOrEqual(0);
-    }
-  });
-
-  it("gives the default result of the page", () => {
-    const r = calculateCompound(base);
-    expect(r.totalDeposits).toBe(600000);
-    expect(Math.round(r.finalCapital)).toBe(1218382);
-  });
-});
-
-describe("requiredMonthlyDeposit", () => {
-  const base = { startCapital: 50000, years: 10, annualReturn: 7, annualFee: 0.3, yieldTax: 1.05 };
-
-  it("gives the monthly saving that ends at the goal", () => {
-    const m = requiredMonthlyDeposit(base, 1_000_000);
-    expect(m).toBeGreaterThan(0);
-    expect(calculateCompound({ ...base, monthlyDeposit: m }).finalCapital).toBeCloseTo(1_000_000, 4);
-  });
-
-  it("is 0 when the start capital alone reaches the goal", () => {
-    expect(requiredMonthlyDeposit(base, 60000)).toBe(0);
-  });
-});
 
 describe("toCsv", () => {
   it("writes a header and whole numbers with semicolons", () => {

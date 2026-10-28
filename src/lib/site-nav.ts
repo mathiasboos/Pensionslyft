@@ -116,8 +116,10 @@ const nettolon: NavItem = {
   keywords: ["nettolönkalkylator", "lön efter skatt", "kommunalskatt", "nettolön 2026"],
 };
 
+// Shown as it is in github.com/mathiasboos/Calculators (Compound Interest Calculator.html), see scripts/sync-apps.mjs.
 const compound: NavItem = {
   href: "/ranta-pa-ranta",
+  enHref: "/en/compound-interest",
   title: "Ränta på ränta",
   description: "Jämför hur mycket som är dina insättningar och hur mycket avkastningen gör.",
   icon: LineChart,
