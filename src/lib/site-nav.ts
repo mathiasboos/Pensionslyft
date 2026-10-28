@@ -12,6 +12,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import type { Lang } from "./i18n";
 
 /**
  * The pages of the site, in one place. The header and its menus, the footer, the home page and /kalkylatorer
@@ -146,3 +147,64 @@ export const insights: NavItem[] = [
     icon: Newspaper,
   },
 ];
+
+// ── English ──
+// The calculators are in Swedish for now; the English pages show their English names and descriptions and link to
+// the Swedish pages (marked as Swedish). The insights (articles, reports, news) have no English pages yet.
+const NAV_EN: Record<string, { title: string; description: string }> = {
+  "/pensionsplaneraren": {
+    title: "Pension planner",
+    description: "Plan your whole retirement: assets, spending, withdrawals and scenarios, year by year.",
+  },
+  "/pensionskalkylator": {
+    title: "Pension savings calculator",
+    description: "See your future pension capital and what it gives per month after fees.",
+  },
+  "/pensionsoversikt": {
+    title: "Pension overview",
+    description: "Will your pension and savings last? See your forecast and how much more you need to save.",
+  },
+  "/typfallsmodellen": {
+    title: "The Typfall model",
+    description: "The public and occupational pension year by year, according to the Swedish Pensions Agency's model.",
+  },
+  "/lonevaxlingskalkylator": {
+    title: "Salary exchange calculator",
+    description: "See what salary exchange gives in extra pension capital and when it suits your salary level.",
+  },
+  "/nettolonkalkylator": {
+    title: "Net salary calculator",
+    description: "See what is left after tax in 2026, step by step, with municipal tax, deductions and fees.",
+  },
+  "/ranta-pa-ranta": {
+    title: "Compound interest",
+    description: "Compare how much is your deposits and how much the return does.",
+  },
+  "/fire-kalkylator": {
+    title: "FIRE calculator",
+    description: "See at what age your savings are enough to live on the return.",
+  },
+};
+
+const GROUP_EN: Record<string, string> = { "Lön och sparande": "Salary and savings", Pension: "Pension" };
+const LEVEL_EN: Record<Level, string> = { Enkel: "Simple", Medel: "Intermediate", Avancerad: "Advanced" };
+const LEVEL_TEXT_EN: Record<Level, string> = {
+  Enkel: "a few fields and the answer at once",
+  Medel: "more choices and settings",
+  Avancerad: "several tabs and many settings for those who want to go deeper",
+};
+
+/** A calculator or page as it is called and described in the language. */
+export function navItem(item: NavItem, lang: Lang): NavItem {
+  const en = lang === "en" ? NAV_EN[item.href] : undefined;
+  return en ? { ...item, ...en } : item;
+}
+export function groupTitle(group: NavGroup, lang: Lang): string {
+  return lang === "en" ? (GROUP_EN[group.title] ?? group.title) : group.title;
+}
+export function levelName(level: Level, lang: Lang): string {
+  return lang === "en" ? LEVEL_EN[level] : level;
+}
+export function levelText(level: Level, lang: Lang): string {
+  return lang === "en" ? LEVEL_TEXT_EN[level] : (LEVELS.find((l) => l.level === level)?.text ?? "");
+}

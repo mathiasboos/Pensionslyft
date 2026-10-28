@@ -21,16 +21,17 @@ export const organization: Json = {
   contactPoint: { "@type": "ContactPoint", email: CONTACT_EMAIL, contactType: "customer support", availableLanguage: "sv" },
 };
 
-export function homeData(): Json[] {
+export function homeData(lang: "sv" | "en" = "sv"): Json[] {
+  const en = lang === "en";
   return [
     { "@context": "https://schema.org", ...organization },
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
+      "@id": en ? `${SITE_URL}/en#website` : `${SITE_URL}/#website`,
       name: SITE_NAME,
-      url: SITE_URL,
-      inLanguage: "sv-SE",
+      url: en ? `${SITE_URL}/en` : SITE_URL,
+      inLanguage: en ? "en-GB" : "sv-SE",
       publisher: { "@id": `${SITE_URL}/#organization` },
     },
   ];

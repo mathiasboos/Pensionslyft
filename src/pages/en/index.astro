@@ -1,0 +1,125 @@
+---
+import { ArrowRight } from "lucide-react";
+import CalculatorCard from "@/components/CalculatorCard.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { KEY_FIGURES_YEAR, keyFiguresEn } from "@/data/nyckeltal";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatSek } from "@/lib/format";
+import { PBB } from "@/lib/nettolon";
+import { calculatorGroups, groupTitle } from "@/lib/site-nav";
+import { cn } from "@/lib/utils";
+---
+
+<BaseLayout
+  title="Pensionslyft – understand and improve your Swedish pension"
+  description="Calculators and guides about the Swedish pension system: pension savings, net salary, salary exchange, compound interest and FIRE."
+  ogDescription="Calculators and guides for your Swedish pension."
+>
+  <section class="border-b border-border" aria-label={`Key figures ${KEY_FIGURES_YEAR}`}>
+    <div class="mx-auto flex max-w-7xl items-center gap-5 px-4">
+      <p
+        class="eyebrow shrink-0 py-3 text-foreground"
+        title="In brackets: the change on the year before, or the year before's value"
+      >
+        Key figures {KEY_FIGURES_YEAR}:
+      </p>
+      <div class="ticker ticker-reverse ticker-slow min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div class="ticker-track flex w-max">
+          {
+            [false, true].map((copy) => (
+              <dl class:list={["items-center gap-5 py-3 pr-5", copy ? "ticker-copy" : "flex"]} aria-hidden={copy ? "true" : undefined}>
+                {keyFiguresEn.map((figure) => (
+                  <div class="flex items-center gap-2 border-l border-border pl-5">
+                    <dt class="eyebrow whitespace-nowrap">{figure.label}</dt>
+                    <dd class="flex items-center gap-1.5 whitespace-nowrap">
+                      <span class="figure-chip">{figure.value}</span>
+                      {figure.note && <span class="text-xs text-muted-foreground tabular-nums">({figure.note})</span>}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dot-grid">
+    <div class="mx-auto max-w-7xl px-4 pt-14 pb-10 sm:pt-20">
+      <p class="eyebrow flex flex-wrap items-center gap-2">
+        Price base amount {KEY_FIGURES_YEAR}: <span class="figure-chip">{formatSek(PBB)}</span>
+      </p>
+      <h1 class="mt-5 max-w-4xl font-display text-[2.75rem] leading-[1.05] font-medium sm:text-6xl lg:text-7xl">
+        Take control of your pension.
+      </h1>
+      <p class="mt-5 max-w-2xl text-lg text-muted-foreground sm:text-xl">
+        Clear guides and calculators about the Swedish public pension, occupational pension and your own savings.
+        Calculate first, read later.
+      </p>
+
+      <form
+        action="/nettolonkalkylator"
+        method="get"
+        class="mt-8 flex max-w-xl items-center gap-2 rounded-xl border border-border bg-card p-1.5 shadow-[var(--shadow-soft)] focus-within:border-primary"
+      >
+        <label for="hero-lon" class="sr-only">Your monthly salary before tax, in kronor</label>
+        <input
+          id="hero-lon"
+          name="lon"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="Monthly salary before tax"
+          class="h-11 min-w-0 flex-1 bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground"
+        />
+        <button type="submit" class={cn(buttonVariants({ variant: "highlight", size: "lg" }), "h-11 px-4 sm:px-6")}>
+          See your net salary
+        </button>
+      </form>
+      <p class="mt-3 max-w-xl text-sm text-muted-foreground">
+        Or <a href="/pensionskalkylator" class="font-medium text-primary hover:underline">calculate your pension</a>{" "}
+        with your savings and fees. The calculators are in Swedish for now, and amounts are in Swedish kronor (kr).
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 pt-12">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Calculators</p>
+        <h2 class="mt-2 font-display text-3xl font-semibold sm:text-4xl">Do the maths on your finances</h2>
+      </div>
+      <a href="/en/calculators" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+        All calculators <ArrowRight className="size-4" aria-hidden="true" />
+      </a>
+    </div>
+    {
+      calculatorGroups.map((group) => (
+        <div class="mt-10">
+          <p class="eyebrow">{groupTitle(group, "en")}</p>
+          <div class="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {group.items.map((item) => (
+              <CalculatorCard item={item} />
+            ))}
+          </div>
+        </div>
+      ))
+    }
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 pt-20">
+    <div class="rounded-2xl border border-border bg-muted p-6 sm:p-10">
+      <p class="eyebrow">About this site</p>
+      <h2 class="mt-2 font-display text-2xl font-semibold sm:text-3xl">Swedish pension, explained</h2>
+      <p class="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+        Pensionslyft is an independent Swedish site. The English version is new and still small: the calculators,
+        articles, news and reports are written in Swedish, and more of the site will be available in English. What you
+        enter in a calculator is calculated in your browser and is not sent anywhere.
+      </p>
+      <a href="/en/about" class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+        About Pensionslyft <ArrowRight className="size-4" aria-hidden="true" />
+      </a>
+    </div>
+  </section>
+</BaseLayout>

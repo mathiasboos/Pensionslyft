@@ -27,6 +27,8 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap({
+      // Swedish and English versions of a page point at each other (hreflang in the sitemap).
+      i18n: { defaultLocale: "sv", locales: { sv: "sv-SE", en: "en-GB" } },
       // Tell Google when news and articles were published (the sitemap's lastmod), so a new item is crawled sooner.
       serialize(item) {
         const date = lastModified(item.url);

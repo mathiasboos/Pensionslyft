@@ -4,7 +4,9 @@ import ArticleCover from "@/components/ArticleCover.astro";
 import { buttonVariants } from "@/components/ui/button";
 import { getArticles } from "@/lib/articles";
 import CalculatorLevel from "@/components/CalculatorLevel.astro";
-import { calculatorGroups, featuredCalculator, insights } from "@/lib/site-nav";
+import { calculatorGroups, featuredCalculator, groupTitle, insights, navItem } from "@/lib/site-nav";
+import { cleanPath, HOME, langOf, twinOf } from "@/lib/i18n";
+import { ui } from "@/i18n/ui";
 import { cn } from "@/lib/utils";
 
 const articles = await getArticles();
@@ -12,20 +14,32 @@ const latest = articles[0];
 const categories = [...new Set(articles.map((a) => a.data.category))].sort((a, b) => a.localeCompare(b, "sv"));
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
+const lang = langOf(Astro.url.pathname);
+const en = lang === "en";
+const t = ui[lang];
+const groups = calculatorGroups.map((g) => ({ ...g, title: groupTitle(g, lang), items: g.items.map((i) => navItem(i, lang)) }));
+const featured = navItem(featuredCalculator, lang);
+const calcHref = en ? "/en/calculators" : "/kalkylatorer";
+const aboutHref = en ? "/en/about" : "/om-pensionslyft";
+// The other language: the same page if it exists there, else the front page of that language.
+const twin = twinOf(Astro.url.pathname);
+const here = cleanPath(Astro.url.pathname);
+const svHref = en ? (twin ?? "/") : here;
+const enHref = en ? here : (twin ?? "/en");
 const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 const calculatorsActive =
-  isActive("/kalkylatorer") || calculatorGroups.some((g) => g.items.some((item) => isActive(item.href)));
-const insightsActive = insights.some((item) => isActive(item.href));
+  isActive(calcHref) || calculatorGroups.some((g) => g.items.some((item) => isActive(item.href)));
+const insightsActive = !en && insights.some((item) => isActive(item.href));
 
 const trigger =
   "group inline-flex cursor-pointer items-center gap-1 rounded-md px-3 py-2 text-sm transition-colors hover:text-primary aria-expanded:text-primary";
 const plainLink = "rounded-md px-3 py-2 text-sm transition-colors hover:text-primary";
-const FeaturedIcon = featuredCalculator.icon;
+const FeaturedIcon = featured.icon;
 ---
 
 <header class="sticky top-0 z-50 border-b border-border bg-background" data-site-header>
   <div class="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4">
-    <a href="/" class="flex shrink-0 items-center gap-1.5 text-primary" aria-label="Pensionslyft, till startsidan">
+    <a href={HOME[lang]} class="flex shrink-0 items-center gap-1.5 text-primary" aria-label={t["site.homeAria"]}>
       <span class="font-display text-xl font-semibold">Pensionslyft</span>
       <svg viewBox="0 0 20 20" class="size-5" aria-hidden="true">
         <polyline
@@ -45,7 +59,7 @@ const FeaturedIcon = featuredCalculator.icon;
       </svg>
     </a>
 
-    <nav class="hidden h-full items-center lg:flex" aria-label="Huvudmeny">
+    <nav class="hidden h-full items-center lg:flex" aria-label={t["nav.main"]}>
       <div class="flex h-full items-center" data-mega>
         <button
           type="button"
@@ -54,7 +68,7 @@ const FeaturedIcon = featuredCalculator.icon;
           aria-controls="mega-kalkylatorer"
           data-mega-trigger
         >
-          Kalkylatorer
+          {t["nav.calculators"]}
           <ChevronDown className="size-4 transition-transform group-aria-expanded:rotate-180" aria-hidden="true" />
         </button>
         <div id="mega-kalkylatorer" class="absolute inset-x-0 top-full z-10 px-4 pt-2" hidden data-mega-panel>
@@ -62,7 +76,7 @@ const FeaturedIcon = featuredCalculator.icon;
             class="mx-auto grid max-w-7xl grid-cols-[1fr_1fr_20rem] overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]"
           >
             {
-              calculatorGroups.map((group) => (
+              groups.map((group) => (
                 <div class="border-r border-border p-6">
                   <p class="eyebrow px-2">{group.title}</p>
                   <ul class="mt-3 space-y-1">
@@ -91,8 +105,8 @@ const FeaturedIcon = featuredCalculator.icon;
               ))
             }
             <div class="bg-muted p-6">
-              <p class="eyebrow">Utvalt</p>
-              <a href={featuredCalculator.href} class="group/feat mt-3 block">
+              <p class="eyebrow">{t["nav.featured"]}</p>
+              <a href={featured.href} class="group/feat mt-3 block">
                 <span
                   class="grid aspect-[16/9] place-items-center rounded-lg text-primary-foreground"
                   style="background: var(--gradient-deep)"
@@ -100,23 +114,26 @@ const FeaturedIcon = featuredCalculator.icon;
                   <FeaturedIcon className="size-10 text-highlight" aria-hidden="true" />
                 </span>
                 <span class="mt-3 block text-sm font-medium text-foreground group-hover/feat:text-primary">
-                  Nytt: {featuredCalculator.title}
+                  {t["nav.featuredNew"]} {featured.title}
                 </span>
                 <span class="mt-0.5 block text-sm leading-5 text-muted-foreground">
-                  {featuredCalculator.description}
+                  {featured.description}
                 </span>
               </a>
               <a
-                href="/kalkylatorer"
+                href={calcHref}
                 class="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
               >
-                Alla kalkylatorer <ArrowRight className="size-4" aria-hidden="true" />
+                {t["nav.allCalculators"]} <ArrowRight className="size-4" aria-hidden="true" />
               </a>
             </div>
           </div>
         </div>
       </div>
 
+      {
+        !en && (
+          <>
       <div class="flex h-full items-center" data-mega>
         <button
           type="button"
@@ -220,26 +237,50 @@ const FeaturedIcon = featuredCalculator.icon;
       >
         Nyheter
       </a>
+          </>
+        )
+      }
       <a
-        href="/om-pensionslyft"
-        aria-current={isActive("/om-pensionslyft") ? "page" : undefined}
-        class:list={[plainLink, isActive("/om-pensionslyft") ? "font-medium text-primary" : "text-foreground/80"]}
+        href={aboutHref}
+        aria-current={isActive(aboutHref) ? "page" : undefined}
+        class:list={[plainLink, isActive(aboutHref) ? "font-medium text-primary" : "text-foreground/80"]}
       >
-        Om Pensionslyft
+        {t["nav.about"]}
       </a>
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
+      <div class="flex items-center text-sm" role="group" aria-label={t["lang.switchAria"]}>
+        <a
+          href={svHref}
+          lang="sv"
+          hreflang="sv"
+          data-lang-switch="sv"
+          title={t["lang.toSwedish"]}
+          aria-current={en ? undefined : "true"}
+          class:list={["rounded-md px-2 py-1.5 transition-colors hover:text-primary", en ? "text-foreground/70" : "font-semibold text-primary"]}>SV</a
+        >
+        <span class="text-border" aria-hidden="true">|</span>
+        <a
+          href={enHref}
+          lang="en"
+          hreflang="en"
+          data-lang-switch="en"
+          title={t["lang.toEnglish"]}
+          aria-current={en ? "true" : undefined}
+          class:list={["rounded-md px-2 py-1.5 transition-colors hover:text-primary", en ? "font-semibold text-primary" : "text-foreground/70"]}>EN</a
+        >
+      </div>
       <a href="/pensionsoversikt" class={cn(buttonVariants({ variant: "highlight" }), "hidden sm:inline-flex")}>
-        Räkna ut din pension
+        {t["nav.cta"]}
       </a>
-      <a href="/kalkylatorer" class={cn(buttonVariants(), "hidden shadow-none lg:inline-flex")}>
-        Alla kalkylatorer
+      <a href={calcHref} class={cn(buttonVariants(), "hidden shadow-none lg:inline-flex")}>
+        {t["nav.allCalculators"]}
       </a>
       <button
         type="button"
         class="-mr-2 grid size-10 cursor-pointer place-items-center rounded-md lg:hidden"
-        aria-label="Meny"
+        aria-label={t["nav.menu"]}
         aria-expanded="false"
         aria-controls="mobile-menu"
         data-menu-toggle
@@ -250,6 +291,22 @@ const FeaturedIcon = featuredCalculator.icon;
     </div>
   </div>
 
+  {
+    !en && (
+      <div id="lang-hint" class="border-t border-border bg-muted" hidden>
+        <p class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-sm">
+          <span lang="en">{ui.en["hint.text"]}</span>
+          <a href={enHref} lang="en" hreflang="en" data-lang-switch="en" class="font-medium text-primary underline underline-offset-2">
+            {ui.en["hint.link"]}
+          </a>
+          <button type="button" class="ml-auto cursor-pointer text-muted-foreground hover:text-foreground" data-hint-dismiss>
+            {t["hint.dismiss"]}
+          </button>
+        </p>
+      </div>
+    )
+  }
+
   <div class="fixed inset-x-0 top-16 bottom-0 z-0 bg-foreground/20" hidden data-mega-overlay></div>
 
   <div
@@ -257,16 +314,16 @@ const FeaturedIcon = featuredCalculator.icon;
     class="fixed inset-x-0 top-16 bottom-0 overflow-y-auto overscroll-contain bg-background lg:hidden"
     hidden
   >
-    <nav class="mx-auto max-w-7xl px-4 pb-10" aria-label="Huvudmeny">
+    <nav class="mx-auto max-w-7xl px-4 pb-10" aria-label={t["nav.main"]}>
       <details class="group border-b border-border" open={calculatorsActive}>
         <summary
           class="flex cursor-pointer list-none items-center justify-between py-4 text-base font-medium [&::-webkit-details-marker]:hidden"
         >
-          Kalkylatorer
+          {t["nav.calculators"]}
           <ChevronDown className="size-5 transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
         {
-          calculatorGroups.map((group) => (
+          groups.map((group) => (
             <div class="pb-4">
               <p class="eyebrow">{group.title}</p>
               <ul class="mt-2 space-y-1">
@@ -294,10 +351,13 @@ const FeaturedIcon = featuredCalculator.icon;
             </div>
           ))
         }
-        <a href="/kalkylatorer" class="mb-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
-          Alla kalkylatorer <ArrowRight className="size-4" aria-hidden="true" />
+        <a href={calcHref} class="mb-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+          {t["nav.allCalculators"]} <ArrowRight className="size-4" aria-hidden="true" />
         </a>
       </details>
+      {
+        !en && (
+          <>
       <details class="group border-b border-border" open={insightsActive}>
         <summary
           class="flex cursor-pointer list-none items-center justify-between py-4 text-base font-medium [&::-webkit-details-marker]:hidden"
@@ -345,12 +405,15 @@ const FeaturedIcon = featuredCalculator.icon;
       <a href="/artiklar" class="block border-b border-border py-4 text-base font-medium">Artiklar</a>
       <a href="/rapporter" class="block border-b border-border py-4 text-base font-medium">Rapporter</a>
       <a href="/nyheter" class="block border-b border-border py-4 text-base font-medium">Nyheter</a>
-      <a href="/om-pensionslyft" class="block border-b border-border py-4 text-base font-medium">Om Pensionslyft</a>
+          </>
+        )
+      }
+      <a href={aboutHref} class="block border-b border-border py-4 text-base font-medium">{t["nav.about"]}</a>
       <div class="mt-8 grid gap-3">
         <a href="/pensionsoversikt" class={cn(buttonVariants({ variant: "highlight", size: "lg" }))}>
-          Räkna ut din pension
+          {t["nav.cta"]}
         </a>
-        <a href="/kalkylatorer" class={cn(buttonVariants({ size: "lg" }), "shadow-none")}>Alla kalkylatorer</a>
+        <a href={calcHref} class={cn(buttonVariants({ size: "lg" }), "shadow-none")}>{t["nav.allCalculators"]}</a>
       </div>
     </nav>
   </div>
@@ -433,6 +496,38 @@ const FeaturedIcon = featuredCalculator.icon;
     show(null);
     trigger.focus();
   });
+
+  // Language. A choice made with the switch is remembered. A visitor with an English browser, or who chose English
+  // before, is shown a hint on the Swedish pages; nobody is redirected (search engines never are).
+  const store = {
+    get: (key: string) => {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    set: (key: string, value: string) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // storage can be blocked; the switch still works
+      }
+    },
+  };
+  document.querySelectorAll<HTMLElement>("[data-lang-switch]").forEach((link) => {
+    link.addEventListener("click", () => store.set("pl-lang", link.dataset.langSwitch ?? "sv"));
+  });
+  const hint = document.getElementById("lang-hint");
+  if (hint) {
+    const chosen = store.get("pl-lang");
+    const wantsEnglish = chosen === "en" || (chosen === null && navigator.language.toLowerCase().startsWith("en"));
+    if (wantsEnglish && store.get("pl-lang-hint") !== "dismissed") hint.hidden = false;
+    hint.querySelector("[data-hint-dismiss]")?.addEventListener("click", () => {
+      hint.hidden = true;
+      store.set("pl-lang-hint", "dismissed");
+    });
+  }
 
   // The sheet on phones.
   const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
