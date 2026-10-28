@@ -1,0 +1,22 @@
+---
+import AppFrame from "@/components/AppFrame.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// The Swedish page is /nettolonkalkylator. The calculator is the same file, started in English.
+---
+
+<BaseLayout
+  title="Net salary calculator 2026 – your pay after tax"
+  description="Work out your net salary for 2026 step by step: municipal tax, state tax, earned income tax credit, fees, salary exchange, capital, ROT/RUT and property fee."
+  ogTitle="Net salary calculator 2026 – Pensionslyft"
+  ogDescription="See what is left in your hand after tax, according to the Swedish Tax Agency's formulas for 2026."
+>
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">Net salary calculator 2026</h1>
+    <AppFrame slug="nettolon" title="Net salary calculator 2026" />
+    <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
+      The calculation follows the Swedish Tax Agency's technical description for income year 2026 and is an estimate, not
+      tax advice. The preliminary tax on your pay slip can differ slightly. Amounts are in Swedish kronor (SEK).
+    </p>
+  </div>
+</BaseLayout>

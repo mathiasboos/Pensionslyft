@@ -62,12 +62,11 @@ look at on the preview.
   | Calculator | Kept up to date by |
   |---|---|
   | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
-  | FIRE (`FIRE_Calculator .html`), Löneväxling (`Salary_Exchange.html`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
+  | FIRE (`FIRE_Calculator .html`), Nettolön (`Net_Salary_2026.html`), Löneväxling (`Salary_Exchange.html`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
-  | Nettolön (re-written in React from `Net_Salary_2026.html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
 
 - **Calculators shown straight from GitHub** (`scripts/lib/apps.mjs`; today the Pensionsmålkalkylatorn, `/pensionsmalkalkylatorn`
-  and `/en/replacement-rate-calculator`, the Pensionssparkalkylatorn, `/pensionskalkylator` and `/en/pension-savings-calculator`, Ränta på ränta, `/ranta-pa-ranta` and `/en/compound-interest`, the Pensionsöversikten, `/pensionsoversikt` and `/en/pension-overview`, and the Löneväxlingskalkylatorn, `/lonevaxlingskalkylator` and `/en/salary-exchange`). The file in Calculators is the master and is never edited here: `node
+  and `/en/replacement-rate-calculator`, the Pensionssparkalkylatorn, `/pensionskalkylator` and `/en/pension-savings-calculator`, Ränta på ränta, `/ranta-pa-ranta` and `/en/compound-interest`, the Pensionsöversikten, `/pensionsoversikt` and `/en/pension-overview`, the Löneväxlingskalkylatorn, `/lonevaxlingskalkylator` and `/en/salary-exchange`, FIRE, `/fire-kalkylator` and `/en/fire-calculator`, and the Nettolönkalkylatorn, `/nettolonkalkylator` and `/en/net-salary`). The file in Calculators is the master and is never edited here: `node
   scripts/sync-apps.mjs [--only slug] [--if-changed] [--reapply]` puts it in `public/app/<slug>.html` (disallowed in
   robots.txt) with `scripts/apps-theme.css` (hides the file's own header and SV | EN switch), `scripts/apps-site.js`
   (language from `?lang=`, links) and, when the file does not have the site's palette, its colours in
@@ -152,21 +151,9 @@ look at on the preview.
   built into `typfallsmodellen.html`). When a calculator on this site is added, changed or checked, read the
   current file in those repositories first (a read-only shallow clone is enough) and port from it, instead of
   working from an older copy. They are newer than anything uploaded to a chat.
-- **Amount fields** (`fields.tsx`): `AmountField`, `NumberField` and `AmountSliderField` write the amount with thousands
-  separators as it is typed ("100 000") and take `stepBy` for the − / + buttons (hold to repeat, arrow keys in the field,
-  snapping to the step; `stepValue` in `src/lib/format.ts`). Give every field in kronor a `stepBy` (100 for a monthly
-  saving, 1 000 for a salary, 10 000 for a capital); fields in % get none. The calculators shown from GitHub and the embedded
-  Typfallsmodellen page are separate files with their own fields.
-- **Tables and fold-outs.** Every fold-out in Nettolönkalkylatorn is `Collapsible` (an arrow at the far left, then the name; closed
-  from the start). The embedded Typfallsmodellen app is built from another project, so the fold-in of its table
+- **Tables and fold-outs.** The embedded Typfallsmodellen app is built from another project, so the fold-in of its table
   "Månadsinkomster" is added by `scripts/typfallsmodellen-site.js` and `scripts/typfallsmodellen-theme.css`, which the sync script
   puts into the file (`node scripts/sync-typfallsmodellen.mjs --reapply` does it again after an edit, with no build).
-- `src/lib/nettolon.ts`, `src/components/calculators/NettolonCalculator.tsx` and `src/data/kommunalskatt-2026.json`
-  are a port of `Net_Salary_2026.html`. The calculation and its rounding are the original's, and
-  `tests/nettolon.test.ts` compares it with what the original shows for 190 sets of inputs
-  (`tests/fixtures/nettolon-web.json`). The page itself is built in the site's own components, colours and
-  fonts (`AmountField`, `SelectField` and `SwitchRow` are in `fields.tsx`), not in the original's look. The rules
-  are for income year 2026 and the list of municipalities is SCB's of 2025-12-15: check both every December.
 - **The dots ripple.** The dotted hero background (`.dot-grid`: home, `/kalkylatorer`, `/rapporter`) is drawn on a canvas by
   `src/scripts/dot-ripple.ts` (loaded from `BaseLayout.astro`) so that a click or tap on a surface where nothing happens
   sends a wave out from the click point through the dots (`rippleAt`, `dotLook`; tested in `tests/dot-ripple.test.ts`).
@@ -186,9 +173,9 @@ look at on the preview.
 - `/rapporter` lists links to the authorities' reports from `src/data/rapporter.ts`. Link to a page that lists every
   edition rather than to one year's PDF, and only add a link that has been checked to work.
 - The articles have no images: `ArticleCover.astro` draws a cover from the category (colour) and the article (the
-  shape of the rising line). The home page's Prisbasbelopp comes from `src/lib/nettolon.ts` and its key figures from `src/data/nyckeltal.ts`.
+  shape of the rising line). The home page's Prisbasbelopp comes from `src/lib/constants.ts` and its key figures from `src/data/nyckeltal.ts`.
   The home page's salary field opens `/nettolonkalkylator?lon=…`, which the Nettolön calculator reads.
-- Sliders are native range inputs (`SliderField` in `fields.tsx`, the `.range` class in `global.css`). The
+- Sliders are native range inputs (the `.range` class in `global.css`). The
   Radix slider that was used before did not follow a finger on a phone, so do not bring it back; test any
   new slider with touch events (Playwright with an iPhone profile and CDP `Input.dispatchTouchEvent`).
 - Never commit `.env` files or secrets. The repository is public.

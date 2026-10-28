@@ -39,7 +39,7 @@ describe("language helpers", () => {
     expect(switchTarget("/nyheter/tagg/pension")).toBe("/en/news");
     expect(switchTarget("/en/news/tag/pension")).toBe("/nyheter");
     expect(switchTarget("/rapporter")).toBe("/en");
-    expect(switchTarget("/nettolonkalkylator.html")).toBe("/en");
+    expect(switchTarget("/rapporter.html")).toBe("/en");
     expect(switchTarget("/en/calculators")).toBe("/kalkylatorer");
   });
   it("has no path twice", () => {

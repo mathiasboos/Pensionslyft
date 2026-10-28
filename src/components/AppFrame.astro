@@ -23,6 +23,7 @@ const t = ui[lang];
   src={src}
   title={title}
   data-app-frame
+  data-slug={slug}
   class="block min-h-[40rem] w-full border-0 bg-card"
   scrolling="no"></iframe>
 <noscript>
@@ -35,6 +36,11 @@ const t = ui[lang];
   // Sets the frame to the height of the calculator and keeps it there when the calculator changes (a new result, a
   // table that opens) or the window is resized.
   for (const frame of document.querySelectorAll<HTMLIFrameElement>("iframe[data-app-frame]")) {
+    // The home page's salary field opens the Nettolön page as ?lon=45000; the calculator reads it from its own address.
+    const lon = new URLSearchParams(location.search).get("lon");
+    if (frame.dataset.slug === "nettolon" && lon && /^[\d\s,.]{1,12}$/.test(lon)) {
+      frame.src += `&lon=${encodeURIComponent(lon)}`;
+    }
     const fit = () => {
       const doc = frame.contentDocument;
       if (!doc?.documentElement) return;
