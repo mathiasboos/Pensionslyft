@@ -3,17 +3,6 @@
   "branch": "main",
   "sources": [
     {
-      "calculator": "Löneväxlingskalkylatorn",
-      "file": "Salary_Exchange_Consumer.html",
-      "page": "/lonevaxlingskalkylator",
-      "port": [
-        "src/lib/lonevaxling.ts",
-        "src/components/calculators/LonevaxlingCalculator.tsx",
-        "tests/lonevaxling.test.ts"
-      ],
-      "commit": "0506fb50f96934e62911f386ff4b91e6c7b0e465"
-    },
-    {
       "calculator": "Nettolönkalkylatorn",
       "file": "Net_Salary_2026.html",
       "page": "/nettolonkalkylator",

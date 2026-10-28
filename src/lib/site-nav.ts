@@ -100,6 +100,7 @@ const typfall: NavItem = {
   keywords: ["typfallsmodellen", "pensionsmyndigheten", "inkomstpension", "premiepension", "garantipension"],
 };
 
+// Shown as it is in github.com/mathiasboos/Calculators (Salary_Exchange.html, Swedish only for now), see scripts/sync-apps.mjs.
 const lonevaxling: NavItem = {
   href: "/lonevaxlingskalkylator",
   title: "Löneväxlingskalkylatorn",

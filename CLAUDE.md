@@ -62,12 +62,12 @@ look at on the preview.
   | Calculator | Kept up to date by |
   |---|---|
   | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
-  | Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
+  | Löneväxling (`Salary_Exchange.html`, recoloured: `scripts/apps-colors.mjs` and `scripts/apps/lonevaxling.css`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
-  | Löneväxling, Nettolön, FIRE (re-written in React from `Salary_Exchange_Consumer.html`, `Net_Salary_2026.html`, `FIRE_Calculator .html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
+  | Nettolön, FIRE (re-written in React from `Net_Salary_2026.html`, `FIRE_Calculator .html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
 
 - **Calculators shown straight from GitHub** (`scripts/lib/apps.mjs`; today the Pensionsmålkalkylatorn, `/pensionsmalkalkylatorn`
-  and `/en/replacement-rate-calculator`, the Pensionssparkalkylatorn, `/pensionskalkylator` and `/en/pension-savings-calculator`, Ränta på ränta, `/ranta-pa-ranta` and `/en/compound-interest`, and the Pensionsöversikten, `/pensionsoversikt` and `/en/pension-overview`). The file in Calculators is the master and is never edited here: `node
+  and `/en/replacement-rate-calculator`, the Pensionssparkalkylatorn, `/pensionskalkylator` and `/en/pension-savings-calculator`, Ränta på ränta, `/ranta-pa-ranta` and `/en/compound-interest`, the Pensionsöversikten, `/pensionsoversikt` and `/en/pension-overview`, and the Löneväxlingskalkylatorn, `/lonevaxlingskalkylator` and `/en/salary-exchange`). The file in Calculators is the master and is never edited here: `node
   scripts/sync-apps.mjs [--only slug] [--if-changed] [--reapply]` puts it in `public/app/<slug>.html` (disallowed in
   robots.txt) with `scripts/apps-theme.css` (hides the file's own header and SV | EN switch), `scripts/apps-site.js`
   (language from `?lang=`, links) and, when the file does not have the site's palette, its colours in
@@ -152,11 +152,6 @@ look at on the preview.
   built into `typfallsmodellen.html`). When a calculator on this site is added, changed or checked, read the
   current file in those repositories first (a read-only shallow clone is enough) and port from it, instead of
   working from an older copy. They are newer than anything uploaded to a chat.
-- `src/lib/lonevaxling.ts` is a port of `Salary_Exchange_Consumer.html`, and `tests/lonevaxling.test.ts` compares
-  the calculation with what the original shows (`tests/fixtures/lonevaxling-web.json`). Its rules are for 2026.
-  The page (`LonevaxlingCalculator.tsx`) keeps the original's texts and behaviour but is built like the
-  Pensionssparkalkylatorn, in the site's own components: inputs in a frame to the left, results and a Recharts chart to
-  the right (`AmountSliderField` is in `fields.tsx`). There is no separate stylesheet or canvas chart any more.
 - **Amount fields** (`fields.tsx`): `AmountField`, `NumberField` and `AmountSliderField` write the amount with thousands
   separators as it is typed ("100 000") and take `stepBy` for the − / + buttons (hold to repeat, arrow keys in the field,
   snapping to the step; `stepValue` in `src/lib/format.ts`). Give every field in kronor a `stepBy` (100 for a monthly

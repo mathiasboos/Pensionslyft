@@ -13,6 +13,12 @@
       "committedAt": "2026-10-28T14:35:35+00:00",
       "subject": "Add Excel download next to CSV in Compound Interest, Pension Savings and Pension Overview"
     },
+    "lonevaxling": {
+      "file": "Salary_Exchange.html",
+      "commit": "b16fd45877257ce337ed74748d6617a8dd43897d",
+      "committedAt": "2026-10-28T17:56:40+01:00",
+      "subject": "Add files via upload"
+    },
     "pensionsoversikt": {
       "file": "Pension Overview.html",
       "commit": "261b40f7274e5357fe04b47c9a52ee5544432394",
@@ -22,7 +28,7 @@
     "pensionsmal": {
       "file": "Replacement rate goal calculator.html",
       "commit": "bf308a201ad6cc3866c6e33d866d7b65fb0e08b9",
-      "committedAt": "2026-10-28T15:46:43Z",
+      "committedAt": "2026-10-28T15:46:43+00:00",
       "subject": "Replacement rate calculator: shorten About the model text"
     }
   }
