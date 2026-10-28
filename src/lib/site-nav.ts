@@ -131,6 +131,7 @@ const compound: NavItem = {
   keywords: ["ränta på ränta", "ränta på ränta kalkylator", "sparkalkylator", "månadssparande"],
 };
 
+// Shown as it is in github.com/mathiasboos/Calculators (FIRE_Calculator .html, Swedish only for now), see scripts/sync-apps.mjs.
 const fire: NavItem = {
   href: "/fire-kalkylator",
   title: "FIRE-kalkylatorn",

@@ -62,9 +62,9 @@ look at on the preview.
   | Calculator | Kept up to date by |
   |---|---|
   | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
-  | Löneväxling (`Salary_Exchange.html`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
+  | FIRE (`FIRE_Calculator .html`), Löneväxling (`Salary_Exchange.html`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
-  | Nettolön, FIRE (re-written in React from `Net_Salary_2026.html`, `FIRE_Calculator .html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
+  | Nettolön (re-written in React from `Net_Salary_2026.html`) | `.github/workflows/watch-calculators.yml`, hourly: opens an issue "Originalen har ändrats: …" when the original has a newer commit than the one in `src/data/ported-sources.json`; the owner tells Claude to port it, and the port moves the `commit` there (the issue then closes by itself). Add every new port to that file. |
 
 - **Calculators shown straight from GitHub** (`scripts/lib/apps.mjs`; today the Pensionsmålkalkylatorn, `/pensionsmalkalkylatorn`
   and `/en/replacement-rate-calculator`, the Pensionssparkalkylatorn, `/pensionskalkylator` and `/en/pension-savings-calculator`, Ränta på ränta, `/ranta-pa-ranta` and `/en/compound-interest`, the Pensionsöversikten, `/pensionsoversikt` and `/en/pension-overview`, and the Löneväxlingskalkylatorn, `/lonevaxlingskalkylator` and `/en/salary-exchange`). The file in Calculators is the master and is never edited here: `node
@@ -155,12 +155,10 @@ look at on the preview.
 - **Amount fields** (`fields.tsx`): `AmountField`, `NumberField` and `AmountSliderField` write the amount with thousands
   separators as it is typed ("100 000") and take `stepBy` for the − / + buttons (hold to repeat, arrow keys in the field,
   snapping to the step; `stepValue` in `src/lib/format.ts`). Give every field in kronor a `stepBy` (100 for a monthly
-  saving, 1 000 for a salary, 10 000 for a capital); fields in % get none. FIRE has only sliders, and the embedded
-  Typfallsmodellen page is its own app.
-- **Tables and fold-outs.** Every fold-out in the calculators is `Collapsible` (an arrow at the far left, then the name; closed
-  from the start). A table of the result year by year is `YearTable` (a `Collapsible` with CSV and Excel buttons in its
-  header; `src/lib/export.ts` writes the files): Pensionssparkalkylatorn, Ränta på ränta and FIRE use it, so a new calculator with a
-  table should too. The embedded Typfallsmodellen app is built from another project, so the fold-in of its table
+  saving, 1 000 for a salary, 10 000 for a capital); fields in % get none. The calculators shown from GitHub and the embedded
+  Typfallsmodellen page are separate files with their own fields.
+- **Tables and fold-outs.** Every fold-out in Nettolönkalkylatorn is `Collapsible` (an arrow at the far left, then the name; closed
+  from the start). The embedded Typfallsmodellen app is built from another project, so the fold-in of its table
   "Månadsinkomster" is added by `scripts/typfallsmodellen-site.js` and `scripts/typfallsmodellen-theme.css`, which the sync script
   puts into the file (`node scripts/sync-typfallsmodellen.mjs --reapply` does it again after an edit, with no build).
 - `src/lib/nettolon.ts`, `src/components/calculators/NettolonCalculator.tsx` and `src/data/kommunalskatt-2026.json`
