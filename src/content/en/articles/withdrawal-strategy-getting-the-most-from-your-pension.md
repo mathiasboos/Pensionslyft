@@ -19,8 +19,8 @@ Pension is taxed as income. If you take out public pension, occupational pension
 
 ## A rule of thumb in five steps
 
-1. Postpone the public pension until after the guide age (riktålder, 67 in 2026). It often gives more total pension paid out. See what an extra year gives in the Typfall model (Typfallsmodellen), in the tab [Bästa pensionsålder?](/typfallsmodellen#retirement) (best retirement age; the tool is in Swedish).
-2. Take out the occupational pension over at least 15 years if you do not need the money right away. Calculate how long the money lasts in the Typfall model, in the tab [Hur länge räcker pensionen?](/typfallsmodellen#lasts) (how long does the pension last?).
+1. Postpone the public pension until after the guide age (riktålder, 67 in 2026). It often gives more total pension paid out. See what an extra year gives in the Representative Case Model (Typfallsmodellen), in the tab [Bästa pensionsålder?](/typfallsmodellen#retirement) (best retirement age; the tool is in Swedish).
+2. Take out the occupational pension over at least 15 years if you do not need the money right away. Calculate how long the money lasts in the Representative Case Model, in the tab [Hur länge räcker pensionen?](/typfallsmodellen#lasts) (how long does the pension last?).
 3. Take out income (for example from a pension insurance) at least up to the tax-free level, which is 42.3 percent of a price base amount (prisbasbelopp), 25,042 kronor in 2026.
 4. Use ISK capital for peaks and one-off expenses.
 5. Recalculate the plan every three years.

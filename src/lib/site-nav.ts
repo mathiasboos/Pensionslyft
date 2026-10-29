@@ -185,7 +185,7 @@ const NAV_EN: Record<string, { title: string; description: string }> = {
     description: "See how much you need to save to reach the pension level you want, before or after tax.",
   },
   "/pensionsplaneraren": {
-    title: "Pension planner",
+    title: "Retirement planner",
     description: "Plan your whole retirement: assets, spending, withdrawals and scenarios, year by year.",
   },
   "/pensionskalkylator": {
@@ -197,7 +197,7 @@ const NAV_EN: Record<string, { title: string; description: string }> = {
     description: "Will your pension and savings last? See your forecast and how much more you need to save.",
   },
   "/typfallsmodellen": {
-    title: "The Typfall model",
+    title: "Representative Case Model",
     description: "The public and occupational pension year by year, according to the Swedish Pensions Agency's model.",
   },
   "/lonevaxlingskalkylator": {
