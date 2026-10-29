@@ -35,7 +35,7 @@ visual editor (Framer, Lovable) is needed.
 | Pensionsplaneraren | `/pensionsplaneraren` | `src/pages/pensionsplaneraren.astro` (shows `public/pensionsplaneraren-app.html`, fetched from GitHub every hour by `.github/workflows/pensionsplaneraren.yml` with `scripts/sync-pensionsplaneraren.mjs`) |
 | Typfallsmodellen | `/typfallsmodellen` | `src/pages/typfallsmodellen.astro` (shows `public/typfallsmodellen-app.html`, built from `main` on GitHub every hour by `.github/workflows/typfallsmodellen.yml` with `scripts/sync-typfallsmodellen.mjs`) |
 | Löneväxling | `/lonevaxlingskalkylator`, `/en/salary-exchange` | `src/components/AppFrame.astro` showing `Salary_Exchange.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
-| Nettolön | `/nettolonkalkylator`, `/en/net-salary` | `src/components/AppFrame.astro` showing `Net_Salary_2026.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
+| Nettolön | `/nettolonkalkylator`, `/en/net-salary` | `src/components/AppFrame.astro` showing `Net_Salary.html` from GitHub (`scripts/sync-apps.mjs`, updated hourly by `.github/workflows/apps.yml`) |
 | Not found | any other URL | `src/pages/404.astro` |
 
 - **Changes in the source repositories.** The Pensionsplaneraren (`github.com/mathiasboos/Calculators`) and the

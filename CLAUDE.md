@@ -62,7 +62,7 @@ look at on the preview.
   | Calculator | Kept up to date by |
   |---|---|
   | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
-  | FIRE (`FIRE_Calculator .html`), Nettolön (`Net_Salary_2026.html`), Löneväxling (`Salary_Exchange.html`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
+  | FIRE (`FIRE_Calculator .html`), Nettolön (`Net_Salary.html`), Löneväxling (`Salary_Exchange.html`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
 
 - **Calculators shown straight from GitHub** (`scripts/lib/apps.mjs`; today the Pensionsmålkalkylatorn, `/pensionsmalkalkylatorn`
@@ -146,7 +146,7 @@ look at on the preview.
   them to the site's, and check diagram colours with the dataviz validator.
 - **Where the calculators come from.** The owner keeps the up-to-date sources of the calculators in two
   public repositories (Calculators was made public in October 2026 so the planner can be fetched without a token): `github.com/mathiasboos/Calculators` (standalone HTML files: `FIRE_Calculator .html`,
-  `Salary_Exchange_Consumer.html`, `Net_Salary_2026.html`, and others, with the tax constants to check every December in its
+  `Salary_Exchange_Consumer.html`, `Net_Salary.html`, and others, with the tax constants to check every December in its
   CLAUDE.md) and `github.com/mathiasboos/Typfallsmodellen` (the TypeScript engine and the web app that is
   built into `typfallsmodellen.html`). When a calculator on this site is added, changed or checked, read the
   current file in those repositories first (a read-only shallow clone is enough) and port from it, instead of

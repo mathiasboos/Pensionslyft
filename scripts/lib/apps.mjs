@@ -17,7 +17,7 @@ export const apps = [
   { slug: "pensionssparande", file: "Pension Savings Calculator.html", sv: "/pensionskalkylator", en: "/en/pension-savings-calculator", native: true },
   { slug: "lonevaxling", file: "Salary_Exchange.html", sv: "/lonevaxlingskalkylator", en: "/en/salary-exchange", native: true },
   { slug: "fire", file: "FIRE_Calculator .html", sv: "/fire-kalkylator", en: "/en/fire-calculator", native: true },
-  { slug: "nettolon", file: "Net_Salary_2026.html", sv: "/nettolonkalkylator", en: "/en/net-salary", native: true },
+  { slug: "nettolon", file: "Net_Salary.html", sv: "/nettolonkalkylator", en: "/en/net-salary", native: true },
   { slug: "pensionsoversikt", file: "Pension Overview.html", sv: "/pensionsoversikt", en: "/en/pension-overview", native: true },
   { slug: "pensionsmal", file: "Replacement rate goal calculator.html", sv: "/pensionsmalkalkylatorn", en: "/en/replacement-rate-calculator", native: true },
 ];
