@@ -3,7 +3,7 @@
 // HTML file it makes in public/, where /typfallsmodellen shows it. What the site adds is put into the file on the way:
 // its colours and fonts (scripts/typfallsmodellen-theme.css) and the fold-in of the table "Månadsinkomster"
 // (scripts/typfallsmodellen-site.js), and the dark mode of the app is turned off. It also writes which version of the
-// project the file was built from to src/data/typfallsmodellen-source.json, which the page shows.
+// project the file was built from to src/data/typfallsmodellen-source.json (the page no longer shows it).
 //
 //   node scripts/sync-typfallsmodellen.mjs                 clones `main` of the project (shallow) into a temporary folder
 //   node scripts/sync-typfallsmodellen.mjs --ref <ref>     the project at a branch, tag or commit instead of `main`
