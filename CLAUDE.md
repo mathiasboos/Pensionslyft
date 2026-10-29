@@ -41,7 +41,7 @@ look at on the preview.
   uses `position: fixed`, a sticky input column and `100vh`, so it must not be auto-height). The app is one
   self-contained file, `public/typfallsmodellen-app.html`, built by `node scripts/sync-typfallsmodellen.mjs`
   (clones the project, builds `apps/web`, copies the file and writes `src/data/typfallsmodellen-source.json`,
-  which the page shows as the version). Never edit the HTML by hand. A link can open a tab: `/typfallsmodellen#retirement`
+  the app's version; the page no longer shows it, at the owner's request). Never edit the HTML by hand. A link can open a tab: `/typfallsmodellen#retirement`
   ("Bästa pensionsålder?") and `#lasts` ("Hur länge räcker pensionen?"), `#amount` ("Hur mycket får jag?"), the names being the app's `data-screen` names; the
   site script reads the hash and the check script tests it, so the articles can link to a tab. It updates itself: the GitHub Action
   `.github/workflows/typfallsmodellen.yml` runs `node scripts/sync-typfallsmodellen.mjs --if-changed` every hour, which

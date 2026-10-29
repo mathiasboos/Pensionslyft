@@ -1,11 +1,10 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import source from "@/data/typfallsmodellen-source.json";
-import { formatDate } from "@/lib/format";
 
 // The calculator is the web app of github.com/mathiasboos/Typfallsmodellen, built into one file by
 // scripts/sync-typfallsmodellen.mjs. It is shown as it is, in a frame the height of the window, so that it
-// behaves as it does on its own page (its input column sticks and its PGB table floats).
+// behaves as it does on its own page (its input column sticks and its PGB table floats). The page does not show
+// the app's version; the sync still writes it to src/data/typfallsmodellen-source.json.
 const app = "/typfallsmodellen-app.html";
 ---
 
@@ -51,12 +50,6 @@ const app = "/typfallsmodellen-app.html";
       <p>
         Resultatet är en uppskattning för ett typfall och inget besked om din egen pension. Din personliga prognos finns
         på minPension. Webbversionen är inofficiell och inte kopplad till Pensionsmyndigheten.
-      </p>
-      <p>
-        Kalkylatorn är projektet{" "}
-        <a href={source.repository} target="_blank" rel="noopener" class="text-primary underline underline-offset-2"
-          >Typfallsmodellen på GitHub</a
-        >, byggt till en fil. Den här sidan visar version <code>{source.commit.slice(0, 7)}</code> från {formatDate(source.committedAt)}.
       </p>
     </div>
   </section>
