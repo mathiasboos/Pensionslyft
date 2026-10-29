@@ -1,7 +1,10 @@
 # Keeps /pensionsplaneraren up to date with Retirement_Planner.html in github.com/mathiasboos/Calculators, so that a
 # change the owner makes there (a parameter or a tab added or removed) reaches the site without anyone porting it.
 #
-# Every hour, and when started by hand (Actions → Pensionsplaneraren → Run workflow), it fetches the file with the
+# It is started three ways: right away by github.com/mathiasboos/Calculators when Retirement_Planner.html changes on its main
+# (that repo's .github/workflows/notify-pensionslyft.yml, with the secret PENSIONSLYFT_DISPATCH_TOKEN), every 15 minutes as a
+# safety net (GitHub runs schedules best-effort and skips many of them: an hourly schedule ran only every few hours), and by
+# hand (Actions → Pensionsplaneraren → Run workflow). Each run fetches the file with the
 # site's look put on it (scripts/sync-pensionsplaneraren.mjs). If the result differs from what the site has, it checks
 # the planner in a browser (scripts/check-pensionsplaneraren.mjs), runs the tests and the build, and commits it to main,
 # which Cloudflare Pages then publishes. If anything fails, nothing is published and the issue "Pensionsplaneraren kunde
@@ -10,7 +13,7 @@ name: Pensionsplaneraren
 
 on:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "2,17,32,47 * * * *"
   workflow_dispatch:
 
 permissions:
