@@ -3632,28 +3632,13 @@ const ACCOUNTS_INIT = [
 // The table below uses the 1959 cohort as a reasonable default; cohort-to-
 // cohort variation across the 65–95 band is small (≈±0,3) for planning use.
 // Source: Pensionsmyndighetens föreskrifter PFS 2024:2 (28 oktober 2024).
-// ─── RIKTÅLDER (Target retirement age, Pensionsmyndigheten 2026) ────────
-// Pensionsåldrarna höjdes 2026 enligt riksdagens beslut. The reference age
-// (riktålder) determines when many pension benefits become payable and is
-// what Pensionsmyndigheten publishes per birth-year cohort.
-// Source: pensionsmyndigheten.se / "Höjda pensionsåldrar — riktåldern".
-//   ≤1957      → 65 (legacy)
-//   1958–1959  → 66
-//   1960–1966  → 67
-//   1967–1980  → 68  (forecast)
-//   1981–1996  → 69  (forecast)
-//   1997–2014  → 70  (forecast)
-//   ≥2015      → 71  (extrapolated)
+// ─── RIKTÅLDER (Target retirement age) ──────────────────────────────────
+// Single source: the RIKTALDER cohort table below (Typfallsmodellen v4.8, sheet Nyckeltal,
+// columns "Årskull född" / "riktalder"; same as Pensionsmyndigheten's page). Born 1981 → 68.
 function getRiktalder(birthYear){
   var y = parseInt(birthYear);
   if(!y || isNaN(y)) return null;
-  if(y <= 1957) return 65;
-  if(y <= 1959) return 66;
-  if(y <= 1966) return 67;
-  if(y <= 1980) return 68;
-  if(y <= 1996) return 69;
-  if(y <= 2014) return 70;
-  return 71;
+  return riktalderOf(y);
 }
 // Is the riktålder for this birth-year cohort a forecast/projection?
 function isRiktalderForecast(birthYear){

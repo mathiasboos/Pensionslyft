@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "f6e07dcef4a406970874b34d17eafa4fb9dd36ac",
-  "committedAt": "2026-10-20T12:20:50Z",
-  "subject": "Credit Pensionsmyndigheten: source footer and About tab"
+  "commit": "37235dc421faaadae7f2501e4066bcdd4ae1fdad",
+  "committedAt": "2026-10-29T10:37:22Z",
+  "subject": "Use Typfallsmodellen riktålder table in Retirement Planner and Pensionskompassen"
 }
