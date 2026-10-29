@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "37235dc421faaadae7f2501e4066bcdd4ae1fdad",
-  "committedAt": "2026-10-29T10:37:22Z",
-  "subject": "Use Typfallsmodellen riktålder table in Retirement Planner and Pensionskompassen"
+  "commit": "60e52d8db0ec4b0f54f7c71a92f0ca8623df00df",
+  "committedAt": "2026-10-29T17:59:08Z",
+  "subject": "Retirement planner: premium pension payout follows Typfallsmodellen at every age"
 }
