@@ -111,7 +111,7 @@ const lonevaxling: NavItem = {
   keywords: ["löneväxling", "löneväxlingskalkylator", "tjänstepension", "särskild löneskatt"],
 };
 
-// Shown as it is in github.com/mathiasboos/Calculators (Net_Salary_2026.html), see scripts/sync-apps.mjs.
+// Shown as it is in github.com/mathiasboos/Calculators (Net_Salary.html), see scripts/sync-apps.mjs.
 const nettolon: NavItem = {
   href: "/nettolonkalkylator",
   enHref: "/en/net-salary",

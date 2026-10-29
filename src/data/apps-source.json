@@ -26,10 +26,10 @@
       "subject": "FIRE_Calculator: add SV/EN toggle and Excel download"
     },
     "nettolon": {
-      "file": "Net_Salary_2026.html",
-      "commit": "f85cbc9f35625d17e37a4fbb40c35016e186e87b",
-      "committedAt": "2026-10-28T19:35:57+00:00",
-      "subject": "Net_Salary_2026: add SV/EN toggle and CSV/Excel download"
+      "file": "Net_Salary.html",
+      "commit": "a5e0a3d55323320787b842a53783efc57e3b356a",
+      "committedAt": "2026-10-29T10:52:15+00:00",
+      "subject": "Net_Salary: add CSV/Excel download, English number formats and a few wordings"
     },
     "pensionsoversikt": {
       "file": "Pension Overview.html",
