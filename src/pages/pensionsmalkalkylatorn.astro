@@ -1,12 +1,17 @@
 ---
 import AppFrame from "@/components/AppFrame.astro";
+import AppInfo from "@/components/AppInfo.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { calculatorText } from "@/data/calculator-text";
+import { faqData } from "@/lib/seo";
 
 // The calculator is Replacement rate goal calculator.html of github.com/mathiasboos/Calculators, shown as it is
 // (scripts/sync-apps.mjs; a GitHub Action keeps it up to date). English page: /en/replacement-rate-calculator.
+const faq = calculatorText["pensionsmal"]["sv"].faq;
 ---
 
 <BaseLayout
+  jsonLd={faqData(faq)}
   title="Pensionsmålkalkylatorn – hur mycket behöver du spara?"
   description="Räkna ut hur mycket du behöver spara varje månad, eller som engångsbelopp, för att nå din önskade pensionsnivå, före eller efter skatt."
   ogTitle="Pensionsmålkalkylatorn – Pensionslyft"
@@ -15,25 +20,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
     <h1 class="sr-only">Pensionsmålkalkylatorn</h1>
     <AppFrame slug="pensionsmal" title="Pensionsmålkalkylatorn" />
+    <AppInfo slug="pensionsmal" />
 
-    <section class="mt-12 border-t border-border pt-10">
-      <h2 class="font-display text-2xl font-semibold">Vad räknar Pensionsmålkalkylatorn ut?</h2>
-      <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
-        <p>
-          Du anger din lön, den pension du får enligt prognosen (kompensationsgraden hittar du på minPension) och den
-          pensionsnivå du vill ha. Kalkylatorn visar hur stor del av den önskade inkomsten som saknas och hur mycket du
-          behöver spara, varje månad eller som ett engångsbelopp, för att nå målet.
-        </p>
-        <p>
-          Du kan räkna före eller efter inkomstskatt. Skatten på pensionen räknas enligt Pensionsmyndighetens
-          Typfallsmodellen. Resultatet är en uppskattning och inte rådgivning.
-        </p>
-        <p>
-          Vill du se hela bilden med allmän pension och tjänstepension, använd{" "}
-          <a href="/pensionsoversikt" class="text-primary underline underline-offset-2">Pensionsöversikten</a> eller{" "}
-          <a href="/typfallsmodellen" class="text-primary underline underline-offset-2">Typfallsmodellen</a>.
-        </p>
-      </div>
-    </section>
   </div>
 </BaseLayout>

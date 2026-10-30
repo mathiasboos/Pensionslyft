@@ -1,11 +1,16 @@
 ---
 import AppFrame from "@/components/AppFrame.astro";
+import AppInfo from "@/components/AppInfo.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { calculatorText } from "@/data/calculator-text";
+import { faqData } from "@/lib/seo";
 
 // The Swedish page is /pensionsmalkalkylatorn. The calculator is the same file, started in English.
+const faq = calculatorText["pensionsmal"]["en"].faq;
 ---
 
 <BaseLayout
+  jsonLd={faqData(faq)}
   title="Replacement rate calculator – how much do you need to save?"
   description="Work out how much you need to save each month, or as a lump sum, to reach the pension level you want, before or after tax."
   ogTitle="Replacement rate calculator – Pensionslyft"
@@ -14,25 +19,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
     <h1 class="sr-only">Replacement rate calculator</h1>
     <AppFrame slug="pensionsmal" title="Replacement rate calculator" />
+    <AppInfo slug="pensionsmal" />
 
-    <section class="mt-12 border-t border-border pt-10">
-      <h2 class="font-display text-2xl font-semibold">What does the replacement rate calculator work out?</h2>
-      <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
-        <p>
-          You enter your salary, the pension you are forecast to get (the replacement rate is on minPension, the Swedish
-          Pensions Agency's forecast service) and the pension level you want. The calculator shows how much of the income
-          you want is missing and how much you need to save, each month or as a lump sum, to reach the goal.
-        </p>
-        <p>
-          You can calculate before or after income tax. Tax on the pension follows the Swedish Pensions Agency's Representative
-          Case Model. The result is an estimate, not advice. Amounts are in Swedish kronor (kr).
-        </p>
-        <p>
-          For the whole picture with the public and occupational pension, see the
-          <a href="/en/calculators" class="text-primary underline underline-offset-2">other calculators</a>
-          (in Swedish for now).
-        </p>
-      </div>
-    </section>
   </div>
 </BaseLayout>

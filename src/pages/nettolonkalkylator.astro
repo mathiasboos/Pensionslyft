@@ -1,13 +1,18 @@
 ---
 import AppFrame from "@/components/AppFrame.astro";
+import AppInfo from "@/components/AppInfo.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { calculatorText } from "@/data/calculator-text";
+import { faqData } from "@/lib/seo";
 
 // The calculator is Net_Salary.html of github.com/mathiasboos/Calculators, shown as it is (scripts/sync-apps.mjs; a
 // GitHub Action keeps it up to date). The home page's salary field opens this page as ?lon=45000, which the file reads.
 // English page: /en/net-salary.
+const faq = calculatorText["nettolon"]["sv"].faq;
 ---
 
 <BaseLayout
+  jsonLd={faqData(faq)}
   title="Nettolönkalkylator 2026 – räkna ut din lön efter skatt"
   description="Räkna ut din nettolön för 2026 steg för steg: kommunalskatt, statlig skatt, jobbskatteavdrag, avgifter, löneväxling, kapital, ROT/RUT och fastighetsavgift."
   ogTitle="Nettolönkalkylator 2026 – Pensionslyft"
@@ -16,6 +21,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
     <h1 class="sr-only">Nettolönkalkylator 2026</h1>
     <AppFrame slug="nettolon" title="Nettolönkalkylator 2026" />
+    <AppInfo slug="nettolon" />
     <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
       Beräkningen följer Skatteverkets tekniska beskrivning för inkomstår 2026 och är en uppskattning, inte
       skatterådgivning. Preliminärskatten på lönebeskedet kan avvika något.

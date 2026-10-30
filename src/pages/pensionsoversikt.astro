@@ -1,12 +1,17 @@
 ---
 import AppFrame from "@/components/AppFrame.astro";
+import AppInfo from "@/components/AppInfo.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { calculatorText } from "@/data/calculator-text";
+import { faqData } from "@/lib/seo";
 
 // The calculator is Pension Overview.html of github.com/mathiasboos/Calculators, shown as it is
 // (scripts/sync-apps.mjs; a GitHub Action keeps it up to date). English page: /en/pension-overview.
+const faq = calculatorText["pensionsoversikt"]["sv"].faq;
 ---
 
 <BaseLayout
+  jsonLd={faqData(faq)}
   title="Pensionsöversikt – räcker pensionen? – Pensionslyft"
   description="Se om din pension och ditt sparande räcker: allmän pension och tjänstepension, skatt, budget och hur mycket mer du behöver spara varje månad."
   ogTitle="Pensionsöversikt – Pensionslyft"
@@ -15,6 +20,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
     <h1 class="sr-only">Pensionsöversikt</h1>
     <AppFrame slug="pensionsoversikt" title="Pensionsöversikt" />
+    <AppInfo slug="pensionsoversikt" />
     <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
       Beräkningen är en uppskattning och inte individuell rådgivning. Den allmänna pensionen räknas enligt
       Pensionsmyndighetens Typfallsmodell, och din egen prognos hittar du på minPension.

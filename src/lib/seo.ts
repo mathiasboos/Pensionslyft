@@ -50,6 +50,15 @@ export function breadcrumbs(trail: { name: string; path: string }[]): Json {
   };
 }
 
+/** The questions and answers of a page, as schema.org FAQPage data (the same text is visible on the page). */
+export function faqData(items: { q: string; a: string }[]): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a } })),
+  };
+}
+
 export function webApplication(app: { name: string; description: string; path: string; keywords?: string[]; lang?: "sv" | "en" }): Json {
   return {
     "@context": "https://schema.org",
