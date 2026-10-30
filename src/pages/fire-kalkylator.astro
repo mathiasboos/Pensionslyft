@@ -1,12 +1,17 @@
 ---
 import AppFrame from "@/components/AppFrame.astro";
+import AppInfo from "@/components/AppInfo.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { calculatorText } from "@/data/calculator-text";
+import { faqData } from "@/lib/seo";
 
 // The calculator is FIRE_Calculator .html of github.com/mathiasboos/Calculators, shown as it is (scripts/sync-apps.mjs; a
 // GitHub Action keeps it up to date). English page: /en/fire-calculator.
+const faq = calculatorText["fire"]["sv"].faq;
 ---
 
 <BaseLayout
+  jsonLd={faqData(faq)}
   title="FIRE-kalkylator – när kan du bli ekonomiskt oberoende?"
   description="Räkna ut när ditt sparande räcker för att leva på avkastningen. FIRE-kalkylatorn tar hänsyn till sparkvot, avkastning, avgifter och skatt på ISK."
   ogTitle="FIRE-kalkylator – Pensionslyft"
@@ -15,6 +20,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
     <h1 class="sr-only">FIRE-kalkylator</h1>
     <AppFrame slug="fire" title="FIRE-kalkylator" />
+    <AppInfo slug="fire" />
     <p class="mt-8 max-w-3xl text-sm leading-6 text-muted-foreground">
       Beräkningen är en uppskattning och inte individuell rådgivning. Avkastningen är inte garanterad.
     </p>

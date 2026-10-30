@@ -1,0 +1,44 @@
+---
+import { calculatorText, type CalculatorSlug } from "@/data/calculator-text";
+import { langOf } from "@/lib/i18n";
+
+// The text under a calculator (src/data/calculator-text.ts): what it is, how it works, common questions and related
+// pages. The calculator itself sits in a frame that Google does not index, so this is the text the page is found by.
+interface Props {
+  slug: CalculatorSlug;
+}
+const lang = langOf(Astro.url.pathname);
+const info = calculatorText[Astro.props.slug][lang];
+const h = lang === "en"
+  ? { about: "About the calculator", how: "How it works", faq: "Frequently asked questions", more: "Read more" }
+  : { about: "Om kalkylatorn", how: "Så fungerar den", faq: "Vanliga frågor", more: "Läs mer" };
+---
+
+<section class="mt-12 border-t border-border pt-10">
+  <h2 class="font-display text-2xl font-semibold">{h.about}</h2>
+  <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
+    {info.about.map((p) => <p set:html={p} />)}
+  </div>
+
+  <h2 class="mt-10 font-display text-2xl font-semibold">{h.how}</h2>
+  <ul class="mt-4 max-w-3xl list-disc space-y-2 pl-5 text-sm leading-6 text-muted-foreground">
+    {info.how.map((p) => <li set:html={p} />)}
+  </ul>
+
+  <h2 class="mt-10 font-display text-2xl font-semibold">{h.faq}</h2>
+  <dl class="mt-4 max-w-3xl space-y-5">
+    {
+      info.faq.map((item) => (
+        <div>
+          <dt class="text-sm font-semibold">{item.q}</dt>
+          <dd class="mt-1 text-sm leading-6 text-muted-foreground">{item.a}</dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <h2 class="mt-10 font-display text-2xl font-semibold">{h.more}</h2>
+  <ul class="mt-4 max-w-3xl list-disc space-y-1 pl-5 text-sm leading-6">
+    {info.related.map((r) => <li><a href={r.href} class="text-primary underline underline-offset-2">{r.label}</a></li>)}
+  </ul>
+</section>

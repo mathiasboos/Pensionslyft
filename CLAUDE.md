@@ -181,6 +181,7 @@ look at on the preview.
   Radix slider that was used before did not follow a finger on a phone, so do not bring it back; test any
   new slider with touch events (Playwright with an iPhone profile and CDP `Input.dispatchTouchEvent`).
 - **The language switch on the embedded tools** (`stayMode` in `src/lib/i18n.ts`): on `/pensionsplaneraren` and `/typfallsmodellen`, which have no English page, the header's SV | EN does not navigate (it would close the tool). On the planner it sets the app's own language (`setLang`, key `pensionslyft.planner.lang`) and follows the app's own buttons; on the Typfallsmodellen it clicks the app's own SV / EN chip (the app starts in Swedish every time and keeps no choice). A new embedded tool without a twin is added to `STAY_ON_PAGE`.
+- **Text under every calculator.** The calculator pages are a frame (`AppFrame.astro`) plus text from `src/components/AppInfo.astro`, whose content is in `src/data/calculator-text.ts` (about, how it works, FAQ, related links, Swedish and English). Google does not index the frame (`/app/` is disallowed), so this text is what the page ranks on; the FAQ also goes out as `FAQPage` data (`faqData` in `src/lib/seo.ts`). A new calculator must get an entry there (about 250+ words; `tests/calculator-text.test.ts` checks it) and its facts must match the calculator file (2026 figures). Do not hide the text.
 - Never commit `.env` files or secrets. The repository is public.
 
 ## Before opening a PR
