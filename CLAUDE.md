@@ -61,7 +61,7 @@ look at on the preview.
 
   | Calculator | Kept up to date by |
   |---|---|
-  | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`, hourly: fetches `Retirement_Planner.html`, checks it, publishes by itself |
+  | Pensionsplaneraren | `.github/workflows/pensionsplaneraren.yml`: started right away by Calculators' `notify-pensionslyft.yml` when `Retirement_Planner.html` changes on its `main` (secret `PENSIONSLYFT_DISPATCH_TOKEN` there), plus every 15 minutes as a safety net (GitHub skips many scheduled runs; hourly ran only every few hours): fetches `Retirement_Planner.html`, checks it, publishes by itself |
   | FIRE (`FIRE_Calculator .html`), Nettolön (`Net_Salary.html`), Löneväxling (`Salary_Exchange.html`), Pensionsöversikt (`Pension Overview.html`), Ränta på ränta (`Compound Interest Calculator.html`), Pensionssparkalkylatorn (`Pension Savings Calculator.html`), Pensionsmålkalkylatorn (`Replacement rate goal calculator.html`) | `.github/workflows/apps.yml`, hourly: `scripts/sync-apps.mjs --if-changed` fetches every file listed in `scripts/lib/apps.mjs` whose commit is newer than the pin in `src/data/apps-source.json`, `scripts/check-apps.mjs` checks it in a browser, the Action publishes by itself |
   | Typfallsmodellen | `.github/workflows/typfallsmodellen.yml`, hourly: builds `main`, checks it, publishes by itself |
 
@@ -79,7 +79,9 @@ look at on the preview.
   `Retirement_Planner.html` of `github.com/mathiasboos/Calculators` (11 tabs, Chart.js and SheetJS inline, EN/SV)
   in a same-origin iframe like Typfallsmodellen. The owner develops it there and wants every change, a parameter or a
   tab added or removed, on the site without porting: Calculators `main` is the source of truth. The GitHub Action
-  `.github/workflows/pensionsplaneraren.yml` runs every hour (and on "Run workflow"):
+  `.github/workflows/pensionsplaneraren.yml` runs when Calculators starts it (its `notify-pensionslyft.yml`, on a push to `main`
+  that changes the file; needs the secret `PENSIONSLYFT_DISPATCH_TOKEN` in Calculators, a fine-grained token with Actions: read
+  and write on Pensionslyft), every 15 minutes as a safety net, and on "Run workflow":
   `node scripts/sync-pensionsplaneraren.mjs` fetches the file (a blob-less clone, no token: the repo is public)
   and writes `public/pensionsplaneraren-app.html` and `src/data/pensionsplaneraren-source.json` (the file's last
   commit; the page no longer shows it, at the owner's request). If they changed, `scripts/check-pensionsplaneraren.mjs` (Playwright: no script errors,
