@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "710e60184a066f7d1c34d531784265920c603699",
-  "committedAt": "2026-10-31T07:41:20Z",
-  "subject": "Retirement planner: Withdrawal strategy tab (Uttagsstrategi) from Typfallsmodellen"
+  "commit": "a0e4550c139a3c54ef5b4bf6e59cd73c34223f47",
+  "committedAt": "2026-10-31T09:45:06Z",
+  "subject": "Withdrawal strategy tab: planner font, colours and card headers"
 }
