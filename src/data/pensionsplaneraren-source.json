@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "0536a3e08ef7292ce4a82e5a55bdaa51a7f6de05",
-  "committedAt": "2026-11-02T14:31:20Z",
-  "subject": "Withdrawals tab: step-by-step withdrawal plan with spending phases"
+  "commit": "7f7c8d1e1d9f2c0067c07b4eb4a50d486d0deaf2",
+  "committedAt": "2026-11-02T18:31:51Z",
+  "subject": "Withdrawal strategy tab: rebuilt on the planner engine with the plan's data"
 }
