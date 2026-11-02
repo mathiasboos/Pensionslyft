@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "09c57223c84caf1e55a1613f23c1148e70165d1b",
-  "committedAt": "2026-10-31T13:39:37Z",
-  "subject": "Withdrawal strategy tab: the payout timeline follows Före / Efter skatt"
+  "commit": "0536a3e08ef7292ce4a82e5a55bdaa51a7f6de05",
+  "committedAt": "2026-11-02T14:31:20Z",
+  "subject": "Withdrawals tab: step-by-step withdrawal plan with spending phases"
 }
