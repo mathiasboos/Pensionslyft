@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "7f7c8d1e1d9f2c0067c07b4eb4a50d486d0deaf2",
-  "committedAt": "2026-11-02T18:31:51Z",
-  "subject": "Withdrawal strategy tab: rebuilt on the planner engine with the plan's data"
+  "commit": "a4a6ca611f5d610bc88fcdeb6492c9ff4394af01",
+  "committedAt": "2026-11-02T18:55:09Z",
+  "subject": "Withdrawals result cards show the Dashboard's monthly pension figure too"
 }

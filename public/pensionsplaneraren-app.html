@@ -2718,6 +2718,7 @@ en:{
   'wdp.s5.auto':'Even split',
   'wdp.ages':'age {from}–{to}',
   'wdp.res.t':'Result',
+  'wdp.res.dash':'Pension, {tax} (as on the Dashboard)',
   'wdp.res.income':'Income after tax',
   'wdp.res.spend':'Spending',
   'wdp.res.ok':'Covered every year',
@@ -3455,6 +3456,7 @@ sv:{
   'wdp.s5.auto':'Jämn fördelning',
   'wdp.ages':'{from}–{to} år',
   'wdp.res.t':'Resultat',
+  'wdp.res.dash':'Pension, {tax} (som på Dashboard)',
   'wdp.res.income':'Inkomst efter skatt',
   'wdp.res.spend':'Utgifter',
   'wdp.res.ok':'Räcker varje år',
@@ -9230,11 +9232,15 @@ function wdpRenderResult(){
       exp:rows.reduce(function(s, y){ return s + (y.expenses || 0); }, 0) / n / 12,
       short:sh ? sh.age : null};
   });
+  // The Dashboard's monthly-pension cards (same function, same Before / After tax setting as the Income Sources chart)
+  var dash = computePensionPhases({years:_projYears, params:_projParams}) || [];
+  var dashLbl = t((typeof _ilsMode !== 'undefined' && _ilsMode === 'net') ? 'acc.after.tax' : 'acc.before.tax');
   var h = '<div class="card-header">' + t('wdp.res.t') + '</div><div class="wdp-res-grid">';
   phases.forEach(function(ph, i){
     if(!ph.n) return;
     var cls = ph.exp > 0 ? (ph.short == null ? 'good' : 'bad') : '';
     h += '<div class="wdp-res ' + cls + '"><h4>' + t(names[i]) + ' <span>' + t('wdp.ages', {from:ph.from, to:ph.to}) + '</span></h4>'
+      + (dash[i] && dash[i].hasRows ? '<div class="l">' + t('wdp.res.dash', {tax:dashLbl.toLowerCase()}) + '</div><div class="v2">' + wdpN(dash[i].monthly) + ' ' + t('wdp.permonth') + '</div>' : '')
       + '<div class="l">' + t('wdp.res.income') + '</div><div class="v">' + wdpN(ph.inc) + ' <small>' + t('wdp.permonth') + '</small></div>'
       + '<div class="l">' + t('wdp.res.spend') + '</div><div class="v2">' + wdpN(ph.exp) + ' ' + t('wdp.permonth') + '</div>'
       + (cls ? '<div class="st">' + (cls === 'good' ? '✓ ' + t('wdp.res.ok') : t('wdp.res.short', {age:ph.short})) + '</div>' : '')
@@ -13043,7 +13049,7 @@ function guideClose(){
 }
 function guideMove(d){
   var n = _guideStep + d;
-  if(n >= GUIDE_STEPS.length){ guideClose(); goTab('dashboard'); return; }
+  if(n >= GUIDE_STEPS.length){ guideClose(); goTab('dashboard'); if(typeof refreshPhaseTiles === 'function') refreshPhaseTiles(); return; }
   _guideStep = Math.max(0, n);
   guideShow();
 }
