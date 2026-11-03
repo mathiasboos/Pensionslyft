@@ -1,4 +1,5 @@
 ---
+import { ChevronDown } from "lucide-react";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 
 // The planner is Retirement_Planner.html of github.com/mathiasboos/Calculators, fetched with the site's colours, fonts
@@ -33,24 +34,94 @@ const app = "/pensionsplaneraren-app.html";
     </p>
   </noscript>
 
+  <!-- Folded by default. Swedish is the page's language; the English text is shown when the planner is in English
+       (the visitor's choice is kept in localStorage "pensionslyft.planner.lang", as in SiteHeader.astro). -->
   <section class="mx-auto max-w-7xl px-4 pt-12">
-    <h2 class="font-display text-2xl font-semibold">Om Pensionsplaneraren</h2>
-    <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
-      <p>
-        Pensionsplaneraren räknar fram din ekonomi år för år, från i dag till slutet av livet: lön och skatt, allmän
-        pension och tjänstepension, sparande på ISK och i kapitalförsäkring, utgifter och uttag från varje konto. Du
-        kan jämföra scenarier och pröva planen mot slumpmässig avkastning i en Monte Carlo-simulering. Allt räknas i
-        fasta priser, i dagens kronor, med svenska skatteregler.
-      </p>
-      <p>
-        Börja i menyn <em>Börja här för att skapa en plan</em> högst upp i planeraren. När du sparar din plan sparas den
-        bara i den här webbläsaren, och du kan exportera den som en fil och läsa in den igen. Ingenting skickas
-        någonstans.
-      </p>
-      <p>
-        Resultatet är en uppskattning och inget besked om din egen pension eller finansiell rådgivning. Din personliga
-        prognos finns på minPension.
-      </p>
-    </div>
+    <details class="group" data-planner-about>
+      <summary
+        class="flex w-full cursor-pointer list-none items-center justify-between gap-4 rounded-md py-2 [&::-webkit-details-marker]:hidden"
+      >
+        <h2 class="font-display text-2xl font-semibold">
+          <span data-pl-lang="sv" lang="sv">Om Pensionsplaneraren</span>
+          <span data-pl-lang="en" lang="en" hidden>About the Retirement planner</span>
+        </h2>
+        <ChevronDown className="size-5 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+      </summary>
+      <div data-pl-lang="sv" lang="sv" class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
+        <p>
+          Pensionsplaneraren räknar fram din ekonomi år för år, från i dag till slutet av livet: lön och skatt, allmän
+          pension och tjänstepension, sparande på ISK och i kapitalförsäkring, utgifter och uttag från varje konto. Du
+          kan jämföra scenarier och pröva planen mot slumpmässig avkastning i en Monte Carlo-simulering. Allt räknas i
+          fasta priser, i dagens kronor, med svenska skatteregler.
+        </p>
+        <p>
+          Börja i menyn <em>Börja här för att skapa en plan</em> högst upp i planeraren. När du sparar din plan sparas den
+          bara i den här webbläsaren, och du kan exportera den som en fil och läsa in den igen. Ingenting skickas
+          någonstans.
+        </p>
+        <p>
+          Resultatet är en uppskattning och inget besked om din egen pension eller finansiell rådgivning. Din personliga
+          prognos finns på minPension.
+        </p>
+      </div>
+      <div data-pl-lang="en" lang="en" hidden class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
+        <p>
+          The Retirement planner works out your finances year by year, from today to the end of your life: salary and
+          tax, state pension and occupational pension, savings in an ISK and a capital insurance, spending and
+          withdrawals from each account. You can compare scenarios and test the plan against random returns in a Monte
+          Carlo simulation. Everything is calculated in constant prices, in today's kronor, with Swedish tax rules.
+        </p>
+        <p>
+          Start in the menu <em>Begin here to create a plan</em> at the top of the planner. When you save your plan it is
+          saved only in this browser, and you can export it as a file and load it again. Nothing is sent anywhere.
+        </p>
+        <p>
+          The result is an estimate, not a statement of your own pension and not financial advice. Your personal
+          forecast is on minPension.
+        </p>
+      </div>
+    </details>
   </section>
+
+  <script is:inline>
+    (function () {
+      var KEY = "pensionslyft.planner.lang";
+      function stored() {
+        try {
+          return localStorage.getItem(KEY);
+        } catch (e) {
+          return null;
+        }
+      }
+      function apply(lang) {
+        lang = lang === "en" ? "en" : "sv";
+        document.querySelectorAll("[data-planner-about] [data-pl-lang]").forEach(function (el) {
+          el.hidden = el.getAttribute("data-pl-lang") !== lang;
+        });
+      }
+      apply(stored());
+      // The planner's own EN / SV buttons (same-origin frame) and the header's switch both move the text with them.
+      function watchFrame() {
+        var frame = document.querySelector("iframe");
+        try {
+          var doc = frame && frame.contentDocument;
+          if (!doc || doc.__plAbout) return;
+          doc.__plAbout = true;
+          doc.addEventListener("click", function (e) {
+            var b = e.target && e.target.closest ? e.target.closest(".lang-btn[data-lang]") : null;
+            if (b) apply(b.getAttribute("data-lang"));
+          });
+        } catch (e) {
+          /* the frame is not ready or not readable */
+        }
+      }
+      var frame = document.querySelector("iframe");
+      if (frame) frame.addEventListener("load", watchFrame);
+      watchFrame();
+      document.addEventListener("click", function (e) {
+        var l = e.target && e.target.closest ? e.target.closest("[role=group] [data-lang-switch]") : null;
+        if (l) setTimeout(function () { apply(stored() || l.getAttribute("data-lang-switch")); }, 0);
+      });
+    })();
+  </script>
 </BaseLayout>
