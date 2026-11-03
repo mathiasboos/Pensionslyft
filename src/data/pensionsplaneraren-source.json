@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "14008547bc2f550734e2313c2f9cf6f4522fa6b1",
-  "committedAt": "2026-11-03T13:02:18Z",
-  "subject": "Assets: a summary table of everything in the plan"
+  "commit": "fba956562fb3ce75fd592530c65af2b7e55ca530",
+  "committedAt": "2026-11-03T13:31:47Z",
+  "subject": "Assets: give Cancel room beside the Add button"
 }

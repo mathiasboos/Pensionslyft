@@ -333,7 +333,10 @@ header{
 .wdp-step-ctl{display:flex;align-items:center;gap:4px}
 .wdp-step-ctl button{width:28px;height:28px;border:1px solid var(--border);border-radius:5px;background:var(--s1);cursor:pointer;font-size:15px;color:var(--navy);line-height:1}
 .wdp-step-ctl .lvl{width:52px;text-align:center;font-weight:700}
-.wdp-nav{display:flex;justify-content:flex-end;margin-top:12px}
+.wdp-nav{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px}
+/* In the nav the link sits beside a padded button, so it needs the same vertical rhythm and a
+   real hit target. Scoped: .wdp-link's other uses are inline inside help sentences. */
+.wdp-nav .wdp-link{padding:7px 6px}
 .wdp-next{padding:7px 16px;border:none;border-radius:6px;background:var(--gold);color:var(--navy);font-weight:700;font-family:var(--font-b);cursor:pointer;font-size:13px;white-space:nowrap}
 .wdp-link{background:none;border:none;color:#22507B;cursor:pointer;font-size:12px;font-family:var(--font-b);padding:0;text-decoration:underline}
 .wdp-seg{display:inline-flex;flex-wrap:wrap;background:var(--s2);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:6px}
