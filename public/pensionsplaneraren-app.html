@@ -348,7 +348,10 @@ header{
 .wdp-res .l{font-size:11px;color:var(--muted)}
 .wdp-res .v{font-family:var(--font-m);font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
 .wdp-res .v small{font-size:11px;font-weight:500;color:var(--muted)}
-.wdp-res .v2{font-family:var(--font-m);font-size:13px;color:var(--text)}
+.wdp-res .v.good{color:var(--pl-emerald-ink)}
+.wdp-res .v.bad{color:var(--rose)}
+.wdp-res .v2{font-family:var(--font-m);font-size:13px;color:var(--text);margin-bottom:4px}
+.wdp-res .v2.strong{font-size:15px;font-weight:700}
 .wdp-res .st{font-size:11.5px;font-weight:700;margin-top:8px}
 .wdp-res.good .st{color:#206762}
 .wdp-res.bad .st{color:#cc2827}
@@ -360,6 +363,33 @@ header{
   .wdp-body{padding:0 12px 14px}
   .wdp-phases,.wdp-res-grid{grid-template-columns:1fr}
   .wdp-lbl{min-width:0;flex-basis:100%}
+}
+
+/* ── ASSETS TAB: ACCOUNT CARDS (acsRender) — everything else reuses .wdp-* ── */
+.acs-card{border:1px solid var(--border);border-radius:6px;background:var(--s1);padding:10px 12px;margin-bottom:8px}
+.acs-card-hd{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.acs-nm{font-weight:700;font-size:13.5px;color:var(--text)}
+.acs-sp{flex:1}
+.acs-tag{font-size:9px;font-weight:600;color:#22507B;background:rgba(70,117,164,.1);border-radius:3px;padding:1px 5px;white-space:nowrap}
+.acs-del{width:24px;height:24px;border-radius:50%;background:rgba(156,68,56,.12);border:1px solid rgba(156,68,56,.3);color:#9C4438;font-size:12px;line-height:1;cursor:pointer;flex:0 0 auto}
+.acs-ctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.acs-ctl small{font-size:10px;color:var(--muted);margin-right:4px}
+.acs-money{width:110px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--text);text-align:right;padding:5px 7px;font-size:13px;font-family:var(--font-m)}
+.acs-money.acs-auto{font-style:italic;color:#22507B}
+.acs-money.acs-ro{color:#0C2A49;background:rgba(240,199,94,.07);border-color:rgba(240,199,94,.2);pointer-events:none}
+.acs-name{width:240px;max-width:100%;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:5px 7px;font-size:13px;font-family:var(--font-b)}
+.acs-fixed{font-size:12px;color:var(--text);background:var(--s3);border-radius:5px;padding:7px 9px;margin:6px 0}
+.acs-fixed .acs-cell{min-width:0}
+.acs-rownote{margin:-2px 0 6px}
+.acs-add{border:1px dashed var(--s4);border-radius:6px;padding:12px;margin-top:6px;background:var(--s3)}
+.acs-addbtn{font-size:12px;color:#22507B;background:rgba(70,117,164,.08);border:1px solid rgba(70,117,164,.25);border-radius:5px;padding:5px 12px;cursor:pointer;font-weight:600;font-family:var(--font-b);margin-top:4px}
+.acs-namebox{margin:10px 0 4px}
+.acs-tot{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:0 0 16px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#545f6c}
+.acs-tot input{width:110px;text-align:right;font-family:var(--font-m);font-size:13px;font-weight:700;color:#0C2A49;background:rgba(240,199,94,.1);border:1px solid rgba(240,199,94,.35);border-radius:4px;padding:4px 6px;pointer-events:none}
+.acs-tot small{font-size:9px;font-weight:600;color:var(--muted);margin-left:6px;text-transform:none;letter-spacing:0}
+@media (max-width:767px){
+  .acs-money,.acs-name{width:100%}
+  .acs-ctl{width:100%}
 }
 
 /* ── WITHDRAWAL STRATEGY TAB (wsRender) ── */
@@ -485,6 +515,10 @@ header{
 .tile-value.warn{color:var(--pl-amber-ink)}   /* yellow: --gold is the brand green here */
 .tile-value.bad{color:var(--rose)}
 .tile-sub{font-size:12px;color:var(--muted);margin-top:8px;font-weight:500}
+/* Figures inside a tile sub-line, same emphasis as the Withdrawals result card (.wdp-res .v2) */
+.tile-row{margin-top:3px}
+.tile-row b{font-family:var(--font-m);font-size:15px;font-weight:700;color:var(--text)}
+.tile-row span{font-family:var(--font-m);font-size:13px;font-weight:500;color:var(--text)}
 
 /* ── CHART CONTAINERS ── */
 .chart-wrap{
@@ -2005,56 +2039,18 @@ header {
   </div>
   <div id="asset-summary-wrap" style="display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px;padding:18px 12px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);flex-wrap:wrap;row-gap:16px"></div>
 
-  <!-- Age bracket controls -->
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;
-              background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:12px">
-    <span style="color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:10px" data-i18n="acc.eq.brackets">Equity % Age Brackets</span>
-    <span style="color:var(--muted)" data-i18n="acc.bracket1">Bracket 1:</span>
-    <input id="ageFrom1" type="text" inputmode="numeric" value="65"
-      style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px"
-      onchange="recalc();refreshEqHeaders()">
-    <span style="color:var(--muted)">&#8211;</span>
-    <input id="ageTo1" type="text" inputmode="numeric" value="75"
-      style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px"
-      onchange="recalc();refreshEqHeaders()">
-    <span style="color:var(--muted);margin-left:8px"><span data-i18n="acc.bracket2">Bracket 2:</span> <span id="ageFrom2-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">64</span> &#8211;</span>
-    <input id="ageTo2" type="text" inputmode="numeric" value="85"
-      style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px"
-      onchange="recalc();refreshEqHeaders()">
-    <span style="color:var(--muted);margin-left:8px"><span data-i18n="acc.bracket3">Bracket 3:</span> <span id="ageFrom3-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">74</span>+</span>
+
+  <!-- Totals, under the pies -->
+  <div class="acs-tot">
+    <span data-i18n="acc.total.value">Total Value</span>
+    <span><input type="text" readonly id="dst-total-opening" value="0"><small data-i18n="acs.tot.open">today</small></span>
+    <span><input type="text" readonly id="dst-total-contrib" value="0"><small data-i18n="acs.tot.contrib">in per year</small></span>
   </div>
 
-  <div style="overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)">
-    <table class="acc-table">
-      <thead>
-        <tr>
-          <th style="min-width:180px" data-i18n="acc.col.account">Account</th>
-          <th data-i18n="acc.col.opening">Opening (SEK)</th>
-          <th data-i18n="acc.col.contrib.yr">Contribution/yr</th>
-          <th data-i18n="acc.col.cs">Contrib Start (Age)</th>
-          <th data-i18n="acc.col.ce">Contrib End (Age)</th>
-          <th id="th-eq1">Equity % Age 55&#8211;63</th>
-          <th id="th-eq2">Equity % Age 64&#8211;73</th>
-          <th id="th-eq3">Equity % Age 74+</th>
-          <th data-i18n="acc.col.mgmt">Mgmt %</th>
-          <th data-i18n="acc.col.yt">Yield Tax %</th>
-          <th data-i18n="acc.col.fr">Fixed Ret %</th>
-        </tr>
-      </thead>
-      <tbody id="accounts-tbody"></tbody>
-    </table>
-
-  <!-- ── PGB — pensionsgrundande belopp ───────────────────────────── -->
-  <div id="pgb-section" style="margin-top:30px">
-    <div class="section-title" style="font-size:18px" data-i18n="pgb.title">Pensionable amounts – PGB</div>
-    <div class="section-sub" data-i18n="pgb.sub">Pension rights for child years, conscription, studies and sickness/activity compensation</div>
-    <div id="pgb-list"></div>
-    <div id="pgb-add" style="margin:8px 0"></div>
-    <div id="pgb-summary" style="font-size:11px;color:var(--muted)"></div>
-  </div>
-
+  <!-- The five steps (acsRender, entry point buildAccountsTable) -->
+  <div id="acs-steps"></div>
 </div>
-</div>
+
 
 <div id="tab-parameters" class="tab-content">
   <div class="section-title" data-i18n="par.title">Parameters</div>
@@ -2067,6 +2063,20 @@ header {
     <div class="input-row" data-i18n-title="par.ret.tip" title="The forecasting standard assumes a return of 1.7 percent. To relate the projected pension value to future income, the return is expressed as an &quot;excess return&quot;—that is, the extent to which the return on capital exceeds general wage growth. The planner deducts each account&#39;s own fee; 1.7 % after an average 0.2 % fee = 1.9 % before fees." style="cursor:help"><div class="input-label" data-i18n="par.eqRet">Real Return &#8212; Equities (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="eqReturn" value="1,9" step="0.1" onchange="recalc()"></div>
     <div class="input-row" data-i18n-title="par.ret.tip" title="The forecasting standard assumes a return of 1.7 percent. To relate the projected pension value to future income, the return is expressed as an &quot;excess return&quot;—that is, the extent to which the return on capital exceeds general wage growth. The planner deducts each account&#39;s own fee; 1.7 % after an average 0.2 % fee = 1.9 % before fees." style="cursor:help"><div class="input-label" data-i18n="par.bdRet">Real Return &#8212; Bonds (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="bdReturn" value="1,9" step="0.1" onchange="recalc()"></div>
     <div class="input-row"><div class="input-label" data-i18n="par.infl">Inflation (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="inflation" value="0,0" step="0.1" onchange="recalc()"></div>
+    <!-- Equity % age brackets: the ONE place they are set. Only accounts with "Own age brackets"
+         ticked use them; everything else follows the default fund (AP7 Safa) glidepath. -->
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase" data-i18n="acc.eq.brackets">Equity % Age Brackets</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px">
+        <span style="color:var(--muted)" data-i18n="acc.bracket1">Bracket 1:</span>
+        <input id="ageFrom1" type="text" inputmode="numeric" value="55" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
+        <span style="color:var(--muted)">&#8211;</span>
+        <input id="ageTo1" type="text" inputmode="numeric" value="63" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
+        <span style="color:var(--muted)"><span data-i18n="acc.bracket2">Bracket 2:</span> <span id="ageFrom2-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">64</span> &#8211;</span>
+        <input id="ageTo2" type="text" inputmode="numeric" value="73" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
+        <span style="color:var(--muted)"><span data-i18n="acc.bracket3">Bracket 3:</span> <span id="ageFrom3-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">74</span>+</span>
+      </div>
+    </div>
     <div style="margin-top:10px;text-align:right">
       <button onclick="resetAssumptions(true)" data-i18n="par.reset" data-i18n-title="par.reset.tip"
         title="Equities 1,9 % · Bonds 1,9 % · Inflation 0 % · Occupational schemes 1,7 % · Salary increase 0 %"
@@ -2115,9 +2125,10 @@ header {
 
   <div class="card">
     <div class="card-header" data-i18n="par.yieldHdr">YIELD TAXES (SCHABLONBESKATTNING)</div>
-    <div class="input-row"><div class="input-label" data-i18n="par.ytP">P-Insurance &#8212; Avkastningsskatt (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="ytP" value="0,375" step="0.001" onchange="recalc()"></div>
-    <div class="input-row"><div class="input-label" data-i18n="par.ytK">K-Insurance / ISK (schablonint&#228;kt)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="ytK" value="1,050" step="0.001" onchange="recalc()"></div>
-    <div class="input-row"><div class="input-label" data-i18n="par.mgmt">Management Fee (default)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="mgmtFee" value="0,2" step="0.05" onchange="recalc()"></div>
+    <div class="input-row"><div class="input-label" data-i18n="par.slr">Statsl&#229;ner&#228;nta (SLR), assumption (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="slr" value="2,5" step="0.05" onchange="refreshYieldTaxes();recalc()"></div>
+    <div class="input-row" data-i18n-title="par.ytP.tip" title="(SLR + 1 percentage point) × 30 %. Derived from the SLR above; each account can still be given its own rate under Details on the Assets tab." style="cursor:help"><div class="input-label" data-i18n="par.ytK">K-Insurance / ISK (schablonint&#228;kt)</div><input class="inp inp-sm" type="text" id="ytK" value="1,050" style="opacity:.6;background:var(--s2);cursor:not-allowed" readonly></div>
+    <div class="input-row" data-i18n-title="par.ytP.tip2" title="SLR × 15 %. Derived from the SLR above; each account can still be given its own rate under Details on the Assets tab." style="cursor:help"><div class="input-label" data-i18n="par.ytP">P-Insurance &#8212; Avkastningsskatt (%)</div><input class="inp inp-sm" type="text" id="ytP" value="0,375" style="opacity:.6;background:var(--s2);cursor:not-allowed" readonly></div>
+    <div class="input-row"><div class="input-label" data-i18n="par.mgmt">Management fee &#8212; default for a new private account (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="mgmtFee" value="1,0" step="0.05" onchange="recalc()"></div>
     <div class="input-row"><div class="input-label" data-i18n="par.occReturn" title="Typfallsmodellen">Occupational pension schemes &#8212; real return, net of fees (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="occReturn" value="1,7" step="0.1" onchange="recalc()"></div>
   </div>
 
@@ -2148,28 +2159,6 @@ header {
     </div>
   </div>
   <div class="section-sub"><span data-i18n="proj.sub.from">Full model output from</span> <span id="proj-startyr">2026</span> <span data-i18n="proj.sub.to">to</span> <span id="proj-endyr">2070</span></div>
-  <!-- Age bracket controls -->
-  <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;
-              background:var(--s2);border:1px solid var(--border);border-radius:8px;
-              padding:8px 16px;font-size:12px">
-    <span style="color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:10px" data-i18n="acc.eq.brackets">Equity % Age Brackets</span>
-    <span style="color:var(--muted)" data-i18n="acc.bracket1">Bracket 1:</span>
-    <input id="ageFrom1" type="text" inputmode="numeric" value="55"
-      style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;
-             color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px"
-      onchange="recalc();refreshEqHeaders()">
-    <span style="color:var(--muted)">–</span>
-    <input id="ageTo1" type="text" inputmode="numeric" value="63"
-      style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;
-             color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px"
-      onchange="recalc();refreshEqHeaders()">
-    <span style="color:var(--muted);margin-left:8px"><span data-i18n="acc.bracket2">Bracket 2:</span> <span id="ageFrom2-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">64</span> –</span>
-    <input id="ageTo2" type="text" inputmode="numeric" value="73"
-      style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;
-             color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px"
-      onchange="recalc();refreshEqHeaders()">
-    <span style="color:var(--muted);margin-left:8px"><span data-i18n="acc.bracket3">Bracket 3:</span> <span id="ageFrom3-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">74</span>+</span>
-  </div>
   <div class="yr-table-wrap">
 
   <table class="yr-table">
@@ -2277,6 +2266,7 @@ header {
         <li data-i18n="about.own.5">Scenarios and Monte Carlo simulation</li>
         <li data-i18n="about.own.6">Income tab (net salary according to Skatteverket's rules)</li>
         <li data-i18n="about.own.7">Plan presets, guided walkthrough, Work after retirement and the Swedish / English interface</li>
+        <li data-i18n="about.own.8">Taxation of private saving: ISK / endowment schablonskatt with the 300 000 kr tax-free allowance shared across your accounts, and the 1 % default fund fee on private accounts. Typfallsmodellen does not model private saving at all.</li>
       </ul>
     </div>
   </div>
@@ -2330,6 +2320,7 @@ en:{
   'about.own.5':'Scenarios and Monte Carlo simulation',
   'about.own.6':'Income tab (net salary according to Skatteverket\'s rules)',
   'about.own.7':'Plan presets, guided walkthrough, Work after retirement and the Swedish / English interface',
+  'about.own.8':'Taxation of private saving: ISK / endowment schablonskatt with the 300 000 kr tax-free allowance shared across your accounts, and the 1 % default fund fee on private accounts. Typfallsmodellen does not model private saving at all.',
   'about.disc':'The planner gives forecasts, not advice. The results can differ from Typfallsmodellen and from the forecast on minpension.se, for example because the premium pension follows the account\'s own funds and fees, and because some rules are not modelled.',
   'hdr.subtitle':'Constant prices · Swedish tax rules · All amounts in SEK',
   'hdr.sub.const':'Constant Prices','hdr.sub.infl':'Inflation {pct}%','hdr.sub.rest':'Swedish Tax Rules',
@@ -2391,7 +2382,7 @@ en:{
   'guide.b3':'<li>Go through the five steps in order: <b>state pension</b> start age, <b>occupational</b> and <b>private pension</b> (lifelong or a number of years), <b>savings</b> and <b>spending</b>.</li><li>Want to spend more in the first, active years? Choose <b>More early, less later</b> in step 5.</li><li>The <b>Result</b> shows whether the money lasts and the highest level your plan allows.</li>',
   'guide.b4':'<li>Enter your <b>monthly spending after tax</b> in retirement per category.</li><li>Start from minPension\'s typical retiree: <b>Basic</b> 17 600, <b>Average</b> 18 400 or <b>Extra</b> 27 300 kr/month, then adjust the amounts.</li><li>Press <b>Finish</b> to see the result on the Dashboard.</li>',
   'acc.title':'Assets','acc.sub':'Tap to expand · SEK / year',
-  'acc.sub.desktop':'Investment accounts, pensions & savings vehicles',
+  'acc.sub.desktop':'What you own, in five steps · the defaults follow Pensionsmyndigheten',
   'acc.group.after':'After-Tax Accounts','acc.group.pins':'P-Insurance Accounts',
   'acc.group.state':'State Pensions',
   'acc.badge.after':'After-Tax','acc.badge.pins':'P-Insurance','acc.badge.state':'State Pension',
@@ -2519,7 +2510,56 @@ en:{
   'sc.fixed':'Fixed',
   // ── Parameters tab extras ──
   'par.ytK':'K-Insurance / ISK (schablonintäkt)',
-  'par.mgmt':'Management Fee (default)',
+  // ── Assets tab, the plan in five steps (acsRender) ──
+  'acs.intro':'Fill in what you own, one group at a time. Anything you leave empty counts as zero. The defaults follow Pensionsmyndigheten, so you only need to open Details if you want to change them.',
+  'acs.s1.t':'State pension','acs.s2.t':'Occupational pension','acs.s3.t':'Private pension','acs.s4.t':'Savings','acs.s5.t':'Other pension rights',
+  'acs.s1.q':'Which state pensions do you have?',
+  'acs.s1.help':'The planner fills in the balance from your salary history, using Pensionsmyndigheten\'s own model. You normally do not need to change anything here.',
+  'acs.s1.empty':'Everyone who has worked in Sweden has an income pension and a premium pension. Add them and the planner works out the balance from your salary history — you do not need to look anything up.',
+  'acs.s2.q':'Do you have an occupational pension through your employer?',
+  'acs.s2.help':'Premiums and balances follow the agreement and your salary history. Add one row per agreement you have belonged to.',
+  'acs.s2.empty':'Most employees in Sweden have an occupational pension through a collective agreement. Pick your agreement and the planner uses its premiums and your salary history.',
+  'acs.s3.q':'Do you pay into a private pension yourself?',
+  'acs.s3.help':'A private pension you pay into yourself, outside your employer.',
+  'acs.s3.empty':'A private pension is one you pay into yourself (IPS or a private pension insurance). Most people have none — leave this empty if that is you.',
+  'acs.s4.q':'What have you saved outside the pension system?',
+  'acs.s4.help':'Savings the plan can draw on in retirement. Add the value today and what you put in each month.',
+  'acs.s4.empty':'Savings outside the pension system: an ISK, a kapitalförsäkring, a bank account. Add what you want the plan to draw on in retirement.',
+  'acs.s5.help':'Years at home with small children, military service, studies and sickness or activity compensation also earn state pension rights. Add them if any apply — otherwise the plan assumes none.',
+  'acs.s5.sum':'{n} added',
+  'acs.sum':'{n} · {amt} kr · {contrib} kr/yr in',
+  'acs.add.1':'Add a state pension','acs.add.2':'Add an occupational pension','acs.add.3':'Add a private pension','acs.add.4':'Add savings','acs.add.5':'Add',
+  'acs.add.q.1':'Which one do you want to add?','acs.add.q.2':'Which agreement do you belong to?','acs.add.q.3':'What do you want to add?','acs.add.q.4':'What kind of savings is it?',
+  'acs.add.ok':'Add','acs.add.cancel':'Cancel',
+  'acs.name.lbl':'Name',
+  'acs.name.help':'Only you see this. Use the company or bank so you recognise it in the charts.',
+  'acs.name.eg.1':'For example “Income pension”.','acs.name.eg.2':'For example “ITP 1 at Alecta”.','acs.name.eg.3':'For example “IPS at Avanza”.','acs.name.eg.4':'For example “ISK at Avanza”.','acs.name.eg.5':'',
+  'acs.details':'Details',
+  'acs.f.kind':'Account type','acs.f.save.mo':'Saving per month','acs.f.contrib':'Contribution',
+  'acs.f.fund':'Equity share',
+  'acs.eq.default':'Default fund (AP7 Såfa)','acs.eq.own':'Own age brackets',
+  'acs.open.auto':'Calculated from your salary history. Type a balance to use your own, or 0 to calculate it again.',
+  'acs.cs.help':'Contributions count from this age. An account you add yourself starts now — the planner never projects backwards.',
+  'acs.yt.help':'ISK and kapitalförsäkring: (statslåneräntan + 1 percentage point) × 30 %, charged only on what your ISK and endowment accounts hold above the 300 000 kr tax-free allowance together. Change the assumption on the Parameters tab.',
+  'acs.eq.link':'Change the age brackets →',
+  'acs.locked':'Return, fees and yield tax follow Typfallsmodellen: return {ret} %, yield tax {yt} %.',
+  'acs.sav.isk':'ISK or kapitalförsäkring','acs.sav.isk.d':'Pays schablonskatt on the whole balance every year, whether it rises or falls.',
+  'acs.sav.bank':'Bank account or cash','acs.sav.bank.d':'No schablonskatt. Use this for a buffer you keep in cash.',
+  'acs.priv.d':'IPS or a private pension insurance that you pay into yourself.',
+  'acs.occ.unknown':'I do not know which agreement I have',
+  'acs.occ.unknown.d':'It follows your employer, not your job title. Check your payslip, ask your HR department, or log in to minpension.se — it lists your occupational pensions by name.',
+  'acs.state.d.inkomst':'Everyone who has worked in Sweden has one. 16 % of your income.',
+  'acs.state.d.premie':'The fund-based part of the state pension. 2,5 % of your income.',
+  'acs.state.d.garanti':'A top-up if you have little or no income pension.',
+  'acs.state.d.ipt':'A supplement for those with a low income pension.',
+  'acs.state.d.tillagg':'Only for people born 1938–1953.',
+  'acs.state.d.annat':'Any other pension you want to add by hand.',
+  'acs.tot.open':'today','acs.tot.contrib':'in per year',
+  'toast.iskfri':'Your savings now get the 300 000 kr tax-free allowance on ISK and kapitalförsäkring, so the yield tax is lower than in the saved plan.',
+  'par.slr':'Statslåneränta (SLR), assumption (%)',
+  'par.ytP.tip':'(SLR + 1 percentage point) × 30 %. Derived from the SLR above; a single account can still be given its own rate under Details on the Assets tab.',
+  'par.ytP.tip2':'SLR × 15 %. Derived from the SLR above; a single account can still be given its own rate under Details on the Assets tab.',
+  'par.mgmt':'Management fee — default for a new private account (%)',
   'par.ibb.hdr':'INKOMSTBASBELOPP (IBB)',
   'par.ibb.year':'IBB Year',
   'par.ibb.val':'IBB Value (SEK)',
@@ -2884,12 +2924,11 @@ en:{
   'tip.goalFulfil':'Calculation: After-tax retirement income ÷ Annual expenses\n\n🟢 ≥ 100% — Income fully covers expenses\n🟡 < 100% — Income falls short; gap must be bridged by portfolio drawdown','tip.repRate':'Calculation (Typfallsmodellen "kompensationsgrad"): total pension before tax in the first retirement year (state + P-insurance) ÷ final salary before tax (average of the last 5 working years) × 100.\n\nReplacement Rate: green at 70 % or more, yellow from 50 to 70 %, red below 50 %.',
   'summary.at.ret':'At retirement · ',
   'tile.phasePension':'Monthly Pension · Age {from}–{to}',
-  'tile.phase.vs':'Expenses {exp} kr/mth · after tax {net} kr/mth',
   'tile.phase.gogo':'Go-go years',
   'tile.phase.slowgo':'Slow-go years',
   'tile.phase.nogo':'No-go years',
   'pp.hdr':'Pension by Retirement Phase',
-  'tip.phasePension':'Average monthly pension in each spending phase of the Withdrawals tab (step 5): state pension and P-insurance, plus withdrawals from savings, as in the income-sources chart. Before Tax / After Tax follows that chart (the model\'s own tax).\n\n🟢 After-tax pension covers the expenses of the period\n🔴 After-tax pension is below the expenses',
+  'tip.phasePension':'Average monthly pension in each spending phase of the Withdrawals tab (step 5): state pension and P-insurance, plus withdrawals from savings, as in the income-sources chart. Before Tax / After Tax follows that chart (the model\'s own tax).\n\n🟢 Income after tax covers the spending in every year of the period\n🔴 Income after tax falls short in at least one year',
 
 
 
@@ -3068,6 +3107,7 @@ sv:{
   'about.own.5':'Scenarier och Monte Carlo-simulering',
   'about.own.6':'Fliken Inkomst (nettolön enligt Skatteverkets regler)',
   'about.own.7':'Planförval, guidad genomgång, Arbete efter pension och svenskt / engelskt gränssnitt',
+  'about.own.8':'Beskattning av privat sparande: schablonskatt på ISK / kapitalförsäkring med fribeloppet 300 000 kr delat mellan dina konton, och 1 % i standardavgift på privata konton. Typfallsmodellen modellerar inte privat sparande alls.',
   'about.disc':'Planeraren ger prognoser, inte rådgivning. Resultaten kan skilja sig från Typfallsmodellen och från prognosen på minpension.se, till exempel eftersom premiepensionen följer kontots egna fonder och avgifter och eftersom vissa regler inte är modellerade.',
   'hdr.subtitle':'Fasta priser · Svenska skatteregler · Alla belopp i SEK',
   'hdr.sub.const':'Fasta priser','hdr.sub.infl':'Inflation {pct}%','hdr.sub.rest':'Svenska skatteregler',
@@ -3129,7 +3169,7 @@ sv:{
   'guide.b3':'<li>Gå igenom de fem stegen i tur och ordning: när <b>allmän pension</b> ska börja, <b>tjänstepension</b> och <b>privat pension</b> (livsvarigt eller ett antal år), <b>sparande</b> och <b>utgifter</b>.</li><li>Vill du spendera mer de första aktiva åren? Välj <b>Mer i början, mindre senare</b> i steg 5.</li><li><b>Resultatet</b> visar om pengarna räcker och den högsta nivå planen klarar.</li>',
   'guide.b4':'<li>Ange dina <b>månadsutgifter efter skatt</b> som pensionär per kategori.</li><li>Utgå från minPensions typiska pensionär: <b>Bas</b> 17 600, <b>Medel</b> 18 400 eller <b>Plus</b> 27 300 kr/mån, och justera sedan beloppen.</li><li>Tryck <b>Klar</b> för att se resultatet på översikten.</li>',
   'acc.title':'Tillgångar','acc.sub':'Tryck för att expandera · SEK / år',
-  'acc.sub.desktop':'Investeringskonton, pensioner & sparformer',
+  'acc.sub.desktop':'Det du äger, i fem steg · standardvärdena följer Pensionsmyndigheten',
   'acc.group.after':'Beskattade konton','acc.group.pins':'P-försäkringskonton',
   'acc.group.state':'Statliga pensioner',
   'acc.badge.after':'Beskattat','acc.badge.pins':'P-försäkring','acc.badge.state':'Statlig pension',
@@ -3257,7 +3297,56 @@ sv:{
   'sc.fixed':'Fast',
   // ── Parameters tab extras ──
   'par.ytK':'Kapitalförsäkring / ISK (schablonintäkt)',
-  'par.mgmt':'Förvaltningsavgift (standard)',
+  // ── Tillgångar, planen i fem steg (acsRender) ──
+  'acs.intro':'Fyll i vad du har, en grupp i taget. Det du lämnar tomt räknas som noll. Standardvärdena följer Pensionsmyndigheten, så du behöver bara öppna Detaljer om du vill ändra dem.',
+  'acs.s1.t':'Allmän pension','acs.s2.t':'Tjänstepension','acs.s3.t':'Privat pension','acs.s4.t':'Sparande','acs.s5.t':'Övriga pensionsrätter',
+  'acs.s1.q':'Vilka allmänna pensioner har du?',
+  'acs.s1.help':'Planeraren räknar fram saldot från din lönehistorik med Pensionsmyndighetens egen modell. Du behöver normalt inte ändra något här.',
+  'acs.s1.empty':'Alla som har arbetat i Sverige har inkomstpension och premiepension. Lägg till dem så räknar planeraren fram saldot från din lönehistorik — du behöver inte leta upp något.',
+  'acs.s2.q':'Har du tjänstepension genom din arbetsgivare?',
+  'acs.s2.help':'Premier och saldon följer avtalet och din lönehistorik. Lägg till en rad per avtal du har tillhört.',
+  'acs.s2.empty':'De flesta anställda i Sverige har tjänstepension genom ett kollektivavtal. Välj ditt avtal så använder planeraren avtalets premier och din lönehistorik.',
+  'acs.s3.q':'Sparar du själv i en privat pension?',
+  'acs.s3.help':'En privat pension som du själv betalar in till, vid sidan av arbetsgivaren.',
+  'acs.s3.empty':'En privat pension är en som du själv betalar in till (IPS eller en privat pensionsförsäkring). De flesta har ingen — lämna tomt om det gäller dig.',
+  'acs.s4.q':'Vad har du sparat utanför pensionssystemet?',
+  'acs.s4.help':'Sparande som planen kan ta av som pensionär. Fyll i värdet i dag och vad du sätter in varje månad.',
+  'acs.s4.empty':'Sparande utanför pensionssystemet: ISK, kapitalförsäkring, bankkonto. Lägg till det du vill att planen ska ta av som pensionär.',
+  'acs.s5.help':'År hemma med små barn, värnplikt, studier och sjuk- eller aktivitetsersättning ger också allmän pensionsrätt. Lägg till det som gäller dig — annars räknar planen med inget.',
+  'acs.s5.sum':'{n} tillagda',
+  'acs.sum':'{n} · {amt} kr · {contrib} kr/år in',
+  'acs.add.1':'Lägg till allmän pension','acs.add.2':'Lägg till tjänstepension','acs.add.3':'Lägg till privat pension','acs.add.4':'Lägg till sparande','acs.add.5':'Lägg till',
+  'acs.add.q.1':'Vilken vill du lägga till?','acs.add.q.2':'Vilket avtal tillhör du?','acs.add.q.3':'Vad vill du lägga till?','acs.add.q.4':'Vilken typ av sparande är det?',
+  'acs.add.ok':'Lägg till','acs.add.cancel':'Avbryt',
+  'acs.name.lbl':'Namn',
+  'acs.name.help':'Bara du ser det här. Skriv bolaget eller banken så känner du igen kontot i diagrammen.',
+  'acs.name.eg.1':'Till exempel ”Inkomstpension”.','acs.name.eg.2':'Till exempel ”ITP 1 hos Alecta”.','acs.name.eg.3':'Till exempel ”IPS hos Avanza”.','acs.name.eg.4':'Till exempel ”ISK hos Avanza”.','acs.name.eg.5':'',
+  'acs.details':'Detaljer',
+  'acs.f.kind':'Kontotyp','acs.f.save.mo':'Sparande per månad','acs.f.contrib':'Insättning',
+  'acs.f.fund':'Aktieandel',
+  'acs.eq.default':'Förvalet (AP7 Såfa)','acs.eq.own':'Egna åldersintervall',
+  'acs.open.auto':'Framräknat från din lönehistorik. Skriv in ett eget saldo, eller 0 för att räkna om det.',
+  'acs.cs.help':'Insättningar räknas från den här åldern. Ett konto du lägger till själv börjar nu — planeraren räknar aldrig bakåt.',
+  'acs.yt.help':'ISK och kapitalförsäkring: (statslåneräntan + 1 procentenhet) × 30 %, bara på det dina ISK- och kapitalförsäkringskonton tillsammans har över fribeloppet 300 000 kr. Ändra antagandet på Parametrar-fliken.',
+  'acs.eq.link':'Ändra åldersintervallen →',
+  'acs.locked':'Avkastning, avgifter och avkastningsskatt följer Typfallsmodellen: avkastning {ret} %, avkastningsskatt {yt} %.',
+  'acs.sav.isk':'ISK eller kapitalförsäkring','acs.sav.isk.d':'Betalar schablonskatt på hela saldot varje år, oavsett om det går upp eller ner.',
+  'acs.sav.bank':'Bankkonto eller kontanter','acs.sav.bank.d':'Ingen schablonskatt. Använd det här för en buffert du har i kontanter.',
+  'acs.priv.d':'IPS eller en privat pensionsförsäkring som du själv betalar in till.',
+  'acs.occ.unknown':'Jag vet inte vilket avtal jag har',
+  'acs.occ.unknown.d':'Avtalet följer din arbetsgivare, inte din yrkestitel. Titta på lönebeskedet, fråga HR, eller logga in på minpension.se — där står dina tjänstepensioner med namn.',
+  'acs.state.d.inkomst':'Alla som har arbetat i Sverige har en. 16 % av din inkomst.',
+  'acs.state.d.premie':'Den fondsparade delen av den allmänna pensionen. 2,5 % av din inkomst.',
+  'acs.state.d.garanti':'Ett påslag om du har låg eller ingen inkomstpension.',
+  'acs.state.d.ipt':'Ett tillägg för dig med låg inkomstpension.',
+  'acs.state.d.tillagg':'Bara för dig som är född 1938–1953.',
+  'acs.state.d.annat':'Någon annan pension som du vill lägga in själv.',
+  'acs.tot.open':'i dag','acs.tot.contrib':'in per år',
+  'toast.iskfri':'Ditt sparande får nu fribeloppet 300 000 kr på ISK och kapitalförsäkring, så avkastningsskatten blir lägre än i den sparade planen.',
+  'par.slr':'Statslåneränta (SLR), antagande (%)',
+  'par.ytP.tip':'(SLR + 1 procentenhet) × 30 %. Räknas fram från SLR ovan; ett enskilt konto kan ändå få en egen sats under Detaljer på Tillgångar-fliken.',
+  'par.ytP.tip2':'SLR × 15 %. Räknas fram från SLR ovan; ett enskilt konto kan ändå få en egen sats under Detaljer på Tillgångar-fliken.',
+  'par.mgmt':'Förvaltningsavgift — standard för ett nytt privat konto (%)',
   'par.ibb.hdr':'INKOMSTBASBELOPP (IBB)',
   'par.ibb.year':'IBB År',
   'par.ibb.val':'IBB Värde (SEK)',
@@ -3622,12 +3711,11 @@ sv:{
   'tip.goalFulfil':'Beräkning: Nettoinkomst efter skatt vid pension ÷ Årsutgifter\n\n🟢 ≥ 100% — Inkomsten täcker alla utgifter\n🟡 < 100% — Inkomsten täcker inte utgifterna; glapp måste täckas av portföljuttag','tip.repRate':'Beräkning (Typfallsmodellens kompensationsgrad): total pension före skatt första pensionsåret (allmän pension + P-försäkring) ÷ slutlön före skatt (snitt av de 5 sista arbetsåren) × 100.\n\nKompensationsgrad: grön vid 70 % eller mer, gul från 50 till 70 %, röd under 50 %.',
   'summary.at.ret':'Vid pension · ',
   'tile.phasePension':'Månadspension · Ålder {from}–{to}',
-  'tile.phase.vs':'Utgifter {exp} kr/mån · efter skatt {net} kr/mån',
   'tile.phase.gogo':'Aktiva år (go-go)',
   'tile.phase.slowgo':'Lugnare år (slow-go)',
   'tile.phase.nogo':'Stillsamma år (no-go)',
   'pp.hdr':'Pension per pensionsfas',
-  'tip.phasePension':'Genomsnittlig pension per månad i varje utgiftsfas på Uttag-fliken (steg 5): allmän pension och P-försäkringar plus uttag från sparandet, som i diagrammet över inkomstkällor. Före / efter skatt följer diagrammet (modellens egen skatt).\n\n🟢 Pension efter skatt täcker periodens utgifter\n🔴 Pension efter skatt är lägre än utgifterna',
+  'tip.phasePension':'Genomsnittlig pension per månad i varje utgiftsfas på Uttag-fliken (steg 5): allmän pension och P-försäkringar plus uttag från sparandet, som i diagrammet över inkomstkällor. Före / efter skatt följer diagrammet (modellens egen skatt).\n\n🟢 Inkomst efter skatt täcker utgifterna varje år i perioden\n🔴 Inkomst efter skatt räcker inte något år',
 
 
 
@@ -3872,6 +3960,23 @@ function setLang(lang){
 }
 
 const START_YEAR = 2026;
+
+// ── Fee and yield-tax assumptions ─────────────────────────────────────────────────────────────────
+// Statslåneräntan (SLR) is the rate both Swedish yield taxes are built on. 2,5 % is Typfallsmodellen's
+// own forward assumption (VBA avkskatt, Case Else) and the value occTax() falls back to for future
+// years. The Parameters tab's SLR field drives the two rates below; each account still carries its own
+// yt, so an account can be overridden. Verify every December.
+const SLR_DEFAULT = 0.025;
+function slrNow(){ var v = getParam('slr'); return (isFinite(v) && v >= 0) ? v / 100 : SLR_DEFAULT; }
+function ytKDefault(){ return (slrNow() + 0.01) * 0.30; }   // ISK / kapitalförsäkring: (SLR + 1 pp) × 30 %
+function ytPDefault(){ return slrNow() * 0.15; }            // Pension insurance: SLR × 15 %
+// Fribelopp for ISK + kapitalförsäkring, per person, shared across the accounts (2026 level).
+// Used both by the Income tab and by the projection's schablonskatt. Verify every December.
+const ISK_FRI = 300000;
+// Management fee defaults: Typfallsmodellen's general fund fee for the rows the workbook owns
+// (1,9 % before fees → the 1,7 % it forecasts), a typical Swedish fund/platform fee for private ones.
+const MGMT_DEFAULT_TM = 0.002;
+function mgmtDefaultPrivate(){ var v = getParam('mgmtFee'); return isFinite(v) && v > 0 ? v / 100 : 0.01; }
 const _TODAY_DOY = Math.round((new Date() - new Date(new Date().getFullYear(),0,0)) / 86400000);
 const firstYearContribFactor  = Math.max(0, Math.min(1, (365 - _TODAY_DOY) / 365));
 const firstYearReturnFraction = Math.max(0, Math.min(1, (365 - _TODAY_DOY) / 365));
@@ -3901,14 +4006,14 @@ const EXPENSES_INIT = EXPENSE_PERSONAS.average.map(function(e){ return {name:e.n
 const ACCOUNTS_INIT = [
   // After-tax
   {name:"Cash",                   nameKey:"acc.name.cash",         type:"after",  opening:100000,  contrib:0,      cs:2026, ce:2035, wd:0,      ws:9999, we:9999, eq1:0.0, eq2:0.0, eq3:0.0, mgmt:0.000, yt:0.000,  fixedRet:0.0,  fixedRetPost:null, taxable:false},
-  {name:"ISK Portfolio",          nameKey:"acc.name.isk",          type:"after",  opening:500000,  contrib:12000,  cs:2026, ce:2035, wd:0, ws:2036, we:2056, eq1:0.9, eq2:0.4, eq3:0.75,mgmt:0.002, yt:0.0105, fixedRet:null, fixedRetPost:null, taxable:false},
-  {name:"Endowment Portfolio",    nameKey:"acc.name.endowment",    type:"after",  opening:500000,  contrib:12000,      cs:2026, ce:2035, wd:0,      ws:2036, we:2056, eq1:0.8, eq2:0.4, eq3:0.7, mgmt:0.002, yt:0.0105, fixedRet:null, fixedRetPost:null, taxable:false},
+  {name:"ISK Portfolio",          nameKey:"acc.name.isk",          type:"after",  opening:500000,  contrib:12000,  cs:2026, ce:2035, wd:0, ws:2036, we:2056, eq1:0.9, eq2:0.4, eq3:0.75,mgmt:0.010, yt:0.0105, fixedRet:null, fixedRetPost:null, taxable:false},
+  {name:"Endowment Portfolio",    nameKey:"acc.name.endowment",    type:"after",  opening:500000,  contrib:12000,      cs:2026, ce:2035, wd:0,      ws:2036, we:2056, eq1:0.8, eq2:0.4, eq3:0.7, mgmt:0.010, yt:0.0105, fixedRet:null, fixedRetPost:null, taxable:false},
   // P-Insurance
-  {name:"Private Pension",        nameKey:"acc.name.private.pen",  type:"p-ins",  opening:200000,  contrib:0,      cs:2027, ce:2035, wd:0,  ws:2036, we:2056, eq1:0.8, eq2:0.4, eq3:0.7, mgmt:0.002, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
-  {name:"Occupational Pension 1", nameKey:"acc.name.occ.pen.1",    type:"p-ins",  opening:1000000, contrib:0,      cs:2026, ce:2035, wd:0, ws:2036, we:2056, eq1:0.8, eq2:0.4, eq3:0.7, mgmt:0.002, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:true,  cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
-  {name:"Occupational Pension 2", nameKey:"acc.name.occ.pen.2",    type:"p-ins",  opening:500000,  contrib:0,      cs:2026, ce:2035, wd:0,  ws:2036, we:2056, eq1:0.8, eq2:0.4, eq3:0.7, mgmt:0.002, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
-  {name:"Occupational Pension 3", nameKey:"acc.name.occ.pen.3",    type:"p-ins",  opening:400000,  contrib:0,      cs:2026, ce:2035, wd:0,  ws:2036, we:2056, eq1:0.9, eq2:0.4, eq3:0.75,mgmt:0.002, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
-  {name:"Salary Exchange",        nameKey:"acc.name.salary.ex",    type:"p-ins",  opening:500000,  contrib:24000,  cs:2026, ce:2035, wd:0,  ws:2036, we:2056, eq1:0.9, eq2:0.4, eq3:0.75,mgmt:0.002, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
+  {name:"Private Pension",        nameKey:"acc.name.private.pen",  type:"p-ins",  opening:200000,  contrib:0,      cs:2027, ce:2035, wd:0,  ws:2036, we:2056, eq1:0.8, eq2:0.4, eq3:0.7, mgmt:0.010, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
+  {name:"Occupational Pension 1", nameKey:"acc.name.occ.pen.1",    type:"p-ins",  opening:1000000, contrib:0,      cs:2026, ce:2035, wd:0, ws:2036, we:2056, eq1:0.8, eq2:0.4, eq3:0.7, mgmt:0.010, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:true,  cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
+  {name:"Occupational Pension 2", nameKey:"acc.name.occ.pen.2",    type:"p-ins",  opening:500000,  contrib:0,      cs:2026, ce:2035, wd:0,  ws:2036, we:2056, eq1:0.8, eq2:0.4, eq3:0.7, mgmt:0.010, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
+  {name:"Occupational Pension 3", nameKey:"acc.name.occ.pen.3",    type:"p-ins",  opening:400000,  contrib:0,      cs:2026, ce:2035, wd:0,  ws:2036, we:2056, eq1:0.9, eq2:0.4, eq3:0.75,mgmt:0.010, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
+  {name:"Salary Exchange",        nameKey:"acc.name.salary.ex",    type:"p-ins",  opening:500000,  contrib:24000,  cs:2026, ce:2035, wd:0,  ws:2036, we:2056, eq1:0.9, eq2:0.4, eq3:0.75,mgmt:0.010, yt:0.00375,fixedRet:null, fixedRetPost:null, contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30, taxable:true},
   // State
   {name:"Premium Pension",        nameKey:"acc.name.premium.pen",  type:"state",  opening:750000, contrib:15638,  cs:2026, ce:2035, wd:65000,  ws:2036, we:9998, eq1:0.9, eq2:0.4, eq3:0.75,mgmt:0.002, yt:0.000,  fixedRet:null, fixedRetPost:null, taxable:true, contribSalary:true, cRate1:2.32, cIBB1:8.07, cIBB2:30.0, cRate2:30, useDelningstal:true, delningstalMode:'fond', customDelningstal:17.26, delningstalScope:'premie', wdShare:1},
   {name:"Income Pension",         nameKey:"acc.name.income.pen",   type:"state",  opening:2000000, contrib:100080, cs:2026, ce:2035, wd:91000,  ws:2036, we:9998, eq1:0.0, eq2:0.0, eq3:0.0, mgmt:0.001, yt:0.000,  fixedRet:0.015,fixedRetPost:0.015,taxable:true, contribSalary:true, cRate1:14.88, cIBB1:8.07, cIBB2:30.0, cRate2:30, useDelningstal:true, delningstalMode:'inkomst', customDelningstal:17.26, delningstalScope:'inkomst', wdShare:1},
@@ -5780,7 +5885,6 @@ function updateExpSavingTargets(){
 }
 
 // ── Build accounts table ──
-const GROUP_LABELS = {after:t('acc.group.after'),['p-ins']:t('acc.group.pins'),state:t('acc.group.state')};
 
 
 
@@ -5789,11 +5893,11 @@ function renderPInsContrib(i, a){
   // After-Tax accounts: fixed input only
   if(a.type === 'after'){
     var fmtd=Math.round(a.contrib||0).toLocaleString('sv-SE');
-    return '<td><input type="text" inputmode="numeric" value="'+fmtd+'"'
+    return '<input type="text" inputmode="numeric" value="'+fmtd+'"'
       +' style="width:100px;text-align:right;background:var(--s3);border:1px solid var(--border);'
       +'border-radius:4px;color:var(--text);padding:5px 6px;font-family:var(--font-m);font-size:13px"'
       +' onchange="accounts['+i+'].contrib=parseInt(this.value.replace(/[^0-9]/g,\'\'))||0;'
-      +'this.value=accounts['+i+'].contrib.toLocaleString(\'sv-SE\');updateAccountSubtotals();recalc()"></td>';
+      +'this.value=accounts['+i+'].contrib.toLocaleString(\'sv-SE\');updateAccountSubtotals();recalc()">';
   }
   var ibb     = getParam('ibb') || 83400;
   var fmtD    = function(v){ return Number(v).toFixed(1).replace('.',','); };
@@ -5807,37 +5911,36 @@ function renderPInsContrib(i, a){
     return Math.round(Math.min(sal,b1)*r1/100 + Math.max(0,Math.min(sal,b2)-b1)*r2/100);
   };
   var INP = 'background:var(--s3);border:1px solid var(--border);border-radius:3px;color:var(--pl-gold-ink);text-align:center;padding:1px 3px;font-size:10px';
-  var btnBase   = 'border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:var(--font-b)';
-  var btnFixed  = btnBase+(a.contribSalary?';background:transparent;color:var(--muted)':';background:var(--gold);color:#0c2a49');
-  var btnSalary = btnBase+(a.contribSalary?';background:var(--gold);color:#0c2a49':';background:transparent;color:var(--muted)');
+  var btnFixed  = a.contribSalary ? '' : 'on';
+  var btnSalary = a.contribSalary ? 'on' : '';
 
   // Income pension follows the statutory rules: show them, don't offer editing.
   if(isIpEngineAcc(a)){
     var ctxI = occMakeCtx(occParamsNow());
-    return '<td style="padding:4px;min-width:190px;vertical-align:top">'
+    return '<div class="acs-cell">'
       +'<div style="font-size:10px;color:var(--muted);margin-bottom:3px" title="'+t('ip.rule.tip')+'">'+t('ip.rule')+'</div>'
       +'<div id="pins-sek-'+i+'" style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(15,32,52,0.1);'
       +'font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right">'
-      +'\u2248 '+Math.round(ipRatt(ctxI, a, contribRefYear(a))).toLocaleString('sv-SE')+' kr/yr</div></td>';
+      +'\u2248 '+Math.round(ipRatt(ctxI, a, contribRefYear(a))).toLocaleString('sv-SE')+' kr/yr</div></div>';
   }
   // Premium pension: 2.5 % of PGI, no Fixed/Salary choice
   if(isPpAutoAcc(a)){
-    return '<td style="padding:4px;min-width:190px;vertical-align:top">'
+    return '<div class="acs-cell">'
       +'<div style="font-size:10px;color:var(--muted);margin-bottom:3px" title="'+t('pp.rule.tip')+'">'+t('pp.rule')+'</div>'
       +'<div id="pins-sek-'+i+'" style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(15,32,52,0.1);'
       +'font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right">'
-      +'\u2248 '+Math.round(ppRatt(occMakeCtx(occParamsNow()), a, contribRefYear(a))).toLocaleString('sv-SE')+' kr/yr</div></td>';
+      +'\u2248 '+Math.round(ppRatt(occMakeCtx(occParamsNow()), a, contribRefYear(a))).toLocaleString('sv-SE')+' kr/yr</div></div>';
   }
   // Scheme accounts follow the agreement's rules: show them, don't offer editing.
   if(a.scheme && OCC_SCHEMES[a.scheme] && !a.db){
     var fmtR = function(v){ return Number(v).toString().replace('.',','); };
     var lim  = ib2 >= OCC_NO_CAP ? '∞' : fmtD(ib2);
-    return '<td style="padding:4px;min-width:190px;vertical-align:top">'
+    return '<div class="acs-cell">'
       +'<div style="font-size:10px;color:var(--muted);margin-bottom:3px">0 – '+fmtD(ib1)+' × IBB: <span style="color:var(--pl-gold-ink)">'+fmtR(r1)+'%</span></div>'
       +'<div style="font-size:10px;color:var(--muted)">'+fmtD(ib1)+' – '+lim+' × IBB: <span style="color:var(--pl-gold-ink)">'+fmtR(r2)+'%</span></div>'
       +'<div id="pins-sek-'+i+'" style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(15,32,52,0.1);'
       +'font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right">'
-      +'≈ '+Math.round(occPremiumFor(a, occMakeCtx(occParamsNow()), START_YEAR)).toLocaleString('sv-SE')+' kr/yr</div></td>';
+      +'≈ '+Math.round(occPremiumFor(a, occMakeCtx(occParamsNow()), START_YEAR)).toLocaleString('sv-SE')+' kr/yr</div></div>';
   }
 
   var salarySection = '';
@@ -5881,31 +5984,17 @@ function renderPInsContrib(i, a){
       +'this.value=accounts['+i+'].contrib.toLocaleString(\'sv-SE\');updateAccountSubtotals();recalc()">';
   }
 
-  return '<td style="padding:4px;min-width:190px;vertical-align:top">'
-    +'<div style="display:flex;gap:3px;margin-bottom:5px">'
-      +'<button style="'+btnFixed+'" onclick="accounts['+i+'].contribSalary=false;buildAccountsTable();updateAccountSubtotals();recalc()">'+t('acc.contrib.fixed')+'</button>'
-      +'<button style="'+btnSalary+'" onclick="accounts['+i+'].contribSalary=true;buildAccountsTable();updateAccountSubtotals();recalc()">'+t('acc.contrib.salary')+'</button>'
+  return '<div class="acs-cell">'
+    +'<div class="wdp-seg" style="margin-bottom:5px">'
+      +'<button class="'+btnFixed+'" onclick="accounts['+i+'].contribSalary=false;buildAccountsTable();updateAccountSubtotals();recalc()">'+t('acc.contrib.fixed')+'</button>'
+      +'<button class="'+btnSalary+'" onclick="accounts['+i+'].contribSalary=true;buildAccountsTable();updateAccountSubtotals();recalc()">'+t('acc.contrib.salary')+'</button>'
     +'</div>'
     +salarySection
-    +'</td>';
+    +'</div>';
 }
 
-const OCC_DASH_TD = '<td style="text-align:center;color:var(--muted)">—</td>';
 const OCC_BADGE_STYLE = 'display:inline-block;margin-left:4px;padding:0 5px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.03em;vertical-align:middle';
 
-// Equity %, management fee, yield tax and fixed return follow Typfallsmodellen
-// for scheme accounts and are shown read-only.
-// tailOnly: just the Yield-tax and Fixed-Ret cells (scheme with "Own equity brackets").
-function occLockedCells(a, tailOnly){
-  var dash = function(txt, tip){ return '<td style="text-align:center;color:var(--muted)" title="'+tip+'">'+txt+'</td>'; };
-  var tip = t('occ.locked.tip');
-  var ip = isIpEngineAcc(a);
-  var ytxt = ip ? '\u2014' : (occTax(START_YEAR + 1) * 100).toFixed(3).replace('.', ',');
-  if(tailOnly) return dash(ytxt, tip) + dash('\u2014', tip);
-  var rtxt = ip ? t('ip.index') : (occMakeCtx(occParamsNow()).ret * 100).toFixed(1).replace('.', ',');
-  return dash('\u2014', tip) + dash('\u2014', tip) + dash('\u2014', tip)
-       + dash('\u2014', tip) + dash(ytxt, tip) + dash(rtxt, tip);
-}
 
 function occBadgesHtml(a){
   if(!a.scheme || !OCC_SCHEMES[a.scheme]) return '';
@@ -5928,12 +6017,12 @@ function renderOccDbCell(i, a){
   var startAge = (a.ws && a.ws < 9999 ? a.ws : getParam('retirementYear')) - by;
   var amt = Math.round(occDbBenefit(a, occParamsNow(), startAge));
   var INP = 'background:var(--s3);border:1px solid var(--border);border-radius:3px;color:var(--pl-gold-ink);text-align:center;padding:1px 3px;font-size:10px;width:32px';
-  return '<td style="padding:4px;min-width:190px;vertical-align:top" title="'+t('occ.db.tip')+'">'
+  return '<div class="acs-cell" title="'+t('occ.db.tip')+'">'
     + '<div style="font-size:10px;color:var(--muted);margin-bottom:4px">'+t('occ.db.service')+': '
     + '<input type="text" inputmode="numeric" value="'+(a.serviceYears!=null?a.serviceYears:30)+'" style="'+INP+'"'
     + ' onchange="accounts['+i+'].serviceYears=Math.max(0,Math.min(30,parseInt(this.value)||0));buildAccountsTable();recalc()"> / 30</div>'
     + '<div style="font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right">'
-    + t('occ.db.from',{amt:amt.toLocaleString('sv-SE'), age:Math.round(startAge)})+'</div></td>';
+    + t('occ.db.from',{amt:amt.toLocaleString('sv-SE'), age:Math.round(startAge)})+'</div></div>';
 }
 
 function updatePInsSEK(i){
@@ -6214,24 +6303,6 @@ function toggleWdGroup(type){
   }
 }
 
-function toggleAccGroup(type){
-  if(!window._accGroupCollapsed) window._accGroupCollapsed = {};
-  window._accGroupCollapsed[type] = !window._accGroupCollapsed[type];
-  var collapsed = window._accGroupCollapsed[type];
-
-  // Toggle all rows in this group
-  document.querySelectorAll('#accounts-tbody tr[data-grp="'+type+'"]').forEach(function(tr){
-    tr.style.display = collapsed ? 'none' : '';
-  });
-
-  // Update chevron button
-  var btn = document.getElementById('acc-grp-btn-'+type);
-  if(btn){
-    btn.textContent = collapsed ? '\u25B6' : '\u25BC';
-    btn.title = t(collapsed ? 'grp.expand' : 'grp.collapse');
-  }
-}
-
 // ── Asset Summary Pie Charts ──────────────────────────────────────────
 var _assetCharts = {};  // keyed by canvas id
 
@@ -6247,9 +6318,6 @@ function setAssetTaxMode(mode){
   });
   var rateWrap = document.getElementById('asset-tax-rate-wrap');
   if(rateWrap) rateWrap.style.display = mode==='after' ? 'flex' : 'none';
-  // Update Opening column header to reflect mode
-  var hdr = document.querySelector('#accounts-tbody').closest('table').querySelector('th:nth-child(2)');
-  if(hdr) hdr.textContent = mode==='after' ? t('acc.opening.after.tax') : t('acc.col.opening');
   buildAccountsTable();
   buildAssetSummary();
 }
@@ -6422,188 +6490,299 @@ function buildAssetSummary(){
   });
 }
 
-function buildAccountsTable(){
-  // Recompute group labels each call so language switches take effect
-  const GROUP_LABELS = {after:t('acc.group.after'),['p-ins']:t('acc.group.pins'),state:t('acc.group.state')};
-  const tbody=document.getElementById('accounts-tbody');
-  tbody.innerHTML='';
+// ── ASSETS TAB: THE PLAN IN FIVE STEPS (acsRender) ────────────────────────────────────────────────
+// Same shell as the Withdrawals tab: numbered steps, one open at a time, a one-line summary when
+// closed, simple cards inside. Everything an expert may want sits behind each card's "Details", so a
+// beginner types at most two numbers per account and never meets a bracket, a fee or a yield tax.
+// The entry point keeps the name buildAccountsTable() because ~20 places call it.
+var _acsOpen = 1;                        // the open step (1-5); 0 = all closed
+window._acsDetails = new WeakSet();      // cards with Details open, keyed by the ACCOUNT OBJECT:
+                                         // an index would point at the wrong card after a delete
+window._acsAdd = null;                   // {step, kind, name} while the add panel is open
 
-  // All three groups are always shown, even when empty, so accounts can be
-  // added back after removing the last one in a category.
-  const groups=['after','p-ins','state'].map(type=>({
-    type, items: accounts.map((a,i)=>({a,i})).filter(x=>x.a.type===type)
-  }));
-
-  // ── After-tax display helpers ─────────────────────────────────────
-  const _afterTaxMode = window._assetTaxMode === 'after';
-  const _taxRateEl    = document.getElementById('asset-tax-rate');
-  const _taxRate      = _afterTaxMode ? (parseFloat((_taxRateEl&&_taxRateEl.value)||'32')||32)/100 : 0;
-  const _taxFactorFor = (ai) => (_afterTaxMode && accounts[ai] && accounts[ai].taxable) ? (1-_taxRate) : 1;
-  const _dispOpening  = (a)  => Math.round((a.opening||0) * (_afterTaxMode && a.taxable ? (1-_taxRate) : 1));
-
-  const col=(i,field,val,step,width='80')=>{
-  const isPct=field==='eq1'||field==='eq2'||field==='eq3'||field==='mgmt'||field==='yt'||field==='fixedRet';
-  const isMoney=field==='opening'||field==='contrib'||field==='wd';
-  const isYearField=field==='cs'||field==='ce';
-  const attrs=`data-ai="${i}" data-field="${field}"`;
-  let displayVal=val;
-  if(isPct&&val!==null&&val!==undefined) displayVal=(val*100).toFixed(isPct&&step<=0.01?3:1).replace('.',',');
-  if(val===null||val===undefined) displayVal='-';
-  if(val===9999) displayVal='—';
-  // For cs/ce: convert year to age for display
-  if(isYearField&&val!==null&&val!==undefined&&val!==9999){
-    const _by=Math.round(getParam('birthYear')||1971);
-    displayVal=String(Math.round(val)-_by);
-  }
-  const baseStyle=`width:${width}px`;
-  const onChange=`updateAccountField(${i},'${field}',this.value)`;
-  if(val===9999){
-    return `<td><input type="text" ${attrs} value="—" style="${baseStyle};opacity:.4" onchange="${onChange}"></td>`;
-  }
-  if(isMoney){
-    // In After-Tax mode, the opening column shows the tax-adjusted value read-only
-    if(field==='opening' && _afterTaxMode){
-      const adjVal = Math.round((val||0)*_taxFactorFor(i));
-      const fmtd = adjVal.toLocaleString('sv-SE');
-      return `<td><input type="text" readonly value="${fmtd}" style="${baseStyle};color:#0C2A49;background:rgba(240,199,94,.07);border:1px solid rgba(240,199,94,.2);border-radius:4px;text-align:right;padding:2px 5px;font-size:12px;font-family:var(--font-m);pointer-events:none"></td>`;
-    }
-    const fmtd=val===null||val===undefined?'0':Math.round(val).toLocaleString('sv-SE');
-    if(field==='opening' && hasAutoOpening(accounts[i]) && accounts[i].openAuto){
-      return `<td><input type="text" inputmode="numeric" ${attrs} value="${fmtd}" style="${baseStyle};font-style:italic;color:#22507B" title="${t('occ.auto.tip')}" onchange="${onChange}">`
-        + `<div style="font-size:9px;color:#22507B;text-align:right;margin-top:2px" title="${t('occ.auto.tip')}">${t('occ.auto')}</div></td>`;
-    }
-    return `<td><input type="text" inputmode="numeric" ${attrs} value="${fmtd}" style="${baseStyle}" onchange="${onChange}"></td>`;
-  }
-  if(isPct){
-    return `<td><input type="text" inputmode="decimal" ${attrs} value="${displayVal}" style="${baseStyle};text-align:right" onchange="${onChange}"></td>`;
-  }
-  if(isYearField){
-    return `<td><input type="text" inputmode="numeric" ${attrs} value="${displayVal}" style="${baseStyle};text-align:right" onchange="${onChange}"></td>`;
-  }
-  return `<td><input type="number" ${attrs} value="${displayVal}" step="${step||1}" style="${baseStyle}" onchange="${onChange}"></td>`;
-};
-
-  const fmtN = n => Math.round(n).toLocaleString('sv-SE');
-
-  // Persist collapse state across rebuilds
-  if(!window._accGroupCollapsed) window._accGroupCollapsed = {after:true,'p-ins':true,state:true};
-
-  groups.forEach(g=>{
-    const collapsed = !!window._accGroupCollapsed[g.type];
-    const chevron   = collapsed ? '▶' : '▼';
-    const grpColor  = {after:'#7BB0AB','p-ins':'#4675A4',state:'#C0A778'}[g.type]||'var(--muted)';
-
-    // Group header with toggle button
-    const gr=document.createElement('tr');
-    gr.innerHTML=`<td colspan="11" class="acc-group-hdr" style="user-select:none">
-      <button onclick="toggleAccGroup('${g.type}')" title="${t(collapsed?'grp.expand':'grp.collapse')}"
-        style="background:none;border:none;cursor:pointer;color:${grpColor};font-size:11px;
-               margin-right:6px;padding:0 4px;line-height:1;vertical-align:middle;
-               opacity:.75;transition:opacity .15s" onmouseenter="this.style.opacity=1"
-        onmouseleave="this.style.opacity='.75'" id="acc-grp-btn-${g.type}">${chevron}</button>${GROUP_LABELS[g.type]||''}
-    </td>`;
-    tbody.appendChild(gr);
-
-    // Account rows
-    g.items.forEach(({a,i})=>{
-      const tr=document.createElement('tr');
-      tr.setAttribute('data-grp',g.type);
-      if(collapsed) tr.style.display='none';
-      tr.innerHTML=`
-        <td><input type="text" class="acc-name-input" ${a.workRow?'readonly':''} title="${accDisplayName(a).replace(/"/g,'&quot;')}" value="${accDisplayName(a).replace(/"/g,'&quot;')}" data-ai="${i}" style="background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text);-webkit-text-fill-color:var(--text);font-size:13px;font-weight:600;font-family:var(--font-b);width:100%;max-width:160px;padding:1px 2px;outline:none;cursor:pointer" onfocus="this.style.borderBottomColor='var(--gold)';this.style.background='var(--s2)';this.style.cursor='text'" onblur="this.style.borderBottomColor='transparent';this.style.background='transparent';accounts[parseInt(this.getAttribute('data-ai'))].nameKey=null;accounts[parseInt(this.getAttribute('data-ai'))].name=this.value.trim()||accounts[parseInt(this.getAttribute('data-ai'))].name;buildPortfolioTab&&buildPortfolioTab();buildWdTable&&buildWdTable();buildAssetSummary&&buildAssetSummary()" onkeydown="if(event.key==='Enter')this.blur()"><span class="acc-type">${a.type==='after'?t('acc.badge.after'):a.type==='p-ins'?t('acc.badge.pins'):t('acc.badge.state')}</span>${occBadgesHtml(a)}${((a.type==='state' && a.delningstalScope==='premie') || isOccPremiumAcc(a)) ? `<label title="${isOccPremiumAcc(a) ? t('occ.own.eq.tip') : t('pp.glide.tip')}" style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);margin-top:3px;cursor:pointer;white-space:nowrap"><input type="checkbox" ${a.ownEq?'checked':''} onchange="accounts[${i}].ownEq=this.checked;buildAccountsTable();setTimeout(updateAccountSubtotals,0);recalc()" style="accent-color:#F0C75E;cursor:pointer">${t('pp.own.eq')}</label>` : ''}</td>
-        ${(a.db||a.benefit) ? OCC_DASH_TD : col(i,'opening',a.opening,1000,100)}
-        ${a.db ? renderOccDbCell(i,a) : a.benefit ? renderBenefitCell(i,a) : renderPInsContrib(i,a)}
-        ${isUnderlagAcc(a) ? col(i,'cs',a.cs,1,60) + col(i,'ce',a.ce,1,60) + OCC_DASH_TD.repeat(6) : (a.db||a.benefit) ? OCC_DASH_TD.repeat(8) : col(i,'cs',a.cs,1,60).replace(/<\/td>$/, csNote(a) + '</td>')
-          + col(i,'ce',a.ce,1,60).replace(/<\/td>$/, ceNote(a) + '</td>')
-          + ((isOccPremiumAcc(a) && a.ownEq) ? col(i,'eq1',a.eq1,0.1,60) + col(i,'eq2',a.eq2,0.1,60) + col(i,'eq3',a.eq3,0.1,60)
-              + col(i,'mgmt',a.mgmt,0.01,60) + occLockedCells(a, true)
-          : (isOccPremiumAcc(a) || isIpEngineAcc(a)) ? occLockedCells(a) :
-            (isPpGlide(a) ? `<td colspan="3" style="font-size:10px;color:var(--muted);padding:4px 6px;line-height:1.35" title="${t('pp.glide.tip')}">${t('pp.glide')}</td>`
-              : col(i,'eq1',a.eq1,0.1,60) + col(i,'eq2',a.eq2,0.1,60) + col(i,'eq3',a.eq3,0.1,60))
-          + col(i,'mgmt',a.mgmt,0.01,60)
-          + col(i,'yt',a.yt,0.01,60)
-          + col(i,'fixedRet',a.fixedRet,0.1,60))}
-        <td style="padding:0 4px">${a.workRow ? '<span title="'+t('pers.work.title')+'" style="font-size:10px;color:var(--muted)">auto</span>' : ''}${a.workRow ? '' : `<button onclick="removeAccount(${i})" class="acc-remove-btn" title="${t('acc.remove')}" style="width:26px;height:26px;border-radius:50%;background:rgba(156,68,56,.12);border:1px solid rgba(156,68,56,.3);color:#9C4438;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // Add-account row
-    const addRow=document.createElement('tr');
-    addRow.setAttribute('data-grp',g.type);
-    if(collapsed) addRow.style.display='none';
-    const _addStyle='font-size:11px;color:#22507B;background:rgba(70,117,164,.08);border:1px solid rgba(70,117,164,.25);border-radius:5px;padding:3px 10px;cursor:pointer;font-weight:600;font-family:var(--font-b)';
-    const _addLbl=t({after:'acc.add.after','p-ins':'acc.add.pins',state:'acc.add.state'}[g.type]);
-    addRow.innerHTML = g.type==='p-ins'
-      ? `<td colspan="12" style="padding:6px 12px"><select id="acc-add-pins" onchange="addPInsFromMenu(this)" style="${_addStyle}">`
-        + `<option value="" selected disabled hidden>${_addLbl} \u25BE</option>`
-        + `<option value="individual">${t('occ.opt.individual')}</option>`
-        + OCC_SCHEME_ORDER.map(k=>`<option value="${k}">${t(OCC_SCHEMES[k].opt)}</option>`).join('')
-        + `</select></td>`
-      : g.type==='state'
-      ? `<td colspan="12" style="padding:6px 12px"><select id="acc-add-state" onchange="addStateFromMenu(this)" style="${_addStyle}">`
-        + `<option value="" selected disabled hidden>${_addLbl} \u25BE</option>`
-        + STATE_KINDS.map(k=>`<option value="${k}">${t('st.opt.'+k)}</option>`).join('')
-        + `</select></td>`
-      : `<td colspan="12" style="padding:6px 12px"><button onclick="addAccount('${g.type}')" style="${_addStyle}">${_addLbl}</button></td>`;
-    tbody.appendChild(addRow);
-
-    // Subtotal row (IDs updated by updateAccountSubtotals on every recalc)
-    // For delningstal-driven state accounts, estimate yr-1 wd ≈ opening / dt(age@ws) × wdShare
-    const _by_acc    = parseInt((document.getElementById('birthYear')?.value||'').replace(/[^0-9]/g,''))||1971;
-    const _wdOf      = (a)=>{
-      if(a.db) return occDbEstimate(a);
-      if(isUnderlagAcc(a)) return Math.round(underlagFirstAmount(a).amt);
-    if(usesDelningstalPayout(a)){
-        const _dt    = resolveDelningstal(a, a.ws - _by_acc);
-        const _share = (a.wdShare != null ? a.wdShare : 1);
-        return _dt>0 ? Math.round((a.opening||0)/_dt*_share) : 0;
-      }
-      return a.wd||0;
-    };
-    const sumOpening = g.items.reduce((s,{a})=>s+_dispOpening(a),0);
-    const sumContrib = g.items.reduce((s,{a})=>s+effectiveContrib(a),0);
-    const typeKey    = g.type.replace('-','');
-    const st=document.createElement('tr');
-    st.style.cssText='background:#f5f4f1;border-top:2px solid var(--border)';
-    st.innerHTML=`
-      <td style="padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#545f6c">${{after:t('acc.sum.after'),'p-ins':t('acc.sum.pins'),state:t('acc.sum.state')}[g.type]||t('acc.subtotal')}</td>
-      <td><input type="text" readonly style="width:100px;text-align:right;font-family:var(--font-m);font-size:13px;font-weight:600;color:#0C2A49;background:rgba(240,199,94,.08);border:1px solid rgba(240,199,94,.3);border-radius:4px;padding:4px 6px;outline:none;pointer-events:none;cursor:default" id="dst-${typeKey}-opening" value="${fmtN(sumOpening)}"></td>
-      <td><input type="text" readonly style="width:100px;text-align:right;font-family:var(--font-m);font-size:13px;font-weight:600;color:#0C2A49;background:rgba(240,199,94,.08);border:1px solid rgba(240,199,94,.3);border-radius:4px;padding:4px 6px;outline:none;pointer-events:none;cursor:default" id="dst-${typeKey}-contrib" value="${fmtN(sumContrib)}"></td>
-      <td></td><td></td>
-      <td></td>
-      <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    `;
-    tbody.appendChild(st);
+function acsBy(){ return Math.round(getParam('birthYear') || 1971); }
+function acsAgeOf(year){ return (year == null || year >= 9999) ? null : Math.round(year) - acsBy(); }
+function acsItems(step){
+  var out = [];
+  accounts.forEach(function(a, i){
+    var ok = step === 1 ? a.type === 'state'
+           : step === 2 ? (a.type === 'p-ins' && wdpIsOcc(a))
+           : step === 3 ? (a.type === 'p-ins' && !wdpIsOcc(a))
+           : step === 4 ? a.type === 'after' : false;
+    if(ok) out.push({a: a, i: i});
   });
+  return out;
+}
+// After-tax display mode, as the old table's Opening column had it
+function acsAtMode(){ return window._assetTaxMode === 'after'; }
+function acsAtRate(){
+  var el = document.getElementById('asset-tax-rate');
+  return acsAtMode() ? (parseFloat((el && el.value) || '32') || 32) / 100 : 0;
+}
+function acsDispOpening(a){ return Math.round((a.opening || 0) * (acsAtMode() && a.taxable ? (1 - acsAtRate()) : 1)); }
 
-  // ── Total Value row ──────────────────────────────────────────────
-  const _byTot       = parseInt((document.getElementById('birthYear')?.value||'').replace(/[^0-9]/g,''))||1971;
-  const _wdOfTot     = (a)=>{
-    if(a.db) return occDbEstimate(a);
-    if(isUnderlagAcc(a)) return Math.round(underlagFirstAmount(a).amt);
-    if(usesDelningstalPayout(a)){
-      const _dt    = resolveDelningstal(a, a.ws - _byTot);
-      const _share = (a.wdShare != null ? a.wdShare : 1);
-      return _dt>0 ? Math.round((a.opening||0)/_dt*_share) : 0;
+function acsRow(lbl, html, note){
+  return '<div class="wdp-row"><span class="wdp-lbl">' + lbl + '</span><span class="acs-ctl">' + html + '</span></div>'
+    + (note ? '<div class="wdp-note acs-rownote">' + note + '</div>' : '');
+}
+// Equity %, management fee, yield tax and fixed return follow Typfallsmodellen for scheme and income
+// pension rows. One line instead of the old six dashes, carrying the same two numbers.
+function acsLockedNote(a){
+  var ip = isIpEngineAcc(a);
+  return '<div class="wdp-note" title="' + wdpEsc(t('occ.locked.tip')) + '">' + t('acs.locked', {
+    ret: ip ? t('ip.index') : (occMakeCtx(occParamsNow()).ret * 100).toFixed(1).replace('.', ','),
+    yt:  ip ? '—' : (occTax(START_YEAR + 1) * 100).toFixed(3).replace('.', ',')
+  }) + '</div>';
+}
+
+function acsPctInput(i, field, val){
+  var v = (val === null || val === undefined) ? '-' : (val * 100).toFixed(Math.abs(val * 100) < 0.01 ? 3 : 1).replace('.', ',');
+  return '<input type="text" inputmode="decimal" class="wdp-inp" data-ai="' + i + '" data-field="' + field + '" value="' + v
+    + '" onchange="updateAccountField(' + i + ',\'' + field + '\',this.value)">';
+}
+function acsAgeInput(i, field, val){
+  var age = acsAgeOf(val);
+  return '<input type="text" inputmode="numeric" class="wdp-inp" data-ai="' + i + '" data-field="' + field + '" value="'
+    + (age == null ? '—' : age) + '" onchange="updateAccountField(' + i + ',\'' + field + '\',this.value)">';
+}
+function acsOpeningRow(a, i){
+  var lbl = acsAtMode() ? t('acc.opening.after.tax') : t('acc.col.opening');
+  if(acsAtMode() && a.taxable){
+    return acsRow(lbl, '<input type="text" class="acs-money acs-ro" readonly value="' + acsDispOpening(a).toLocaleString('sv-SE') + '">');
+  }
+  var auto = hasAutoOpening(a) && a.openAuto, tip = wdpEsc(t('occ.auto.tip'));
+  return acsRow(lbl,
+    '<input type="text" inputmode="numeric" class="acs-money' + (auto ? ' acs-auto' : '') + '" data-ai="' + i + '" data-field="opening" value="'
+      + Math.round(a.opening || 0).toLocaleString('sv-SE') + '"' + (auto ? ' title="' + tip + '"' : '')
+      + ' onchange="updateAccountField(' + i + ',\'opening\',this.value)">'
+      + (auto ? '<span class="acs-tag" title="' + tip + '">' + t('occ.auto') + '</span>' : ''),
+    auto ? t('acs.open.auto') : '');
+}
+// Savings accounts: ISK / kapitalforsakring pays schablonskatt, a bank account does not. That rate is
+// the only thing distinguishing them in the model, so it is a chip rather than a "Yield Tax %" field.
+function acsSavKind(a){ return (a.yt || 0) > 0 ? 'isk' : 'bank'; }
+function acsApplySavKind(a, kind){
+  if(!a) return;
+  if(kind === 'bank'){ a.yt = 0; if(a.fixedRet === null || a.fixedRet === undefined) a.fixedRet = 0; }
+  else { a.yt = ytKDefault(); if(a.fixedRet === 0) a.fixedRet = null; }
+}
+function acsSetSavKind(i, kind){
+  acsApplySavKind(accounts[i], kind);
+  buildAccountsTable(); setTimeout(updateAccountSubtotals, 0); recalc();
+}
+function acsSetOwnEq(i, own){
+  accounts[i].ownEq = !!own;
+  buildAccountsTable(); setTimeout(updateAccountSubtotals, 0); recalc();
+}
+function acsSetMonthly(i, raw){
+  accounts[i].contrib = (parseInt(String(raw).replace(/[^0-9]/g, '')) || 0) * 12;
+  buildAccountsTable(); setTimeout(updateAccountSubtotals, 0); recalc();
+}
+function acsMonthlyRow(a, i){
+  return acsRow(t('acs.f.save.mo'),
+    '<input type="text" inputmode="numeric" class="acs-money" value="' + Math.round((a.contrib || 0) / 12).toLocaleString('sv-SE') + '"'
+    + ' onchange="acsSetMonthly(' + i + ',this.value)">',
+    '= ' + wdpN(a.contrib || 0) + ' ' + t('wdp.peryear'));
+}
+function acsSetName(i, raw){
+  var v = String(raw).trim();
+  if(v && v !== accDisplayName(accounts[i])){ accounts[i].name = v; accounts[i].nameKey = null; }
+  buildAccountsTable();
+  if(typeof buildPortfolioTab === 'function') buildPortfolioTab();
+  if(typeof buildWdTable === 'function') buildWdTable();
+  buildAssetSummary();
+}
+
+function acsCard(a, i, step){
+  var locked = isOccPremiumAcc(a) || isIpEngineAcc(a);
+  var isSav  = a.type === 'after';
+  var isPriv = step === 3;
+  var vis = '', det = '';
+
+  // ── visible: at most three fields ──
+  if(isSav) vis += acsRow(t('acs.f.kind'),
+    '<span class="wdp-seg">'
+    + '<button class="' + (acsSavKind(a) === 'isk' ? 'on' : '') + '" onclick="acsSetSavKind(' + i + ',\'isk\')">' + t('acs.sav.isk') + '</button>'
+    + '<button class="' + (acsSavKind(a) === 'bank' ? 'on' : '') + '" onclick="acsSetSavKind(' + i + ',\'bank\')">' + t('acs.sav.bank') + '</button>'
+    + '</span>');
+  if(!a.db && !a.benefit) vis += acsOpeningRow(a, i);
+  if(a.db || a.benefit){
+    vis += '<div class="acs-fixed">' + (a.db ? renderOccDbCell(i, a) : renderBenefitCell(i, a)) + '</div>';
+  } else if(isSav){
+    vis += acsMonthlyRow(a, i);
+  } else if(locked || (a.scheme && !a.db)){
+    vis += '<div class="acs-fixed">' + renderPInsContrib(i, a) + '</div>';
+  } else if(isPriv && !a.contribSalary){
+    vis += acsMonthlyRow(a, i);
+  } else {
+    vis += '<div class="acs-fixed">' + renderPInsContrib(i, a) + '</div>';
+  }
+
+  // ── details: everything else ──
+  if(!a.db && !a.benefit){
+    if(isPriv || isSav){
+      if(isPriv) det += acsRow(t('acs.f.contrib'), '<div class="acs-cellwrap">' + renderPInsContrib(i, a) + '</div>');
+      det += acsRow(t('acc.col.cs'), acsAgeInput(i, 'cs', a.cs), t('acs.cs.help'));
+    } else {
+      det += acsRow(t('acc.col.cs'), acsAgeInput(i, 'cs', a.cs) + csNote(a));
     }
-    return a.wd||0;
-  };
-  const totalOpening = accounts.reduce((s,a)=>s+_dispOpening(a),0);
-  const totalContrib  = accounts.reduce((s,a)=>s+effectiveContrib(a),0);
-  const totalRow = document.createElement('tr');
-  totalRow.style.cssText = 'background:#ebe7df';
-  totalRow.innerHTML=`
-    <td style="padding:11px 12px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--navy);border-top:2px solid rgba(240,199,94,.5)">${t('acc.total.value')}</td>
-    <td style="border-top:2px solid rgba(240,199,94,.5)"><input type="text" readonly style="width:100px;text-align:right;font-family:var(--font-m);font-size:13px;font-weight:700;color:#0C2A49;background:rgba(240,199,94,.1);border:1px solid rgba(240,199,94,.35);border-radius:4px;padding:4px 6px;outline:none;pointer-events:none;cursor:default" id="dst-total-opening" value="8 200 000"></td>
-    <td style="border-top:2px solid rgba(240,199,94,.5)"><input type="text" readonly style="width:100px;text-align:right;font-family:var(--font-m);font-size:13px;font-weight:700;color:#0C2A49;background:rgba(240,199,94,.1);border:1px solid rgba(240,199,94,.35);border-radius:4px;padding:4px 6px;outline:none;pointer-events:none;cursor:default" id="dst-total-contrib" value="220 260"></td>
-    <td style="border-top:2px solid rgba(240,199,94,.5)"></td><td style="border-top:2px solid rgba(240,199,94,.5)"></td>
-    <td style="border-top:2px solid rgba(240,199,94,.5)"></td>
-    <td style="border-top:2px solid rgba(240,199,94,.5)"></td><td style="border-top:2px solid rgba(240,199,94,.5)"></td>
-    <td style="border-top:2px solid rgba(240,199,94,.5)"></td><td style="border-top:2px solid rgba(240,199,94,.5)"></td><td style="border-top:2px solid rgba(240,199,94,.5)"></td><td style="border-top:2px solid rgba(240,199,94,.5)"></td>
-  `;
-  tbody.appendChild(totalRow);
-  // Sync subtotals immediately after rebuilding
+    det += acsRow(t('acc.col.ce'), acsAgeInput(i, 'ce', a.ce) + ceNote(a));
+    var eqRow = function(){
+      var pre = t('acc.eq.prefix'), f1 = getParam('ageFrom1') || 55, t1 = getParam('ageTo1') || 63, t2 = getParam('ageTo2') || 73;
+      return acsRow(pre,
+        acsPctInput(i, 'eq1', a.eq1) + '<small>' + f1 + '–' + t1 + '</small>'
+        + acsPctInput(i, 'eq2', a.eq2) + '<small>' + (t1 + 1) + '–' + t2 + '</small>'
+        + acsPctInput(i, 'eq3', a.eq3) + '<small>' + (t2 + 1) + '+</small>',
+        '<button type="button" class="wdp-link" onclick="goTab(\'parameters\')">' + t('acs.eq.link') + '</button>');
+    };
+    var fundSeg = function(){
+      if(a.fixedRet !== null && a.fixedRet !== undefined) return '';   // a fixed return has no equity share
+      return acsRow(t('acs.f.fund'),
+        '<span class="wdp-seg">'
+        + '<button class="' + (a.ownEq ? '' : 'on') + '" onclick="acsSetOwnEq(' + i + ',false)" title="' + wdpEsc(t('pp.glide.tip')) + '">' + t('acs.eq.default') + '</button>'
+        + '<button class="' + (a.ownEq ? 'on' : '') + '" onclick="acsSetOwnEq(' + i + ',true)">' + t('acs.eq.own') + '</button>'
+        + '</span>', a.ownEq ? '' : t('pp.glide'));
+    };
+    if(isOccPremiumAcc(a) && a.ownEq){
+      det += fundSeg() + eqRow() + acsRow(t('acc.col.mgmt'), acsPctInput(i, 'mgmt', a.mgmt)) + acsLockedNote(a);
+    } else if(locked){
+      det += (isIpEngineAcc(a) ? '' : fundSeg()) + acsLockedNote(a);
+    } else {
+      det += fundSeg() + (a.ownEq ? eqRow() : '')
+        + acsRow(t('acc.col.mgmt'), acsPctInput(i, 'mgmt', a.mgmt))
+        + acsRow(t('acc.col.yt'), acsPctInput(i, 'yt', a.yt), isSav ? t('acs.yt.help') : '')
+        + acsRow(t('acc.col.fr'), acsPctInput(i, 'fixedRet', a.fixedRet));
+    }
+  }
+  if(!a.workRow) det += acsRow(t('acs.name.lbl'),
+    '<input type="text" class="acs-name" value="' + wdpEsc(accDisplayName(a)) + '" onchange="acsSetName(' + i + ',this.value)"'
+    + ' onkeydown="if(event.key===\'Enter\')this.blur()">', t('acs.name.help') + ' ' + t('acs.name.eg.' + step));
+
+  var open = window._acsDetails.has(a);
+  return '<div class="acs-card">'
+    + '<div class="acs-card-hd"><span class="acs-nm">' + wdpEsc(accDisplayName(a)) + '</span>' + occBadgesHtml(a)
+    + (a.workRow ? '<span class="acs-tag" title="' + wdpEsc(t('pers.work.title')) + '">' + t('occ.auto') + '</span>' : '')
+    + '<span class="acs-sp"></span>'
+    + (a.workRow ? '' : '<button class="acs-del" onclick="removeAccount(' + i + ')" title="' + wdpEsc(t('acc.remove')) + '">✕</button>')
+    + '</div>' + vis
+    + (det ? '<details class="wdp-more"' + (open ? ' open' : '')
+        + ' ontoggle="window._acsDetails[this.open?\'add\':\'delete\'](accounts[' + i + '])"><summary>'
+        + t('acs.details') + '</summary>' + det + '</details>' : '')
+    + '</div>';
+}
+
+// ── add panel: pick what it is, then name it ──
+function acsAddOpen(step){ _acsOpen = step; window._acsAdd = {step: step, kind: null, name: ''}; buildAccountsTable(); }
+function acsAddCancel(){ window._acsAdd = null; buildAccountsTable(); }
+function acsAddName(v){ if(window._acsAdd) window._acsAdd.name = String(v); }
+function acsSuggestName(step, kind){
+  if(step === 1) return t('st.opt.' + kind);
+  if(step === 2) return (OCC_SCHEMES[kind] && OCC_SCHEMES[kind].name) || t('acc.name.new.pins');
+  if(step === 3) return t('acc.name.new.pins');
+  return t(kind === 'bank' ? 'acs.sav.bank' : 'acs.sav.isk');
+}
+function acsAddKind(kind){
+  var A = window._acsAdd; if(!A) return;
+  A.kind = kind; A.name = acsSuggestName(A.step, kind);
+  buildAccountsTable();
+}
+function acsAddGo(){
+  var A = window._acsAdd; if(!A || !A.kind) return;
+  var before = accounts.slice();
+  if(A.step === 1) addStateAccount(A.kind);
+  else if(A.step === 2) addOccScheme(A.kind);
+  else if(A.step === 3) addAccount('p-ins', null);
+  else if(A.step === 4) addAccount('after');
+  // identity diff: addOccScheme adds TWO rows (premium + defined benefit) and all three creators
+  // splice after the last account of the same type, so an index would be guesswork
+  var made = accounts.filter(function(x){ return before.indexOf(x) < 0; });
+  var nm = String(A.name || '').trim();
+  if(made[0] && nm){ made[0].name = nm; made[0].nameKey = null; }
+  if(A.step === 4 && made[0]) acsApplySavKind(made[0], A.kind);
+  window._acsAdd = null; window._acsOpen = A.step;
+  buildAccountsTable(); setTimeout(updateAccountSubtotals, 0); recalc();
+}
+function acsAddPanel(step){
+  var A = window._acsAdd;
+  if(!A || A.step !== step){
+    return '<button type="button" class="acs-addbtn" onclick="acsAddOpen(' + step + ')">+ ' + t('acs.add.' + step) + '</button>';
+  }
+  var opts = step === 1 ? STATE_KINDS.map(function(k){ return {v: k, l: t('st.opt.' + k), d: t('acs.state.d.' + k)}; })
+    : step === 2 ? OCC_SCHEME_ORDER.map(function(k){ return {v: k, l: t(OCC_SCHEMES[k].opt), d: ''}; })
+    : step === 3 ? [{v: 'individual', l: t('occ.opt.individual'), d: t('acs.priv.d')}]
+    : [{v: 'isk', l: t('acs.sav.isk'), d: t('acs.sav.isk.d')}, {v: 'bank', l: t('acs.sav.bank'), d: t('acs.sav.bank.d')}];
+  var cards = opts.map(function(o){
+    var on = A.kind === o.v;
+    return '<div class="wdp-opt' + (on ? ' on' : '') + '"' + (on ? '' : ' onclick="acsAddKind(\'' + o.v + '\')"')
+      + ' role="radio" aria-checked="' + on + '" tabindex="0"'
+      + (on ? '' : ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}"') + '>'
+      + '<input type="radio" name="acs-add" tabindex="-1" ' + (on ? 'checked' : '') + '><div><b>' + o.l + '</b>'
+      + (o.d ? '<span>' + o.d + '</span>' : '') + '</div></div>';
+  }).join('');
+  return '<div class="acs-add">'
+    + '<div class="wdp-q">' + t('acs.add.q.' + step) + '</div>' + cards
+    + (step === 2 ? '<details class="wdp-more"><summary>' + t('acs.occ.unknown') + '</summary><div class="wdp-help">' + t('acs.occ.unknown.d') + '</div></details>' : '')
+    + (A.kind ? '<div class="acs-namebox"><div class="wdp-lbl">' + t('acs.name.lbl') + '</div>'
+        + '<input type="text" class="acs-name" value="' + wdpEsc(A.name) + '" oninput="acsAddName(this.value)"'
+        + ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();acsAddGo()}">'
+        + '<div class="wdp-help">' + t('acs.name.help') + ' ' + t('acs.name.eg.' + step) + '</div></div>' : '')
+    + '<div class="wdp-nav"><button type="button" class="wdp-link" onclick="acsAddCancel()">' + t('acs.add.cancel') + '</button>'
+    + '<button type="button" class="wdp-next"' + (A.kind ? '' : ' disabled') + ' onclick="acsAddGo()">' + t('acs.add.ok') + '</button></div>'
+    + '</div>';
+}
+
+// ── the closed-step one-liners, refreshed by updateAccountSubtotals without a re-render ──
+function acsSumText(step){
+  if(step === 5) return pgbItems.length ? t('acs.s5.sum', {n: pgbItems.length}) : '–';
+  var items = acsItems(step);
+  if(!items.length) return '–';
+  var open = items.reduce(function(s, x){ return s + acsDispOpening(x.a); }, 0);
+  var cont = items.reduce(function(s, x){ return s + effectiveContrib(x.a); }, 0);
+  return t('acs.sum', {n: items.length, amt: wdpN(open), contrib: wdpN(cont)});
+}
+function acsStepBody(step){
+  if(step === 5){
+    return '<div class="wdp-help">' + t('acs.s5.help') + '</div>'
+      + '<div id="pgb-section"><div id="pgb-list"></div><div id="pgb-add" style="margin:8px 0"></div>'
+      + '<div id="pgb-summary" style="font-size:11px;color:var(--muted)"></div></div>';
+  }
+  var items = acsItems(step);
+  return '<div class="wdp-q">' + t('acs.s' + step + '.q') + '</div>'
+    + '<div class="wdp-help">' + t(items.length ? 'acs.s' + step + '.help' : 'acs.s' + step + '.empty') + '</div>'
+    + items.map(function(x){ return acsCard(x.a, x.i, step); }).join('')
+    + acsAddPanel(step);
+}
+function acsOpen(n){
+  _acsOpen = _acsOpen === n ? 0 : n; buildAccountsTable();
+  var el = document.getElementById('acs-step-' + n);
+  if(el && n && el.scrollIntoView) el.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+}
+function acsNext(n){
+  _acsOpen = n; buildAccountsTable();
+  var el = document.getElementById('acs-step-' + n);
+  if(el && el.scrollIntoView) el.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+}
+function buildAccountsTable(){
+  var el = document.getElementById('acs-steps');
+  if(!el) return;
+  if(window._acsAdd && window._acsAdd.step !== _acsOpen) window._acsAdd = null;
+  var h = '<div class="wdp-intro">' + t('acs.intro') + '</div>';
+  for(var n = 1; n <= 5; n++){
+    var open = _acsOpen === n;
+    h += '<div class="wdp-step' + (open ? ' open' : '') + '" id="acs-step-' + n + '">'
+      + '<button type="button" class="wdp-head" onclick="acsOpen(' + n + ')" aria-expanded="' + open + '">'
+      + '<span class="wdp-num">' + n + '</span><span class="wdp-title">' + t('acs.s' + n + '.t') + '</span>'
+      + '<span class="wdp-sum" id="acs-sum-' + n + '">' + acsSumText(n) + '</span>'
+      + '<span class="wdp-chev">' + (open ? '▾' : '▸') + '</span></button>'
+      + (open ? '<div class="wdp-body">' + acsStepBody(n)
+          + '<div class="wdp-nav">' + (n < 5
+              ? '<button type="button" class="wdp-next" onclick="acsNext(' + (n + 1) + ')">' + t('wdp.next') + ' →</button>'
+              : '<button type="button" class="wdp-next" onclick="acsNext(0)">' + t('wdp.done') + '</button>')
+          + '</div></div>' : '')
+      + '</div>';
+  }
+  el.innerHTML = h;
+  if(_acsOpen === 5) buildPgbSection();
   setTimeout(updateAccountSubtotals, 0);
   setTimeout(buildAssetSummary, 0);
 }
@@ -6619,13 +6798,18 @@ function getParam(id){ const el=document.getElementById(id); if(!el)return 0; re
 // Premium pension default fund (AP7 Såfa): 100 % equities to age 55, then
 // linearly down to 33 % equities / 67 % bonds at 75, flat after that.
 function ppGlideEq(age){ return age <= 55 ? 1 : age >= 75 ? 0.33 : 1 - 0.67 * (age - 55) / 20; }
-function isPpGlide(a){
-  return !!(a && a.type === 'state' && a.delningstalScope === 'premie' && !a.ownEq
+// Pensionsmyndigheten's default fund is the planner's default glidepath for EVERY account that
+// has not been given its own age brackets. Three step-brackets cannot express a ramp, and the old
+// per-account defaults (ISK 0,9 / 0,4 / 0,75 — equity rising again in the last bracket) show what
+// happens when they are left to drift. An account with a fixed return has no equity share at all.
+function usesGlideEq(a){
+  return !!(a && !a.ownEq && !a.db && !a.benefit && !a.workRow
     && (a.fixedRet === null || a.fixedRet === undefined));
 }
+function isPpGlide(a){ return isPpAcc(a) && usesGlideEq(a); }   // kept for the premium-pension wording
 function calcEquityShare(acc, age){
   if(acc.fixedRet!==null && acc.fixedRet!==undefined) return 0;
-  if(isPpGlide(acc)) return ppGlideEq(age);
+  if(usesGlideEq(acc)) return ppGlideEq(age);
   const t1 = getParam('ageTo1')||63;
   const t2 = getParam('ageTo2')||73;
   if(age<=t1) return acc.eq1;
@@ -6700,6 +6884,7 @@ function wdpApplyEven(){
 }
 var _wdpOpen = 1;         // the open step of the Withdrawals tab (1–5)
 var _wdpMigrated = false;  // an older plan's expense intervals were turned into spending phases (toast once)
+var _iskFriNew = false;    // an older plan now gets the ISK/KF tax-free allowance (toast once)
 // Restore (applyPlanState, after expenses and accounts). Plans saved before the redesign (no wdPlanV) carry
 // "Age-based expense intervals" (expAgeIntervals + the #exp-iv-master tick box): with the tick box on, their
 // boundaries and levels (amount ÷ budget) become spending phases and the savings cover the gap; with it off the
@@ -6772,8 +6957,6 @@ function runProjection(){
     stateThreshAge:    getParam('stateThreshAge')||67,
     allowance67Age:    getParam('allowance67Age')||66,
     allowanceAge:      getParam('allowanceAge')||67,
-    ytP:             getParam('ytP')/100,
-    ytK:             getParam('ytK')/100,
     retirementYear:  getParam('retirementYear'),
     birthYear:       getParam('birthYear'),
   };
@@ -6833,22 +7016,44 @@ function runProjection(){
     // in the depletion year rather than leaving Cash stranded.
     const atAvail = new Array(accounts.length).fill(0);
     const prePassContrib = new Array(accounts.length).fill(0);
+    // ── ISK / kapitalforsakring tax-free allowance (fribelopp) ──────────────────────────────────
+    // Schablonskatt is charged only on the part of the person's COMBINED ISK + kapitalforsakring
+    // capital above ISK_FRI (per person, shared across the accounts). A bank account (yt 0) neither
+    // pays the tax nor uses up the allowance. Applied as a factor on the rate rather than a sum of
+    // kronor, because the tax has to sit inside each account's own net return - and a factor stays
+    // correct if one account is given a different yt. Developed for the planner: Typfallsmodellen
+    // does not model private savings at all. Held flat in today's money, like every other threshold
+    // in this constant-prices model.
+    const atYtEff = new Array(accounts.length).fill(0);
+    let _iskBase = 0;
+    for (let i = 0; i < accounts.length; i++) {
+      const a = accounts[i];
+      if (a.taxable || !((a.yt||0) > 0)) continue;
+      const _inC = yr>=a.cs && yr<=a.ce && (yr<params.retirementYear || a.ce>params.retirementYear);
+      // the base is computed with the UNSCALED rate: the dependence of this year's deposits on the
+      // rate that the base itself sets is third-order, and iterating to a fixed point is not worth it
+      const _c = _inC ? monthlyFV((a.contrib||0), calcReturn(a, age, params), a.yt||0, a.mgmt||0) : 0;
+      _iskBase += balances[i] + _c;
+    }
+    const _iskF = _iskBase > 0 ? Math.max(0, _iskBase - ISK_FRI) / _iskBase : 1;
     let atTotalAvail = 0, atTotalSched = 0, contribAfterTax = 0, contribPreTax = 0, returnAfterTax = 0, returnPreTax = 0;
     for (let i = 0; i < accounts.length; i++) {
       const a = accounts[i];
       if (!a.taxable) {
+        const ytEff = (a.yt||0) > 0 ? (a.yt||0) * _iskF : 0;
+        atYtEff[i] = ytEff;
         const _inC2  = yr>=a.cs && yr<=a.ce && (yr<params.retirementYear || a.ce>params.retirementYear);
         const _annC2 = _inC2 ? (a.contrib||0) : 0;
         const _r2 = calcReturn(a, age, params);
         const ret2 = geoRet(_r2);
-        const netRet2 = ret2 - proRate(a.yt||0) - proRate(a.mgmt||0);
-        const contrib2 = _inC2 ? monthlyFV(_annC2, _r2, a.yt||0, a.mgmt||0) : 0;
+        const netRet2 = ret2 - proRate(ytEff) - proRate(a.mgmt||0);
+        const contrib2 = _inC2 ? monthlyFV(_annC2, _r2, ytEff, a.mgmt||0) : 0;
         prePassContrib[i] = contrib2;
         // First year: balance earns geoRet; contributions use annuity FV (already includes their return)
         const atBase2 = yr===START_YEAR ? balances[i]*(1+netRet2) + contrib2 : (balances[i]+contrib2)*(1+netRet2);
         atAvail[i] = Math.max(0, atBase2);
         returnAfterTax += (balances[i] + contrib2) * ret2;  // gross return
-        yieldTaxK    += (balances[i] + contrib2) * (a.yt||0);
+        yieldTaxK    += (balances[i] + contrib2) * ytEff;
         mgmtFeeAT    += (balances[i] + contrib2) * (a.mgmt||0);
         mgmtFeeTotal += (balances[i] + contrib2) * (a.mgmt||0);
         atTotalAvail += atAvail[i];
@@ -7123,8 +7328,8 @@ function runProjection(){
       } else {
         // After-tax: derive from pre-pass values
         var _atGross = atAvail[i] - (opening + prePassContrib[i]);
-        _grossRetSek = _atGross + proRate(a.yt||0)*(opening+_ac) + proRate(a.mgmt||0)*(opening+_ac);
-        _yt = proRate(a.yt||0)   * (opening + _ac);
+        _grossRetSek = _atGross + proRate(atYtEff[i])*(opening+_ac) + proRate(a.mgmt||0)*(opening+_ac);
+        _yt = proRate(atYtEff[i])   * (opening + _ac);
         _mf = proRate(a.mgmt||0) * (opening + _ac);
       }
       row.accDetail.push({ open:opening, contrib:_ac, wdrl:actualWd||0, grossRet:_grossRetSek, yieldTax:_yt, mgmtFee:_mf, close:closing });
@@ -7192,8 +7397,8 @@ function runProjection(){
         balances[i] = closing;
         row.accClosing[i] = closing;
         row.accDetail[i] = { open:opening, contrib:c, wdrl:_nd[i],
-          grossRet: atAvail[i] - (opening + c) + proRate(a.yt||0)*(opening + c) + proRate(a.mgmt||0)*(opening + c),
-          yieldTax: proRate(a.yt||0)*(opening + c), mgmtFee: proRate(a.mgmt||0)*(opening + c), close:closing };
+          grossRet: atAvail[i] - (opening + c) + proRate(atYtEff[i])*(opening + c) + proRate(a.mgmt||0)*(opening + c),
+          yieldTax: proRate(atYtEff[i])*(opening + c), mgmtFee: proRate(a.mgmt||0)*(opening + c), close:closing };
         const eq = calcEquityShare(a, age);
         totalEq += closing * eq; totalBd += closing * (1-eq); totalPort += closing;
       }
@@ -7904,17 +8109,20 @@ function computePensionPhases(data){
     var rows = data.years.filter(function(y){
       return y.yr >= retYear && y.age >= b.from && y.age <= b.to;
     });
-    var monthly = 0, net = 0, exp = 0;
+    var monthly = 0, net = 0, exp = 0, short = null;
     if(rows.length){
       var total = rows.reduce(function(sum, y){
         return sum + (y.taxFree||0) + ((y.wdrlPIns||0) + (y.wdrlState||0)) * _ilsTaxFactor(y);
       }, 0);
       monthly = total / rows.length / 12;
-      // After-tax pension (the model's own tax) and expenses over the same years: they decide the card colour
-      net = rows.reduce(function(sum, y){ return sum + (y.afterTaxIncome||0); }, 0) / rows.length / 12;
+      // Income after tax and spending over the same years — the SAME figures and the same rule as the
+      // Withdrawals tab's result card (wdpRenderResult), so the two card rows always read alike
+      net = rows.reduce(function(sum, y){ return sum + (y.totalAfterTaxIncome||0); }, 0) / rows.length / 12;
       exp = rows.reduce(function(sum, y){ return sum + (y.expenses||0); }, 0) / rows.length / 12;
+      var sh = rows.find(function(y){ return (y.expenses||0) - (y.totalAfterTaxIncome||0) > 1; });
+      short = sh ? sh.age : null;
     }
-    return {from: b.from, to: b.to, key: PHASE_KEYS[i], monthly: monthly, net: net, exp: exp, hasRows: rows.length > 0};
+    return {from: b.from, to: b.to, key: PHASE_KEYS[i], monthly: monthly, net: net, exp: exp, short: short, hasRows: rows.length > 0};
   });
 }
 
@@ -7943,10 +8151,16 @@ function buildPhaseTiles(data){
       label: t('tile.phasePension', {from: has?ph.from:'\u2014', to: has?ph.to:'\u2014'}),
       val:   has ? fmtKr(ph.monthly) : '\u2014',
       sub:   t('tile.phase.'+PHASE_KEYS[i]) + ' \u00b7 ' + taxLbl,
-      // green when the after-tax pension covers the expenses of the period, red when it does not
-      cls:   (has && ph.hasRows && ph.exp > 0) ? (ph.net >= ph.exp ? 'good' : 'bad') : '',
+      // green when the income after tax covers the spending in EVERY year of the period, red when it does not
+      // (same rule as the Withdrawals tab's result card)
+      cls:   (has && ph.hasRows && ph.exp > 0) ? (ph.short == null ? 'good' : 'bad') : '',
       tile:  '',
-      extra: (has && ph.hasRows && ph.exp > 0) ? '<div class="tile-sub" style="margin-top:6px">' + t('tile.phase.vs', {exp:fmt(ph.exp), net:fmt(ph.net)}) + '</div>' : '',
+      // Same two lines, in the same order, with the same wording and the same emphasis as the
+      // Withdrawals tab's result card
+      extra: (has && ph.hasRows && ph.exp > 0)
+        ? '<div class="tile-sub tile-row" style="margin-top:8px">' + t('wdp.res.income') + ' <b>' + fmt(ph.net) + '</b> ' + t('wdp.permonth') + '</div>'
+          + '<div class="tile-sub tile-row">' + t('wdp.res.spend') + ' <span>' + fmt(ph.exp) + '</span> ' + t('wdp.permonth') + '</div>'
+        : '',
       tip:   t('tip.phasePension')
     };
   });
@@ -8144,6 +8358,12 @@ function updateAccountSubtotals(){
   // Total Value row
   sv('dst-total-opening', fmtN(at.opening + pi.opening + st.opening));
   sv('dst-total-contrib', fmtN(at.contrib + pi.contrib + st.contrib));
+
+  // The five closed-step one-liners on the Assets tab: refreshed in place, so typing in a card
+  // never costs a re-render (which would take the focused input with it)
+  if(typeof acsSumText === 'function'){
+    for(var n = 1; n <= 5; n++) sv('acs-sum-' + n, acsSumText(n));
+  }
 }
 
 
@@ -8177,6 +8397,7 @@ function recalc(){
     updateProjectionTable(data);
     updateAccountSubtotals();
     refreshEqHeaders();
+    refreshYieldTaxes();
     var _expTab=document.getElementById('tab-expenses');
     var _scTab=document.getElementById('tab-scenarios'); if(_scTab&&_scTab.classList.contains('active')) buildScenariosTab(); var _mcTab=document.getElementById('tab-montecarlo'); if(_mcTab&&_mcTab.classList.contains('active')) populateMCDefaults(); if(_expTab&&_expTab.classList.contains('active')) buildExpenseChart();
     var _pvTab=document.getElementById('tab-portfolio-value'); if(_pvTab&&_pvTab.classList.contains('active')) buildPortfolioTab();
@@ -8250,6 +8471,18 @@ function setPortMode(mode){
 
 
 
+
+// The two yield taxes are derived from the SLR assumption, not typed: the fields are read-only
+// displays of ytKDefault() / ytPDefault(). The engine reads each account's own yt, which a user can
+// still override per account; these show what a NEW account gets.
+function refreshYieldTaxes(){
+  var f = function(id, v){
+    var el = document.getElementById(id);
+    if(el) el.value = (v * 100).toFixed(3).replace('.', ',');
+  };
+  f('ytK', ytKDefault());
+  f('ytP', ytPDefault());
+}
 
 function refreshEqHeaders(){
   const f1 = getParam('ageFrom1')||55;
@@ -8350,7 +8583,6 @@ const ROT_MAX    = 50000;        // ROT max per person/år
 const RUT_MAX    = 75000;        // RUT max per person/år
 const HUS_MAX    = 75000;        // gemensamt tak ROT+RUT, varav max 50 000 ROT
 const AKT_KVOT   = 0.70;         // okvittad aktieförlust kvoteras till 70 %
-const ISK_FRI    = 300000;       // fribelopp ISK/KF 2026 (per person, samlat)
 const ISK_SCHABLON = 0.0355;     // schablonränta 2026: SLR 30 nov 2025 (2,55%) + 1 pp
 const ISK_GOLV   = 0.0125;       // golv för schablonräntan
 const FAST_SATS  = 0.0075;       // kommunal fastighetsavgift 0,75 %
@@ -9240,8 +9472,10 @@ function wdpRenderResult(){
     if(!ph.n) return;
     var cls = ph.exp > 0 ? (ph.short == null ? 'good' : 'bad') : '';
     h += '<div class="wdp-res ' + cls + '"><h4>' + t(names[i]) + ' <span>' + t('wdp.ages', {from:ph.from, to:ph.to}) + '</span></h4>'
-      + (dash[i] && dash[i].hasRows ? '<div class="l">' + t('wdp.res.dash', {tax:dashLbl.toLowerCase()}) + '</div><div class="v2">' + wdpN(dash[i].monthly) + ' ' + t('wdp.permonth') + '</div>' : '')
-      + '<div class="l">' + t('wdp.res.income') + '</div><div class="v">' + wdpN(ph.inc) + ' <small>' + t('wdp.permonth') + '</small></div>'
+      // Same order and the same emphasis as the Dashboard's phase cards: the pension in the big figure,
+      // then income after tax, then spending
+      + (dash[i] && dash[i].hasRows ? '<div class="l">' + t('wdp.res.dash', {tax:dashLbl.toLowerCase()}) + '</div><div class="v ' + cls + '">' + wdpN(dash[i].monthly) + ' <small>' + t('wdp.permonth') + '</small></div>' : '')
+      + '<div class="l">' + t('wdp.res.income') + '</div><div class="v2 strong">' + wdpN(ph.inc) + ' ' + t('wdp.permonth') + '</div>'
       + '<div class="l">' + t('wdp.res.spend') + '</div><div class="v2">' + wdpN(ph.exp) + ' ' + t('wdp.permonth') + '</div>'
       + (cls ? '<div class="st">' + (cls === 'good' ? '✓ ' + t('wdp.res.ok') : t('wdp.res.short', {age:ph.short})) + '</div>' : '')
       + '</div>';
@@ -9408,6 +9642,8 @@ function persRelinkAccounts(){
   var by = Math.round(getParam('birthYear')), w = workStartAge(), retY = defaultCe(), changed = false;
   accounts.forEach(function(a){
     if(!(a.cs < 9999) || a.workRow) return;
+    // An account added by the user starts at START_YEAR, which matches _csFor only by coincidence, so
+    // it stops following the Personal tab's begin-work age. That is intended: it started when it started.
     var oldCs = _csFor(a, _lastBy, _lastWorkAge), newCs = _csFor(a, by, w);
     if(a.ce === _lastRetY && a.ce !== retY){ a.ce = retY; changed = true; }
     if(a.cs === oldCs && a.cs !== newCs){ a.cs = newCs; changed = true; }
@@ -10074,13 +10310,18 @@ function addPInsFromMenu(sel){
 function addAccount(type, scheme){
   if(type === 'p-ins' && scheme && OCC_SCHEMES[scheme]) return addOccScheme(scheme);
   var yr = START_YEAR || new Date().getFullYear();
-  var ytDef = type==='after'?0.0105:type==='p-ins'?0.00375:0.000;
+  var ytDef = type==='after'?ytKDefault():type==='p-ins'?ytPDefault():0.000;
   var newKey = type==='after'?'acc.name.new.after':type==='p-ins'?'acc.name.new.pins':'acc.name.new.state';
   var newA = {
     name: t(newKey), nameKey: newKey,
-    type:type, opening:0, contrib:0, cs:_csFor(null, Math.round(getParam('birthYear')), workStartAge()), ce:defaultCe(), ceAuto: type!=='after',
+    // An account you add yourself starts contributing NOW (age = START_YEAR - birth year), not at the
+    // begin-work age. That is only the right default for rows whose opening balance is built from the
+    // whole income history - the contractual schemes and the state pensions, which set their own cs in
+    // addOccScheme / addStateAccount. Numerically this is a display fix: the projection starts at
+    // START_YEAR and gates contributions on yr >= a.cs, so an earlier cs never moved any money here.
+    type:type, opening:0, contrib:0, cs:START_YEAR, ce:defaultCe(), ceAuto: type!=='after',
     wd:0, ws:9999, we: type==='state' ? 9998 : 9999,   // state pensions are lifelong
-    eq1:0.6, eq2:0.4, eq3:0.3, mgmt:0.002, yt:ytDef,
+    eq1:0.6, eq2:0.4, eq3:0.3, mgmt:mgmtDefaultPrivate(), yt:ytDef,
     fixedRet:null, fixedRetPost:null,
     contribSalary:false, cRate1:4.5, cIBB1:7.5, cIBB2:30.0, cRate2:30,
     taxable: type!=='after',
@@ -10133,7 +10374,7 @@ function addOccScheme(key){
   accounts.forEach(function(a,i){if(a.type==='p-ins') lastIdx=i;});
   Array.prototype.splice.apply(accounts, [lastIdx>=0?lastIdx+1:accounts.length, 0].concat(rows));
   if(occBirthMismatch(rows[0])) showPlanToast('⚠ ' + t('occ.warn.birth'), true);
-  window._accGroupCollapsed && (window._accGroupCollapsed['p-ins'] = false);
+  window._acsOpen = 2;
   buildAccountsTable(); setTimeout(updateAccountSubtotals,0); recalc();
 }
 
@@ -10175,7 +10416,7 @@ function addStateAccount(kind){
   var lastIdx=-1;
   accounts.forEach(function(a,i){if(a.type==='state') lastIdx=i;});
   accounts.splice(lastIdx>=0?lastIdx+1:accounts.length, 0, row);
-  window._accGroupCollapsed && (window._accGroupCollapsed.state = false);
+  window._acsOpen = 1;
   buildAccountsTable(); setTimeout(updateAccountSubtotals,0); recalc();
 }
 function renderBenefitCell(i, a){
@@ -10192,13 +10433,13 @@ function renderBenefitCell(i, a){
         + ' onchange="accounts['+i+'].ftid=Math.max(0,Math.min(40,parseInt(this.value)||0));buildAccountsTable();recalc()"> / 40' : '')
         + '</div>';
     }
-    return '<td style="padding:4px;min-width:190px;vertical-align:top" title="'+t('bn.auto.tip')+'">'
+    return '<div class="acs-cell" title="'+t('bn.auto.tip')+'">'
       + '<div style="font-size:10px;color:var(--muted)">'+t('bn.rule.'+a.benefitKind)+'</div>' + ctl
       + (a.benefitKind === 'tillagg' && Math.floor(getParam('birthYear')) > 1953 ? '<div style="font-size:10px;color:#9C4438">'+t('bn.atp.none')+'</div>' : '')
       + '<div style="font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right;margin-top:3px">'
-      + t('occ.db.from',{amt:Math.round(r.amt).toLocaleString('sv-SE'), age:Math.round(r.age)})+'</div></td>';
+      + t('occ.db.from',{amt:Math.round(r.amt).toLocaleString('sv-SE'), age:Math.round(r.age)})+'</div></div>';
   }
-  return '<td style="padding:4px;min-width:190px;vertical-align:top;font-size:10px;color:var(--muted)">'+t('st.benefit.note')+'</td>';
+  return '<div class="acs-cell" style="font-size:10px;color:var(--muted)">'+t('st.benefit.note')+'</div>';
 }
 
 
@@ -11787,7 +12028,7 @@ function populateMCDefaults(){
       if(a.nameKey === 'acc.name.income.pen') return; // exclude
       if(a.fixedRet !== null && a.fixedRet !== undefined) return; // skip fixed-return accs
       var wt = a.opening || 0;
-      if(isPpGlide(a)){ wEq1 += ppGlideEq(brT1) * wt; wEq2 += ppGlideEq(brT2) * wt; wEq3 += ppGlideEq(brT2 + 1) * wt; wTot += wt; return; }
+      if(usesGlideEq(a)){ wEq1 += ppGlideEq(brT1) * wt; wEq2 += ppGlideEq(brT2) * wt; wEq3 += ppGlideEq(brT2 + 1) * wt; wTot += wt; return; }
       wEq1 += a.eq1 * wt; wEq2 += a.eq2 * wt; wEq3 += a.eq3 * wt; wTot += wt;
     });
     if(wTot > 0){
@@ -11879,8 +12120,8 @@ autoFillNetSalary();
 var _SAVE_SKIP = [
   /^exp-name-input-/,/^wdp-/,/^dst-/,/^pv-/,/^wd-sum-year/,
   /^e-(monthly|annual|goal)$/,/^s-/,/^sg-/,/^proj-/,
-  /^inc-(breakdown|result|waterfall|summary)/,/^asset-sum/,/^accounts-tbody/,
-  /^expense-rows$/,/^exp-donut/,/^exp-chart/,/^wb-/,/^sc-/,/^plan-preset$/
+  /^inc-(breakdown|result|waterfall|summary)/,/^asset-sum/,/^acs-/,
+  /^expense-rows$/,/^exp-donut/,/^exp-chart/,/^wb-/,/^sc-/,/^plan-preset$/,/^yt[PK]$/
 ];
 
 function _skipId(id){
@@ -12802,6 +13043,9 @@ function collectPlanState(){
     version: 3,
     assumptionsV: 2,   // saved with the Typfallsmodellen default assumptions (1,9 % returns)
     ceRulesV: 1,       // saved with Contrib End following the retirement age (ceAuto) and CE_MAX
+    iskFriV: 1,        // saved with the ISK/KF tax-free allowance applied in the projection
+    mgmtV: 1,          // saved with the 1 % default fee on private accounts
+    eqRulesV: 1,       // saved with the default fund (AP7 Safa) as the equity default
     ppFeeV: 1,         // saved with the 0,20 % premium pension default fee
     wdRulesV: 2,       // saved with Wdrl Start following the retirement age (wsAuto) and WD_RULES
     wdPlanV: 1,        // saved with the step-by-step Withdrawals tab (wdPlan: spending phases + savings mode)
@@ -12863,6 +13107,20 @@ function applyPlanState(state){
       // Premium pension default fee is Typfallsmodellen's 0,20 % (1,9 % before fees → 1,7 % after); saves made before
       // ppFeeV 1 carry the older 0,10 % / 0,04 % (AP7 Såfa) defaults
       if(!(state.ppFeeV >= 1) && a.type === 'state' && a.delningstalScope === 'premie' && !a.ownEq && (a.mgmt === 0.001 || a.mgmt === 0.0004)) a.mgmt = 0.002;
+      // Saves made before the default fund became the equity default: an account still on one of the
+      // old bracket defaults follows AP7 Safa from now on, an account whose brackets were typed keeps
+      // them (ownEq). [0,0,0] is NOT an old default - someone chose all bonds - so it is kept too.
+      if(!(state.eqRulesV >= 1) && !a.ownEq && !a.db && !a.benefit && !a.workRow
+         && (a.fixedRet === null || a.fixedRet === undefined)){
+        var _oldEq = [[0.9,0.4,0.75],[0.8,0.4,0.7],[0.6,0.4,0.3]];
+        a.ownEq = !_oldEq.some(function(e){ return a.eq1 === e[0] && a.eq2 === e[1] && a.eq3 === e[2]; });
+      }
+      // Saves made before the 1 % private default: a row still on Typfallsmodellen's 0,20 % that is
+      // NOT one of the workbook's own rows moves to 1 %. Any fee that was typed is kept. This runs
+      // after the ppFeeV guard above, and excludes premium pension, so a 0,10 % premium pension row
+      // lifted to 0,20 % there is not lifted again here.
+      if(!(state.mgmtV >= 1) && a.mgmt === 0.002
+         && !isOccPremiumAcc(a) && !isPpAcc(a) && !isIpEngineAcc(a) && !a.db && !a.benefit) a.mgmt = 0.01;
       if(a.type === 'state') a.we = 9998;   // state pensions are always lifelong
       // Older saves: pension accounts still on a default start (retirement year, or the first version of the
       // per-scheme default ages) follow the retirement age from now on
@@ -12874,6 +13132,9 @@ function applyPlanState(state){
          (a.ce === Math.round(getParam('retirementYear')) || a.ce === ceMaxYear(a))) a.ceAuto = true;
       accounts.push(a);
     });
+    // An older save was made when schablonskatt was charged on the whole ISK / endowment balance.
+    // Nothing to lift - the engine simply charges less now - but say so once, because the numbers move.
+    if(!(state.iskFriV >= 1) && accounts.some(function(a){ return a.type === 'after' && (a.yt || 0) > 0; })) _iskFriNew = true;
     wdSyncStart(); ceSyncEnd();
     buildAccountsTable();
   }
@@ -12893,6 +13154,7 @@ function applyPlanState(state){
   // 5. Recalc everything
   if(typeof recalc === 'function') recalc();
   if(_wdpMigrated){ _wdpMigrated = false; setTimeout(function(){ showPlanToast(t('wdp.migrated')); }, 1200); }
+  if(_iskFriNew){ _iskFriNew = false; setTimeout(function(){ showPlanToast(t('toast.iskfri')); }, 2000); }
 
   return true;
 }
@@ -13033,7 +13295,7 @@ function goTab(id){ switchTab(id); window.scrollTo(0, 0); }
 
 var GUIDE_STEPS = [
   {tab:'personal',    hl:['#birthYear','#workStartAge','#retirementAge','#lifeAge','#grossSalPre66','#salaryIncrease']},
-  {tab:'accounts',    hl:["#accounts-tbody button[onclick=\"addAccount('after')\"]",'#acc-add-pins','#acc-add-state','#pgb-add']},
+  {tab:'accounts',    hl:['#acs-step-1','#acs-step-2','#acs-step-4','#acs-step-5']},
   {tab:'withdrawals', hl:['#wdp-steps']},
   {tab:'expenses',    hl:['#exp-persona','#expense-rows']}
 ];
@@ -13056,7 +13318,7 @@ function guideMove(d){
 function guideShow(){
   if(_guideStep < 0) return;
   // Open all account groups so every "+ Add" control is visible.
-  if(GUIDE_STEPS[_guideStep].tab === 'accounts') window._accGroupCollapsed = {after:false,'p-ins':false,state:false};
+  if(GUIDE_STEPS[_guideStep].tab === 'accounts') window._acsOpen = 0;   // all five step headers visible
   goTab(GUIDE_STEPS[_guideStep].tab);
   guideRender();
 }

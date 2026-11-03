@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "a4a6ca611f5d610bc88fcdeb6492c9ff4394af01",
-  "committedAt": "2026-11-02T18:55:09Z",
-  "subject": "Withdrawals result cards show the Dashboard's monthly pension figure too"
+  "commit": "d4e073c42667781f45f04703b3430a4db5345146",
+  "committedAt": "2026-11-03T10:25:54Z",
+  "subject": "ISK and kapitalforsakring: the 300 000 kr allowance in the projection"
 }
