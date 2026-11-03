@@ -387,6 +387,16 @@ header{
 .acs-tot{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:0 0 16px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#545f6c}
 .acs-tot input{width:110px;text-align:right;font-family:var(--font-m);font-size:13px;font-weight:700;color:#0C2A49;background:rgba(240,199,94,.1);border:1px solid rgba(240,199,94,.35);border-radius:4px;padding:4px 6px;pointer-events:none}
 .acs-tot small{font-size:9px;font-weight:600;color:var(--muted);margin-left:6px;text-transform:none;letter-spacing:0}
+.acs-tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+.acs-tbl{width:100%;border-collapse:collapse;font-size:13px;background:var(--s1)}
+.acs-tbl th{text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.acs-tbl td{padding:7px 12px;border-bottom:1px solid var(--s2);color:var(--text)}
+.acs-tbl .n{text-align:right;font-family:var(--font-m);white-space:nowrap}
+.acs-tbl tr:last-child td{border-bottom:none}
+.acs-tbl .acs-grp td{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#545f6c;background:var(--s2);padding:6px 12px}
+.acs-tbl .acs-sum-row td{font-weight:700;border-top:2px solid rgba(240,199,94,.5);background:rgba(240,199,94,.06)}
+.acs-tbl .acs-dash{color:var(--muted)}
+#acs-table{margin-top:22px}
 @media (max-width:767px){
   .acs-money,.acs-name{width:100%}
   .acs-ctl{width:100%}
@@ -862,16 +872,19 @@ input[type="number"]::-webkit-outer-spin-button {
 #guide-panel .g-next{background:var(--gold);color:#0c2a49;border:none}
 #guide-panel .g-back{background:transparent;color:var(--muted);border:1px solid var(--border)}
 #guide-panel .g-x{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--muted);font-size:14px;padding:2px 4px}
-#guide-panel .g-min{display:none;position:absolute;top:8px;right:36px;background:none;border:none;color:var(--muted);font-size:14px;padding:2px 6px;line-height:1}
-#guide-panel .g-step,#guide-panel .g-title{padding-right:28px}
+#guide-panel .g-min{position:absolute;top:8px;right:36px;background:none;border:none;color:var(--muted);font-size:14px;padding:2px 6px;line-height:1}
+#guide-panel .g-step,#guide-panel .g-title{padding-right:58px}
+/* Drag handle: the step line and the title. The buttons keep their own cursor. */
+#guide-panel .g-grip{cursor:grab;touch-action:none;user-select:none}
+#guide-panel.g-dragging .g-grip{cursor:grabbing}
+#guide-panel.g-dragging{box-shadow:0 14px 40px rgba(15,32,52,.45)}
+/* Folded in: only the step and the title, so the page stays in view. */
+#guide-panel.g-collapsed{padding:10px 14px}
+#guide-panel.g-collapsed ul,#guide-panel.g-collapsed .g-btns{display:none}
+#guide-panel.g-collapsed .g-title{margin-bottom:0}
 @media(max-width:767px){
   #guide-panel{left:16px;right:16px;width:auto;bottom:76px}
-  #guide-panel .g-min{display:block}
-  #guide-panel .g-step,#guide-panel .g-title{padding-right:58px}
-  /* Folded in on a phone: only the step, the title and the buttons, so that the page stays in view. */
-  #guide-panel.g-collapsed{padding:10px 14px}
-  #guide-panel.g-collapsed ul{display:none}
-  #guide-panel.g-collapsed .g-title{margin-bottom:8px}
+  #guide-panel .g-grip{cursor:default}
 }
 </style>
 <!-- pensionslyft:begin -->
@@ -2049,6 +2062,9 @@ header {
 
   <!-- The five steps (acsRender, entry point buildAccountsTable) -->
   <div id="acs-steps"></div>
+
+  <!-- Read-only summary of everything above (acsSummaryTable) -->
+  <div id="acs-table"></div>
 </div>
 
 
@@ -2375,10 +2391,10 @@ en:{
   'preset.clear':'Clear all input data',
   'preset.confirm':'This replaces the data in the current plan (personal, assets, expenses, withdrawals) and resets the model assumptions to the Typfallsmodellen defaults. A plan saved in the browser is kept until you press Save. Continue?',
   'preset.cleared':'✓ All input data cleared','preset.loaded':'✓ Typical case loaded: ITP1, born 1980, salary 40 000 kr/month',
-  'guide.step':'Step {n} of {m}','guide.back':'Back','guide.next':'Next','guide.finish':'Finish','guide.close':'Close guide','guide.min':'Minimize guide','guide.max':'Show guide',
+  'guide.step':'Step {n} of {m}','guide.back':'Back','guide.next':'Next','guide.finish':'Finish','guide.close':'Close guide','guide.min':'Minimize guide','guide.max':'Show guide','guide.drag':'Drag to move the guide',
   'guide.t1':'Personal','guide.t2':'Assets','guide.t3':'Withdrawals','guide.t4':'Expenses',
   'guide.b1':'<li>Enter your <b>birth year</b> and the <b>age you began working</b>.</li><li><b>Retirement age</b>: tick <b>Target retirement age</b> to use your riktålder, or untick it and enter your own age.</li><li>Enter <b>life expectancy age</b>, for example 95.</li><li>Enter your <b>gross monthly salary</b>; the net salary fills in automatically. Set the yearly salary increase above inflation.</li>',
-  'guide.b2':'<li><b>After-tax</b>: add savings such as ISK, endowment insurance and cash with today\'s balance and monthly saving.</li><li><b>P-Insurance</b>: pick your occupational pension scheme (e.g. ITP 1). Leave Opening empty to calculate the balance from your salary history.</li><li><b>State</b>: add Inkomstpension and Premiepension (Opening empty = automatic), and Garantipension / Inkomstpensionstillägg if relevant.</li><li><b>PGB</b>: add child years, conscription, studies or sickness compensation.</li>',
+  'guide.b2':'<li>The tab is five steps. Work through them in order — anything you leave empty counts as zero.</li><li><b>1 State pension</b>: add Income pension and Premium pension. The planner works out the balance from your salary history, so there is usually nothing to change.</li><li><b>2 Occupational pension</b>: pick your agreement (e.g. ITP 1). It follows your employer, not your job title — minPension lists yours.</li><li><b>3 Private pension</b>: only if you pay into one yourself (IPS or a private pension insurance). Most people have none.</li><li><b>4 Savings</b>: ISK, kapitalförsäkring or a bank account — the value today and what you save each month.</li><li><b>5 Other pension rights</b>: child years, conscription, studies or sickness compensation.</li><li>Each account hides the expert fields — contribution ages, equity share, fees, yield tax — behind <b>Details</b>. The defaults follow Pensionsmyndigheten.</li>',
   'guide.b3':'<li>Go through the five steps in order: <b>state pension</b> start age, <b>occupational</b> and <b>private pension</b> (lifelong or a number of years), <b>savings</b> and <b>spending</b>.</li><li>Want to spend more in the first, active years? Choose <b>More early, less later</b> in step 5.</li><li>The <b>Result</b> shows whether the money lasts and the highest level your plan allows.</li>',
   'guide.b4':'<li>Enter your <b>monthly spending after tax</b> in retirement per category.</li><li>Start from minPension\'s typical retiree: <b>Basic</b> 17 600, <b>Average</b> 18 400 or <b>Extra</b> 27 300 kr/month, then adjust the amounts.</li><li>Press <b>Finish</b> to see the result on the Dashboard.</li>',
   'acc.title':'Assets','acc.sub':'Tap to expand · SEK / year',
@@ -2555,6 +2571,7 @@ en:{
   'acs.state.d.tillagg':'Only for people born 1938–1953.',
   'acs.state.d.annat':'Any other pension you want to add by hand.',
   'acs.tot.open':'today','acs.tot.contrib':'in per year',
+  'acs.tbl.t':'Everything in this plan','acs.tbl.item':'Item','acs.tbl.contrib':'In per year','acs.tbl.total':'Total',
   'toast.iskfri':'Your savings now get the 300 000 kr tax-free allowance on ISK and kapitalförsäkring, so the yield tax is lower than in the saved plan.',
   'par.slr':'Statslåneränta (SLR), assumption (%)',
   'par.ytP.tip':'(SLR + 1 percentage point) × 30 %. Derived from the SLR above; a single account can still be given its own rate under Details on the Assets tab.',
@@ -3162,10 +3179,10 @@ sv:{
   'preset.clear':'Rensa all indata',
   'preset.confirm':'Detta ersätter uppgifterna i den aktuella planen (personligt, tillgångar, utgifter, uttag) och återställer modellantagandena till Typfallsmodellens standardvärden. En plan sparad i webbläsaren finns kvar tills du trycker Spara. Fortsätta?',
   'preset.cleared':'✓ All indata rensad','preset.loaded':'✓ Typfall laddat: ITP1, född 1980, lön 40 000 kr/mån',
-  'guide.step':'Steg {n} av {m}','guide.back':'Tillbaka','guide.next':'Nästa','guide.finish':'Klar','guide.close':'Stäng guiden','guide.min':'Minska guiden','guide.max':'Visa guiden',
+  'guide.step':'Steg {n} av {m}','guide.back':'Tillbaka','guide.next':'Nästa','guide.finish':'Klar','guide.close':'Stäng guiden','guide.min':'Minska guiden','guide.max':'Visa guiden','guide.drag':'Dra för att flytta guiden',
   'guide.t1':'Personligt','guide.t2':'Tillgångar','guide.t3':'Uttag','guide.t4':'Utgifter',
   'guide.b1':'<li>Ange ditt <b>födelseår</b> och <b>åldern då du började arbeta</b>.</li><li><b>Pensionsålder</b>: kryssa i <b>Riktålder</b> för att använda din riktålder, eller ta bort krysset och ange egen ålder.</li><li>Ange <b>förväntad livslängd</b> som ålder, t.ex. 95.</li><li>Ange din <b>bruttolön per månad</b>; nettolönen fylls i automatiskt. Ange årlig löneökning utöver inflationen.</li>',
-  'guide.b2':'<li><b>Efter skatt</b>: lägg till sparande som ISK, kapitalförsäkring och kontanter med dagens saldo och månadssparande.</li><li><b>P-försäkring</b>: välj ditt tjänstepensionsavtal (t.ex. ITP 1). Lämna Ingående tomt så beräknas saldot från din lönehistorik.</li><li><b>Statlig</b>: lägg till Inkomstpension och Premiepension (tomt Ingående = automatiskt), samt Garantipension / Inkomstpensionstillägg vid behov.</li><li><b>PGB</b>: lägg till barnår, värnplikt, studier eller sjukersättning.</li>',
+  'guide.b2':'<li>Fliken är fem steg. Gå igenom dem i tur och ordning — det du lämnar tomt räknas som noll.</li><li><b>1 Allmän pension</b>: lägg till inkomstpension och premiepension. Planeraren räknar fram saldot från din lönehistorik, så du behöver normalt inte ändra något.</li><li><b>2 Tjänstepension</b>: välj ditt avtal (t.ex. ITP 1). Avtalet följer din arbetsgivare, inte din yrkestitel — på minPension ser du vilka du har.</li><li><b>3 Privat pension</b>: bara om du själv betalar in till en (IPS eller privat pensionsförsäkring). De flesta har ingen.</li><li><b>4 Sparande</b>: ISK, kapitalförsäkring eller bankkonto — värdet i dag och vad du sparar varje månad.</li><li><b>5 Övriga pensionsrätter</b>: barnår, värnplikt, studier eller sjukersättning.</li><li>Varje konto gömmer expertfälten — inbetalningsåldrar, aktieandel, avgifter, avkastningsskatt — under <b>Detaljer</b>. Standardvärdena följer Pensionsmyndigheten.</li>',
   'guide.b3':'<li>Gå igenom de fem stegen i tur och ordning: när <b>allmän pension</b> ska börja, <b>tjänstepension</b> och <b>privat pension</b> (livsvarigt eller ett antal år), <b>sparande</b> och <b>utgifter</b>.</li><li>Vill du spendera mer de första aktiva åren? Välj <b>Mer i början, mindre senare</b> i steg 5.</li><li><b>Resultatet</b> visar om pengarna räcker och den högsta nivå planen klarar.</li>',
   'guide.b4':'<li>Ange dina <b>månadsutgifter efter skatt</b> som pensionär per kategori.</li><li>Utgå från minPensions typiska pensionär: <b>Bas</b> 17 600, <b>Medel</b> 18 400 eller <b>Plus</b> 27 300 kr/mån, och justera sedan beloppen.</li><li>Tryck <b>Klar</b> för att se resultatet på översikten.</li>',
   'acc.title':'Tillgångar','acc.sub':'Tryck för att expandera · SEK / år',
@@ -3342,6 +3359,7 @@ sv:{
   'acs.state.d.tillagg':'Bara för dig som är född 1938–1953.',
   'acs.state.d.annat':'Någon annan pension som du vill lägga in själv.',
   'acs.tot.open':'i dag','acs.tot.contrib':'in per år',
+  'acs.tbl.t':'Allt i den här planen','acs.tbl.item':'Post','acs.tbl.contrib':'In per år','acs.tbl.total':'Totalt',
   'toast.iskfri':'Ditt sparande får nu fribeloppet 300 000 kr på ISK och kapitalförsäkring, så avkastningsskatten blir lägre än i den sparade planen.',
   'par.slr':'Statslåneränta (SLR), antagande (%)',
   'par.ytP.tip':'(SLR + 1 procentenhet) × 30 %. Räknas fram från SLR ovan; ett enskilt konto kan ändå få en egen sats under Detaljer på Tillgångar-fliken.',
@@ -6740,6 +6758,52 @@ function acsSumText(step){
   var cont = items.reduce(function(s, x){ return s + effectiveContrib(x.a); }, 0);
   return t('acs.sum', {n: items.length, amt: wdpN(open), contrib: wdpN(cont)});
 }
+// ── Read-only summary of everything entered above ────────────────────────────────────────────────
+// The five steps are good for filling in and poor for reading back, so this is the at-a-glance view
+// the old table used to give. No inputs, so it can be rebuilt from updateAccountSubtotals on every
+// recalc without ever taking a focused field with it.
+function acsSummaryTable(){
+  var el = document.getElementById('acs-table');
+  if(!el) return;
+  var rows = '', grandVal = 0, grandCon = 0, n = 0;
+  var dash = '<span class="acs-dash">\u2014</span>';
+  var money = function(v){ return v > 0 ? wdpN(v) : dash; };
+  for(var step = 1; step <= 4; step++){
+    var items = acsItems(step);
+    if(!items.length) continue;
+    rows += '<tr class="acs-grp"><td colspan="3">' + t('acs.s' + step + '.t') + '</td></tr>';
+    items.forEach(function(x){
+      var val = acsDispOpening(x.a), con = effectiveContrib(x.a);
+      grandVal += val; grandCon += con; n++;
+      rows += '<tr><td>' + wdpEsc(accDisplayName(x.a)) + '</td>'
+        + '<td class="n">' + money(val) + '</td>'
+        + '<td class="n">' + money(con) + '</td></tr>';
+    });
+  }
+  if(pgbItems.length){
+    // PGB is a pension right, not a balance and not a contribution: value only.
+    var ctx = pgbCtx(), kindN = {};
+    rows += '<tr class="acs-grp"><td colspan="3">' + t('acs.s5.t') + '</td></tr>';
+    pgbItems.forEach(function(it, i){
+      kindN[it.kind] = (kindN[it.kind] || 0) + 1;
+      var many = pgbItems.filter(function(o){ return o.kind === it.kind; }).length > 1;
+      var val = Math.round(pgbResultHtml(ctx, i).tot || 0);
+      grandVal += val; n++;
+      rows += '<tr><td>' + t('pgb.opt.' + it.kind) + (many ? ' ' + kindN[it.kind] : '') + '</td>'
+        + '<td class="n">' + money(val) + '</td><td class="n">' + dash + '</td></tr>';
+    });
+  }
+  if(!n){ el.innerHTML = ''; return; }   // empty plan: no headings over nothing
+  el.innerHTML = '<div class="card-header">' + t('acs.tbl.t') + '</div>'
+    + '<div class="acs-tbl-wrap"><table class="acs-tbl"><thead><tr>'
+    + '<th>' + t('acs.tbl.item') + '</th>'
+    + '<th class="n">' + t(acsAtMode() ? 'acc.opening.after.tax' : 'acc.col.opening') + '</th>'
+    + '<th class="n">' + t('acs.tbl.contrib') + '</th></tr></thead><tbody>' + rows
+    + '<tr class="acs-sum-row"><td>' + t('acs.tbl.total') + '</td>'
+    + '<td class="n">' + wdpN(grandVal) + '</td><td class="n">' + wdpN(grandCon) + '</td></tr>'
+    + '</tbody></table></div>';
+}
+
 function acsStepBody(step){
   if(step === 5){
     return '<div class="wdp-help">' + t('acs.s5.help') + '</div>'
@@ -6783,6 +6847,7 @@ function buildAccountsTable(){
   }
   el.innerHTML = h;
   if(_acsOpen === 5) buildPgbSection();
+  acsSummaryTable();
   setTimeout(updateAccountSubtotals, 0);
   setTimeout(buildAssetSummary, 0);
 }
@@ -8363,6 +8428,7 @@ function updateAccountSubtotals(){
   // never costs a re-render (which would take the focused input with it)
   if(typeof acsSumText === 'function'){
     for(var n = 1; n <= 5; n++) sv('acs-sum-' + n, acsSumText(n));
+    acsSummaryTable();
   }
 }
 
@@ -13308,6 +13374,7 @@ function guideClose(){
   _guideMin = false;
   document.querySelectorAll('.guide-hl').forEach(function(el){ el.classList.remove('guide-hl'); });
   var p = document.getElementById('guide-panel'); if(p) p.remove();
+  _guidePos = null;
 }
 function guideMove(d){
   var n = _guideStep + d;
@@ -13322,6 +13389,54 @@ function guideShow(){
   goTab(GUIDE_STEPS[_guideStep].tab);
   guideRender();
 }
+// ── The panel can be dragged out of the way by its step/title area ──────────────────────────────
+// The panel is rebuilt with innerHTML on every step, so the position lives here and is re-applied,
+// and the handler is armed again each time. Below 768 px the panel is full-width: dragging is off.
+var _guidePos = null;   // {left, top} in px once the user has moved it
+function guideDraggable(){ return window.innerWidth > 767; }
+function guideApplyPos(p){
+  if(!_guidePos || !guideDraggable()){
+    if(!guideDraggable() && p){ p.style.left = p.style.top = p.style.right = p.style.bottom = ''; }
+    return;
+  }
+  var r = p.getBoundingClientRect();
+  var l = Math.max(8, Math.min(_guidePos.left, window.innerWidth  - r.width  - 8));
+  var tp= Math.max(8, Math.min(_guidePos.top,  window.innerHeight - r.height - 8));
+  _guidePos = {left:l, top:tp};
+  p.style.left = l + 'px'; p.style.top = tp + 'px';
+  p.style.right = 'auto'; p.style.bottom = 'auto';
+}
+function guideArmDrag(p){
+  var grip = p.querySelector('.g-grip');
+  if(!grip || !guideDraggable()) return;
+  grip.addEventListener('pointerdown', function(e){
+    if(e.button != null && e.button !== 0) return;
+    if(e.target.closest && e.target.closest('button')) return;   // the ✕ / minimise buttons still click
+    var r = p.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+    p.classList.add('g-dragging');
+    try{ grip.setPointerCapture(e.pointerId); }catch(_){}
+    var move = function(ev){
+      _guidePos = {left: ev.clientX - dx, top: ev.clientY - dy};
+      guideApplyPos(p);                                           // clamps to the viewport
+    };
+    var up = function(){
+      p.classList.remove('g-dragging');
+      grip.removeEventListener('pointermove', move);
+      grip.removeEventListener('pointerup', up);
+      grip.removeEventListener('pointercancel', up);
+    };
+    grip.addEventListener('pointermove', move);
+    grip.addEventListener('pointerup', up);
+    grip.addEventListener('pointercancel', up);
+    e.preventDefault();
+  });
+}
+// Keep it on screen when the window is resized or the layout reflows.
+window.addEventListener('resize', function(){
+  var p = document.getElementById('guide-panel');
+  if(p) guideApplyPos(p);
+});
+
 // Draws the panel and the highlights for the current step (also on language switch).
 function guideRender(){
   if(_guideStep < 0) return;
@@ -13331,13 +13446,17 @@ function guideRender(){
   p.className = _guideMin ? 'g-collapsed' : '';
   p.innerHTML = '<button class="g-x" onclick="guideClose()" title="'+t('guide.close')+'">✕</button>'
     + '<button class="g-min" onclick="guideToggleMin()" aria-expanded="'+(!_guideMin)+'" title="'+t(_guideMin ? 'guide.max' : 'guide.min')+'" aria-label="'+t(_guideMin ? 'guide.max' : 'guide.min')+'">'+(_guideMin ? '▴' : '▾')+'</button>'
-    + '<div class="g-step">'+t('guide.step',{n:n, m:m})+'</div>'
-    + '<div class="g-title">'+t('guide.t'+n)+'</div>'
+    + '<div class="g-grip" title="'+t('guide.drag')+'">'
+    +   '<div class="g-step">'+t('guide.step',{n:n, m:m})+'</div>'
+    +   '<div class="g-title">'+t('guide.t'+n)+'</div>'
+    + '</div>'
     + '<ul>'+t('guide.b'+n)+'</ul>'
     + '<div class="g-btns">'
     +   (n > 1 ? '<button class="g-back" onclick="guideMove(-1)">← '+t('guide.back')+'</button>' : '<span></span>')
     +   '<button class="g-next" onclick="guideMove(1)">'+(n < m ? t('guide.next')+' →' : t('guide.finish')+' ✓')+'</button>'
     + '</div>';
+  guideApplyPos(p);
+  guideArmDrag(p);
   var first = _guideHl();
   if(first && first.scrollIntoView) first.scrollIntoView({block:'center', behavior:'smooth'});
   // Tabs rebuild some of their tables shortly after switching; mark them again.
