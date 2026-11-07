@@ -1,4 +1,5 @@
 ---
+import { ChevronDown } from "lucide-react";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 
 // The calculator is the web app of github.com/mathiasboos/Typfallsmodellen, built into one file by
@@ -34,23 +35,28 @@ const app = "/typfallsmodellen-app.html";
   </noscript>
 
   <section class="mx-auto max-w-7xl px-4 pt-12">
-    <h2 class="font-display text-2xl font-semibold">Om kalkylatorn</h2>
-    <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
-      <p>
-        Typfallsmodellen är Pensionsmyndighetens modell för hela pensionsutfallet för en tänkt person, ett typfall:
-        inkomstpension, premiepension, tilläggspension, garantipension, inkomstpensionstillägg, tjänstepension enligt
-        kollektivavtal, privat sparande, inkomstskatt och bostadstillägg. Kalkylatorn här är en webbversion av
-        modellen (version 4.8) och räknar enbart i din webbläsare. Ingenting skickas någonstans.
-      </p>
-      <p>
-        Förutom prognosen finns flikar för att jämföra scenarier, mikrosimulering, vilken pensionsålder som lönar sig
-        bäst, hur länge pensionen räcker mot en budget och hur mycket pensionen ger per månad vid olika utbetalningstider,
-        med eget privat sparande (ISK, kapitalförsäkring, depå eller privat pension).
-      </p>
-      <p>
-        Resultatet är en uppskattning för ett typfall och inget besked om din egen pension. Din personliga prognos finns
-        på minPension. Webbversionen är inofficiell och inte kopplad till Pensionsmyndigheten.
-      </p>
-    </div>
+    <details class="group">
+      <summary class="flex cursor-pointer list-none items-center gap-2 font-display text-2xl font-semibold [&::-webkit-details-marker]:hidden">
+        <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+        Om kalkylatorn
+      </summary>
+      <div class="mt-4 max-w-3xl space-y-3 text-sm leading-6 text-muted-foreground">
+        <p>
+          Typfallsmodellen är Pensionsmyndighetens modell för hela pensionsutfallet för en tänkt person, ett typfall:
+          inkomstpension, premiepension, tilläggspension, garantipension, inkomstpensionstillägg, tjänstepension enligt
+          kollektivavtal, privat sparande, inkomstskatt och bostadstillägg. Kalkylatorn här är en webbversion av
+          modellen (version 4.8) och räknar enbart i din webbläsare. Ingenting skickas någonstans.
+        </p>
+        <p>
+          Förutom prognosen finns flikar för att jämföra scenarier, mikrosimulering, vilken pensionsålder som lönar sig
+          bäst, hur länge pensionen räcker mot en budget och hur mycket pensionen ger per månad vid olika utbetalningstider,
+          med eget privat sparande (ISK, kapitalförsäkring, depå eller privat pension).
+        </p>
+        <p>
+          Resultatet är en uppskattning för ett typfall och inget besked om din egen pension. Din personliga prognos finns
+          på minPension. Webbversionen är inofficiell och inte kopplad till Pensionsmyndigheten.
+        </p>
+      </div>
+    </details>
   </section>
 </BaseLayout>
