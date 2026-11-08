@@ -1,8 +1,42 @@
 /* Pensionskompassen (Pensionskompassen_offline.html) in the site's look. Its colours and fonts are replaced in the file
    itself (scripts/apps-colors.mjs); this adds the shapes of the site: flat white cards with a thin border, 8 px fields,
-   navy buttons. The app's own header (logo, name, SV | EN) is hidden: the page has the name and the site has the switch. */
+   navy buttons. The app's own header (the compass, the name and the tagline) is kept, in the site's navy; its SV | EN
+   switch is hidden by scripts/apps-theme.css, because the site has the switch. The needle of the compass turns in the file
+   itself when a value changes; here it also swings into place once when the page is shown. */
 .header {
-  display: none !important;
+  border-radius: 12px;
+  box-shadow: none;
+  padding: 24px 24px 22px;
+}
+.header [style*="font-size:26px"] {
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+.header [style*="italic"] {
+  font-style: normal !important;
+  letter-spacing: 0 !important;
+}
+@keyframes pk-needle-swing {
+  0% {
+    transform: rotate(-70deg);
+  }
+  55% {
+    transform: rotate(14deg);
+  }
+  78% {
+    transform: rotate(-6deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+html.pl-ready #compass-needle {
+  animation: pk-needle-swing 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s 1 both;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.pl-ready #compass-needle {
+    animation: none;
+  }
 }
 html,
 body {

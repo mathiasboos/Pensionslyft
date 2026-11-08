@@ -99,7 +99,7 @@ const compass: NavItem = {
   title: "Pensionskompassen",
   description: "Planera hur du tar ut tjänstepension och allmän pension: månadsbelopp år för år, före eller efter skatt.",
   icon: Navigation,
-  level: "Avancerad",
+  level: "Medel",
   keywords: ["pensionskompassen", "uttagsplanerare", "ta ut pension", "tjänstepension uttag", "månadsbelopp pension"],
 };
 
