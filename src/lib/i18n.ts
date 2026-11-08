@@ -17,6 +17,7 @@ export const PAGE_PAIRS: readonly (readonly [string, string])[] = [
   ["/pensionsoversikt", "/en/pension-overview"],
   ["/pensionskalkylator", "/en/pension-savings-calculator"],
   ["/pensionsmalkalkylatorn", "/en/replacement-rate-calculator"],
+  ["/pensionskompassen", "/en/pension-compass"],
 ];
 
 // The English news items and articles name the Swedish one they translate ("translation_of"), which gives their pairs.

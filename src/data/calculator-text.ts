@@ -12,7 +12,7 @@ export interface CalculatorText {
   related: { href: string; label: string }[];
 }
 
-export type CalculatorSlug = "ranta-pa-ranta" | "pensionssparande" | "lonevaxling" | "fire" | "nettolon" | "pensionsoversikt" | "pensionsmal";
+export type CalculatorSlug = "ranta-pa-ranta" | "pensionssparande" | "lonevaxling" | "fire" | "nettolon" | "pensionsoversikt" | "pensionsmal" | "pensionskompassen";
 
 const link = (href: string, text: string) => `<a href="${href}" class="text-primary underline underline-offset-2">${text}</a>`;
 
@@ -348,6 +348,55 @@ export const calculatorText: Record<CalculatorSlug, Record<Lang, CalculatorText>
         { href: "/en/pension-overview", label: "Pension overview" },
         { href: "/en/pension-savings-calculator", label: "Pension savings calculator" },
         { href: "/en/articles/withdrawal-strategy-getting-the-most-from-your-pension", label: "Article: Withdrawal strategy" },
+      ],
+    },
+  },
+  pensionskompassen: {
+    sv: {
+      about: [
+        "Pensionskompassen hjälper dig att planera hur du tar ut din pension. Du anger din ålder och din månadslön, väljer tjänstepensionsplan (ITP 1, SAF-LO, AKAP-KR eller PA16 avdelning 1) och ser hur mycket du får i månaden, år för år, beroende på när du börjar ta ut tjänstepensionen och den allmänna pensionen och hur du fördelar uttaget. Vill du hellre fylla i ett eget pensionskapital kan du göra det.",
+        "Du kan välja att ta ut pensionen i upp till tre perioder, till exempel ett högre belopp de första aktiva åren, eller jämnt fördelat livet ut till 95 års ålder. Resultatet visas som ett diagram och en tabell med månadsbelopp per ålder, uppdelat på allmän pension och tjänstepension, och du kan se om pengarna räcker eller om du försöker ta ut för mycket.",
+      ],
+      how: [
+        "Pensionen beräknas enligt Pensionsmyndighetens Typfallsmodellen i fasta priser. Lönen räknas som 2025 års lön och räknas upp med 2026 års inkomstindex. Planer med förmånsbestämd del, som ITP 2, KAP-KL och PA16 avdelning 2, finns i " + link("/pensionsplaneraren", "Pensionsplaneraren") + ".",
+        "Riktåldern för din årskull visas i kalkylatorn. Tar du ut allmän pension före riktåldern blir månadsbeloppet lägre livet ut, och tar du ut den senare blir det högre. Enligt inkomstskattelagen måste tjänstepension betalas ut under minst fem år, och kalkylatorn varnar om dina val gör att kapitalet inte räcker så länge.",
+        "Du väljer före eller efter skatt, och kommun för kommunalskatten, inklusive begravnings- och kyrkoavgift. Tabellen År för år kan laddas ner som CSV eller Excel, och prognosen kan sparas som länk, bild eller PDF.",
+      ],
+      faq: [
+        { q: "När kan jag börja ta ut min pension?", a: "I kalkylatorn kan du låta tjänstepensionen börja mellan 55 och 75 år och den allmänna pensionen mellan 61 och 75 år. Lägsta uttagsålder för dig beror på din årskull och ditt avtal. Ju tidigare du tar ut pensionen, desto lägre blir månadsbeloppet livet ut. Prova olika åldrar och jämför." },
+        { q: "Vad är riktåldern?", a: "Riktåldern är den pensionsålder som pensionssystemet utgår från, och den följer livslängden. Tar du ut allmän pension före riktåldern blir månadsbeloppet lägre, tar du ut den efter blir det högre. Kalkylatorn visar riktåldern för din ålder." },
+        { q: "Hur länge måste tjänstepensionen betalas ut?", a: "Enligt inkomstskattelagen måste tjänstepension betalas ut under minst fem år. Om dina val gör att kapitalet inte räcker i fem år varnar kalkylatorn och du får välja ett lägre belopp." },
+        { q: "Varför skiljer sig svaret från min prognos på minPension?", a: "Kalkylatorn räknar i fasta priser med generella antaganden utifrån din ålder och lön, enligt Pensionsmyndighetens Typfallsmodellen. Din egen prognos bygger på dina faktiska uppgifter, så siffrorna blir inte exakt desamma." },
+        { q: "Är resultatet säkert?", a: "Nej. Det är en uppskattning, och verkligt utfall beror på lön, avkastning och regler som kan ändras. Beräkningen är inte individuell rådgivning." },
+      ],
+      related: [
+        { href: "/pensionsplaneraren", label: "Pensionsplaneraren" },
+        { href: "/typfallsmodellen", label: "Typfallsmodellen" },
+        { href: "/pensionsmalkalkylatorn", label: "Pensionsmålkalkylatorn" },
+        { href: "/artiklar/uttagsstrategi-nar-pensionen-borjar", label: "Artikel: Uttagsstrategi när pensionen börjar" },
+      ],
+    },
+    en: {
+      about: [
+        "The Pension Compass helps you plan how to draw your pension. You enter your age and monthly salary, choose an occupational pension plan (ITP 1, SAF-LO, AKAP-KR or PA16 Division 1) and see how much you get a month, year by year, depending on when you start drawing the occupational and the public pension and how you spread the withdrawals. If you prefer, you can type in a pension capital of your own.",
+        "You can draw the pension in up to three periods, for example a higher amount in the first active years, or spread evenly for life to age 95. The result is shown as a chart and a table of monthly amounts by age, split into public pension and occupational pension, and you can see whether the money lasts or whether you are trying to draw too much.",
+      ],
+      how: [
+        "The pension is calculated according to the Swedish Pensions Agency's Typfall model in constant prices. The salary is treated as a 2025 salary and uplifted with the 2026 income index. Plans with a defined-benefit part, such as ITP 2, KAP-KL and PA16 Division 2, are in the " + link("/pensionsplaneraren", "Retirement planner") + ".",
+        "The guiding retirement age (riktålder) for your cohort is shown in the calculator. If you draw the public pension before it, the monthly amount is lower for life; if you draw it later, it is higher. Under the Swedish Income Tax Act, an occupational pension must be paid out over at least five years, and the calculator warns you if your choices mean the capital does not last that long.",
+        "You choose before or after tax, and your municipality for the municipal tax, including the burial and church fee. The year-by-year table can be downloaded as CSV or Excel, and the forecast can be saved as a link, an image or a PDF.",
+      ],
+      faq: [
+        { q: "When can I start drawing my pension?", a: "In the calculator you can start the occupational pension between ages 55 and 75 and the public pension between 61 and 75. The lowest age you can actually draw at depends on your cohort and your agreement. The earlier you draw, the lower the monthly amount for life. Try different ages and compare." },
+        { q: "What is the guiding retirement age (riktålder)?", a: "It is the retirement age the pension system is built around, and it follows life expectancy. If you draw the public pension before it the monthly amount is lower, and after it is higher. The calculator shows the age for your cohort." },
+        { q: "How long must the occupational pension be paid out?", a: "Under the Swedish Income Tax Act an occupational pension must be paid out over at least five years. If your choices mean the capital does not last five years, the calculator warns you and you pick a lower amount." },
+        { q: "Why does the answer differ from my forecast on minPension?", a: "The calculator works in constant prices with general assumptions based on your age and salary, according to the Pensions Agency's Typfall model. Your own forecast is built on your actual records, so the figures are not exactly the same." },
+        { q: "Is the result certain?", a: "No. It is an estimate, and the actual outcome depends on salary, returns and rules that can change. The calculation is not individual advice." },
+      ],
+      related: [
+        { href: "/en/calculators", label: "Retirement planner and the other calculators" },
+        { href: "/en/pension-overview", label: "Pension overview" },
+        { href: "/en/replacement-rate-calculator", label: "Replacement rate calculator" },
       ],
     },
   },

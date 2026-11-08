@@ -56,7 +56,8 @@ try {
         }
         await page.waitForTimeout(300);
         const state = await page.evaluate(() => ({
-          heading: document.querySelector("h1")?.textContent?.trim() ?? "",
+          // h1, or the title of the first card in a file whose own title sits in the header that the site hides (Pensionskompassen)
+          heading: document.querySelector("h1, .section-title")?.textContent?.trim() ?? "",
           // The switch marks the language in use: a button with the class "active", or a part of it that has it; the page's
           // own lang attribute is the fallback.
           active:

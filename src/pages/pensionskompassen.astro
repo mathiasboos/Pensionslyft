@@ -1,0 +1,26 @@
+---
+import AppFrame from "@/components/AppFrame.astro";
+import AppInfo from "@/components/AppInfo.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { calculatorText } from "@/data/calculator-text";
+import { faqData } from "@/lib/seo";
+
+// The calculator is Pensionskompassen_offline.html of github.com/mathiasboos/Calculators, shown as it is
+// (scripts/sync-apps.mjs; a GitHub Action keeps it up to date). English page: /en/pension-compass.
+const faq = calculatorText["pensionskompassen"]["sv"].faq;
+---
+
+<BaseLayout
+  jsonLd={faqData(faq)}
+  title="Pensionskompassen – planera hur du tar ut din pension"
+  description="Se vad du får i månaden år för år om du tar ut tjänstepension och allmän pension vid olika åldrar, jämnt eller i perioder, före eller efter skatt."
+  ogTitle="Pensionskompassen – Pensionslyft"
+  ogDescription="Planera uttaget av tjänstepension och allmän pension och se månadsbeloppet år för år."
+>
+  <div class="mx-auto max-w-7xl px-4 pt-10 pb-14">
+    <h1 class="sr-only">Pensionskompassen</h1>
+    <AppFrame slug="pensionskompassen" title="Pensionskompassen" />
+    <AppInfo slug="pensionskompassen" />
+
+  </div>
+</BaseLayout>
