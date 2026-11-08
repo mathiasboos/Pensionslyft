@@ -309,6 +309,16 @@
   .news-body img {
     @apply float-right mt-1 mb-2 ml-6 h-auto max-w-[45%] rounded-none border-0 bg-transparent;
   }
+  /* A picture with a caption (a press photo with a name): the figure floats, the picture inside it does not. */
+  .news-body figure {
+    @apply float-right mt-1 mb-2 ml-6 max-w-[45%];
+  }
+  .news-body figure img {
+    @apply float-none m-0 max-w-full;
+  }
+  .news-body figcaption {
+    @apply mt-1 text-xs leading-snug text-muted-foreground;
+  }
   .news-body h2 {
     clear: both;
   }
