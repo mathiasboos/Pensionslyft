@@ -20,6 +20,7 @@ export const apps = [
   { slug: "nettolon", file: "Net_Salary.html", sv: "/nettolonkalkylator", en: "/en/net-salary", native: true },
   { slug: "pensionsoversikt", file: "Pension Overview.html", sv: "/pensionsoversikt", en: "/en/pension-overview", native: true },
   { slug: "pensionsmal", file: "Replacement rate goal calculator.html", sv: "/pensionsmalkalkylatorn", en: "/en/replacement-rate-calculator", native: true },
+  { slug: "pensionskompassen", file: "Pensionskompassen_offline.html", sv: "/pensionskompassen", en: "/en/pension-compass", native: false },
 ];
 
 export const bySlug = (slug) => apps.find((a) => a.slug === slug);

@@ -1,0 +1,59 @@
+/* Pensionskompassen (Pensionskompassen_offline.html) in the site's look. Its colours and fonts are replaced in the file
+   itself (scripts/apps-colors.mjs); this adds the shapes of the site: flat white cards with a thin border, 8 px fields,
+   navy buttons. The app's own header (logo, name, SV | EN) is hidden: the page has the name and the site has the switch. */
+.header {
+  display: none !important;
+}
+html,
+body {
+  background: #ffffff;
+}
+body {
+  padding: 0 12px;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #0f2034;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+.app {
+  max-width: 760px;
+  padding-bottom: 24px;
+}
+.card {
+  border: 1px solid #e7e5e0;
+  border-radius: 12px;
+  box-shadow: none;
+  background: #ffffff;
+}
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #0f2034;
+}
+.field-label {
+  font-weight: 500;
+  color: #0f2034;
+}
+input[type="number"],
+input[type="text"],
+select {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  border-radius: 8px;
+  border-color: #d9d6cf;
+}
+input:focus-visible,
+select:focus-visible,
+button:focus-visible,
+.radio-opt:focus-visible {
+  outline: 2px solid #22507b;
+  outline-offset: 2px;
+}
+button,
+.btn {
+  font-family: inherit;
+}
+table {
+  font-variant-numeric: tabular-nums;
+}

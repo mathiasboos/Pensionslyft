@@ -6,6 +6,7 @@ import {
   Flame,
   Gauge,
   LineChart,
+  Navigation,
   Newspaper,
   PiggyBank,
   Receipt,
@@ -91,6 +92,17 @@ const replacement: NavItem = {
   keywords: ["pensionsmål", "pensionsmålkalkylator", "kompensationsgrad", "önskad pension", "månadssparande pension"],
 };
 
+// Shown as it is in github.com/mathiasboos/Calculators (Pensionskompassen_offline.html), see scripts/sync-apps.mjs.
+const compass: NavItem = {
+  href: "/pensionskompassen",
+  enHref: "/en/pension-compass",
+  title: "Pensionskompassen",
+  description: "Planera hur du tar ut tjänstepension och allmän pension: månadsbelopp år för år, före eller efter skatt.",
+  icon: Navigation,
+  level: "Avancerad",
+  keywords: ["pensionskompassen", "uttagsplanerare", "ta ut pension", "tjänstepension uttag", "månadsbelopp pension"],
+};
+
 const typfall: NavItem = {
   href: "/typfallsmodellen",
   title: "Typfallsmodellen",
@@ -147,13 +159,13 @@ const fire: NavItem = {
 // The simplest calculator, Ränta på ränta, comes first in the menu: "Lön och sparande" is the left column and starts with it.
 export const calculatorGroups: NavGroup[] = [
   { title: "Lön och sparande", items: [compound, nettolon, fire] },
-  { title: "Pension", items: [pension, lonevaxling, replacement, overview, planner, typfall] },
+  { title: "Pension", items: [pension, lonevaxling, replacement, compass, overview, planner, typfall] },
 ];
 
 export const calculators: NavItem[] = calculatorGroups.flatMap((group) => group.items);
 
 /** The calculator shown in the "Utvalt" box of the Kalkylatorer menu: the newest one. */
-export const featuredCalculator: NavItem = replacement;
+export const featuredCalculator: NavItem = compass;
 
 export const insights: NavItem[] = [
   {
@@ -183,6 +195,10 @@ const NAV_EN: Record<string, { title: string; description: string }> = {
   "/pensionsmalkalkylatorn": {
     title: "Replacement rate calculator",
     description: "See how much you need to save to reach the pension level you want, before or after tax.",
+  },
+  "/pensionskompassen": {
+    title: "Pension Compass",
+    description: "Plan how to draw your occupational and public pension: monthly amounts year by year, before or after tax.",
   },
   "/pensionsplaneraren": {
     title: "Retirement planner",

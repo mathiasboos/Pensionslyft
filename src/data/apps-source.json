@@ -42,6 +42,12 @@
       "commit": "bf308a201ad6cc3866c6e33d866d7b65fb0e08b9",
       "committedAt": "2026-10-28T15:46:43+00:00",
       "subject": "Replacement rate calculator: shorten About the model text"
+    },
+    "pensionskompassen": {
+      "file": "Pensionskompassen_offline.html",
+      "commit": "8337d0dceebbcf62b26f28653e6f12073a8c513c",
+      "committedAt": "2026-11-08T09:19:02+00:00",
+      "subject": "Pensionskompassen: typing in age fields no longer jumps to the minimum"
     }
   }
 }
