@@ -108,7 +108,8 @@ body {
    itself (scripts/apps-colors.mjs); this adds the shapes of the site: flat white cards with a thin border, 8 px fields,
    navy buttons. The app's own header (the compass, the name and the tagline) is kept, in the site's navy; its SV | EN
    switch is hidden by scripts/apps-theme.css, because the site has the switch. The needle of the compass turns in the file
-   itself when a value changes; here it also swings into place once when the page is shown. */
+   itself when a value changes; here it also swings into place once when the page is shown (fill-mode "backwards": a
+   held end value would override the file's own turning). */
 .header {
   border-radius: 12px;
   box-shadow: none;
@@ -137,7 +138,7 @@ body {
   }
 }
 html.pl-ready #compass-needle {
-  animation: pk-needle-swing 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s 1 both;
+  animation: pk-needle-swing 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s 1 backwards;
 }
 @media (prefers-reduced-motion: reduce) {
   html.pl-ready #compass-needle {
