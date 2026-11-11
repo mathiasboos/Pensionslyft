@@ -2063,6 +2063,20 @@ header {
     <span><input type="text" readonly id="dst-total-contrib" value="0"><small data-i18n="acs.tot.contrib">in per year</small></span>
   </div>
 
+  <!-- Equity % age brackets: the ONE place they are set (ids must stay unique - they lived in two
+       places until Nov 2026 and the pair disagreed). Only accounts set to "Own age brackets" use
+       them, so the bar hides itself when no account does (acsSyncEqBar). -->
+  <div id="acs-eq-bar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:14px;padding:8px 14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r)">
+    <span style="color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:10px" data-i18n="acc.eq.brackets">Equity % Age Brackets</span>
+    <span style="color:var(--muted)" data-i18n="acc.bracket1">Bracket 1:</span>
+    <input id="ageFrom1" type="text" inputmode="numeric" value="55" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
+    <span style="color:var(--muted)">&#8211;</span>
+    <input id="ageTo1" type="text" inputmode="numeric" value="63" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
+    <span style="color:var(--muted)"><span data-i18n="acc.bracket2">Bracket 2:</span> <span id="ageFrom2-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">64</span> &#8211;</span>
+    <input id="ageTo2" type="text" inputmode="numeric" value="73" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
+    <span style="color:var(--muted)"><span data-i18n="acc.bracket3">Bracket 3:</span> <span id="ageFrom3-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">74</span>+</span>
+  </div>
+
   <!-- The five steps (acsRender, entry point buildAccountsTable) -->
   <div id="acs-steps"></div>
 
@@ -2082,20 +2096,6 @@ header {
     <div class="input-row" data-i18n-title="par.ret.tip" title="The forecasting standard assumes a return of 1.7 percent. To relate the projected pension value to future income, the return is expressed as an &quot;excess return&quot;—that is, the extent to which the return on capital exceeds general wage growth. The planner deducts each account&#39;s own fee; 1.7 % after an average 0.2 % fee = 1.9 % before fees." style="cursor:help"><div class="input-label" data-i18n="par.eqRet">Real Return &#8212; Equities (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="eqReturn" value="1,9" step="0.1" onchange="recalc()"></div>
     <div class="input-row" data-i18n-title="par.ret.tip" title="The forecasting standard assumes a return of 1.7 percent. To relate the projected pension value to future income, the return is expressed as an &quot;excess return&quot;—that is, the extent to which the return on capital exceeds general wage growth. The planner deducts each account&#39;s own fee; 1.7 % after an average 0.2 % fee = 1.9 % before fees." style="cursor:help"><div class="input-label" data-i18n="par.bdRet">Real Return &#8212; Bonds (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="bdReturn" value="1,9" step="0.1" onchange="recalc()"></div>
     <div class="input-row"><div class="input-label" data-i18n="par.infl">Inflation (%)</div><input class="inp inp-sm" type="text" inputmode="decimal" id="inflation" value="0,0" step="0.1" onchange="recalc()"></div>
-    <!-- Equity % age brackets: the ONE place they are set. Only accounts with "Own age brackets"
-         ticked use them; everything else follows the default fund (AP7 Safa) glidepath. -->
-    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
-      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase" data-i18n="acc.eq.brackets">Equity % Age Brackets</div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px">
-        <span style="color:var(--muted)" data-i18n="acc.bracket1">Bracket 1:</span>
-        <input id="ageFrom1" type="text" inputmode="numeric" value="55" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
-        <span style="color:var(--muted)">&#8211;</span>
-        <input id="ageTo1" type="text" inputmode="numeric" value="63" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
-        <span style="color:var(--muted)"><span data-i18n="acc.bracket2">Bracket 2:</span> <span id="ageFrom2-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">64</span> &#8211;</span>
-        <input id="ageTo2" type="text" inputmode="numeric" value="73" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
-        <span style="color:var(--muted)"><span data-i18n="acc.bracket3">Bracket 3:</span> <span id="ageFrom3-lbl" style="color:var(--pl-gold-ink);font-family:var(--font-m)">74</span>+</span>
-      </div>
-    </div>
     <div style="margin-top:10px;text-align:right">
       <button onclick="resetAssumptions(true)" data-i18n="par.reset" data-i18n-title="par.reset.tip"
         title="Equities 1,9 % · Bonds 1,9 % · Inflation 0 % · Occupational schemes 1,7 % · Salary increase 0 %"
@@ -2557,6 +2557,9 @@ en:{
   'acs.f.kind':'Account type','acs.f.save.mo':'Saving per month','acs.f.contrib':'Contribution',
   'acs.f.fund':'Equity share',
   'acs.eq.default':'Default fund (AP7 Såfa)','acs.eq.own':'Own age brackets',
+  'acs.eq.auto':'Glidepath',
+  'acs.eq.auto.note':'100 % equities to age 55 → 33 % at 75',
+  'acs.eq.auto.tip':'The equity share falls with age on its own: 100 % equities up to 55, then down to 33 % equities / 67 % bonds at 75, and flat after that. Same shape as the premium pension\'s default fund. Pick "Own age brackets" to set the shares yourself.',
   'acs.open.auto':'Calculated from your salary history. Type a balance to use your own, or 0 to calculate it again.',
   'acs.cs.help':'Contributions count from this age. An account you add yourself starts now — the planner never projects backwards.',
   'acs.yt.help':'ISK and kapitalförsäkring: (statslåneräntan + 1 percentage point) × 30 %, charged only on what your ISK and endowment accounts hold above the 300 000 kr tax-free allowance together. Change the assumption on the Parameters tab.',
@@ -2565,6 +2568,8 @@ en:{
   'acs.sav.isk':'ISK or kapitalförsäkring','acs.sav.isk.d':'Pays schablonskatt on the whole balance every year, whether it rises or falls.',
   'acs.sav.bank':'Bank account or cash','acs.sav.bank.d':'No schablonskatt. Use this for a buffer you keep in cash.',
   'acs.priv.d':'IPS or a private pension insurance that you pay into yourself.',
+  'acs.occ.individual':'Individual occupational pension',
+  'acs.occ.individual.d':'An occupational pension outside the collective agreements — you fill in the balance and what goes in yourself, as for a private pension.',
   'acs.occ.unknown':'I do not know which agreement I have',
   'acs.occ.unknown.d':'It follows your employer, not your job title. Check your payslip, ask your HR department, or log in to minpension.se — it lists your occupational pensions by name.',
   'acs.state.d.inkomst':'Everyone who has worked in Sweden has one. 16 % of your income.',
@@ -3345,6 +3350,9 @@ sv:{
   'acs.f.kind':'Kontotyp','acs.f.save.mo':'Sparande per månad','acs.f.contrib':'Insättning',
   'acs.f.fund':'Aktieandel',
   'acs.eq.default':'Förvalet (AP7 Såfa)','acs.eq.own':'Egna åldersintervall',
+  'acs.eq.auto':'Nedtrappning',
+  'acs.eq.auto.note':'100 % aktier till 55 år → 33 % vid 75',
+  'acs.eq.auto.tip':'Aktieandelen trappas ned av sig själv: 100 % aktier till 55 år, sedan ned till 33 % aktier / 67 % räntor vid 75 år, och därefter oförändrad. Samma kurva som premiepensionens förvalsalternativ. Välj ”Egna åldersintervall” för att sätta andelarna själv.',
   'acs.open.auto':'Framräknat från din lönehistorik. Skriv in ett eget saldo, eller 0 för att räkna om det.',
   'acs.cs.help':'Insättningar räknas från den här åldern. Ett konto du lägger till själv börjar nu — planeraren räknar aldrig bakåt.',
   'acs.yt.help':'ISK och kapitalförsäkring: (statslåneräntan + 1 procentenhet) × 30 %, bara på det dina ISK- och kapitalförsäkringskonton tillsammans har över fribeloppet 300 000 kr. Ändra antagandet på Parametrar-fliken.',
@@ -3353,6 +3361,8 @@ sv:{
   'acs.sav.isk':'ISK eller kapitalförsäkring','acs.sav.isk.d':'Betalar schablonskatt på hela saldot varje år, oavsett om det går upp eller ner.',
   'acs.sav.bank':'Bankkonto eller kontanter','acs.sav.bank.d':'Ingen schablonskatt. Använd det här för en buffert du har i kontanter.',
   'acs.priv.d':'IPS eller en privat pensionsförsäkring som du själv betalar in till.',
+  'acs.occ.individual':'Individuell tjänstepension',
+  'acs.occ.individual.d':'En tjänstepension utanför kollektivavtalen — du fyller i saldo och insättning själv, som för en privat pension.',
   'acs.occ.unknown':'Jag vet inte vilket avtal jag har',
   'acs.occ.unknown.d':'Avtalet följer din arbetsgivare, inte din yrkestitel. Titta på lönebeskedet, fråga HR, eller logga in på minpension.se — där står dina tjänstepensioner med namn.',
   'acs.state.d.inkomst':'Alla som har arbetat i Sverige har en. 16 % av din inkomst.',
@@ -6654,15 +6664,20 @@ function acsCard(a, i, step){
         acsPctInput(i, 'eq1', a.eq1) + '<small>' + f1 + '–' + t1 + '</small>'
         + acsPctInput(i, 'eq2', a.eq2) + '<small>' + (t1 + 1) + '–' + t2 + '</small>'
         + acsPctInput(i, 'eq3', a.eq3) + '<small>' + (t2 + 1) + '+</small>',
-        '<button type="button" class="wdp-link" onclick="goTab(\'parameters\')">' + t('acs.eq.link') + '</button>');
+        '<button type="button" class="wdp-link" onclick="acsFocusBrackets()">' + t('acs.eq.link') + '</button>');
     };
     var fundSeg = function(){
       if(a.fixedRet !== null && a.fixedRet !== undefined) return '';   // a fixed return has no equity share
+      // AP7 Safa is the premiepension default fund, so it names this option only on the premium
+      // pension row, where the money really is in it. Everywhere else the same curve is just the
+      // glidepath: a state-pension brand has no business labelling an ISK.
+      var pp = isPpAcc(a);
       return acsRow(t('acs.f.fund'),
         '<span class="wdp-seg">'
-        + '<button class="' + (a.ownEq ? '' : 'on') + '" onclick="acsSetOwnEq(' + i + ',false)" title="' + wdpEsc(t('pp.glide.tip')) + '">' + t('acs.eq.default') + '</button>'
+        + '<button class="' + (a.ownEq ? '' : 'on') + '" onclick="acsSetOwnEq(' + i + ',false)" title="'
+          + wdpEsc(t(pp ? 'pp.glide.tip' : 'acs.eq.auto.tip')) + '">' + t(pp ? 'acs.eq.default' : 'acs.eq.auto') + '</button>'
         + '<button class="' + (a.ownEq ? 'on' : '') + '" onclick="acsSetOwnEq(' + i + ',true)">' + t('acs.eq.own') + '</button>'
-        + '</span>', a.ownEq ? '' : t('pp.glide'));
+        + '</span>', a.ownEq ? '' : t(pp ? 'pp.glide' : 'acs.eq.auto.note'));
     };
     if(isOccPremiumAcc(a) && a.ownEq){
       det += fundSeg() + eqRow() + acsRow(t('acc.col.mgmt'), acsPctInput(i, 'mgmt', a.mgmt)) + acsLockedNote(a);
@@ -6698,7 +6713,8 @@ function acsAddCancel(){ window._acsAdd = null; buildAccountsTable(); }
 function acsAddName(v){ if(window._acsAdd) window._acsAdd.name = String(v); }
 function acsSuggestName(step, kind){
   if(step === 1) return t('st.opt.' + kind);
-  if(step === 2) return (OCC_SCHEMES[kind] && OCC_SCHEMES[kind].name) || t('acc.name.new.pins');
+  if(step === 2) return kind === 'individual-occ' ? t('acs.occ.individual')
+    : (OCC_SCHEMES[kind] && OCC_SCHEMES[kind].name) || t('acc.name.new.pins');
   if(step === 3) return t('acc.name.new.pins');
   return t(kind === 'bank' ? 'acs.sav.bank' : 'acs.sav.isk');
 }
@@ -6711,7 +6727,7 @@ function acsAddGo(){
   var A = window._acsAdd; if(!A || !A.kind) return;
   var before = accounts.slice();
   if(A.step === 1) addStateAccount(A.kind);
-  else if(A.step === 2) addOccScheme(A.kind);
+  else if(A.step === 2) A.kind === 'individual-occ' ? addAccount('p-ins', null) : addOccScheme(A.kind);
   else if(A.step === 3) addAccount('p-ins', null);
   else if(A.step === 4) addAccount('after');
   // identity diff: addOccScheme adds TWO rows (premium + defined benefit) and all three creators
@@ -6720,6 +6736,7 @@ function acsAddGo(){
   var nm = String(A.name || '').trim();
   if(made[0] && nm){ made[0].name = nm; made[0].nameKey = null; }
   if(A.step === 4 && made[0]) acsApplySavKind(made[0], A.kind);
+  if(A.step === 2 && A.kind === 'individual-occ' && made[0]) made[0].occGroup = true;
   window._acsAdd = null; window._acsOpen = A.step;
   buildAccountsTable(); setTimeout(updateAccountSubtotals, 0); recalc();
 }
@@ -6730,6 +6747,7 @@ function acsAddPanel(step){
   }
   var opts = step === 1 ? STATE_KINDS.map(function(k){ return {v: k, l: t('st.opt.' + k), d: t('acs.state.d.' + k)}; })
     : step === 2 ? OCC_SCHEME_ORDER.map(function(k){ return {v: k, l: t(OCC_SCHEMES[k].opt), d: ''}; })
+        .concat([{v: 'individual-occ', l: t('acs.occ.individual'), d: t('acs.occ.individual.d')}])
     : step === 3 ? [{v: 'individual', l: t('occ.opt.individual'), d: t('acs.priv.d')}]
     : [{v: 'isk', l: t('acs.sav.isk'), d: t('acs.sav.isk.d')}, {v: 'bank', l: t('acs.sav.bank'), d: t('acs.sav.bank.d')}];
   var cards = opts.map(function(o){
@@ -6819,6 +6837,27 @@ function acsStepBody(step){
     + items.map(function(x){ return acsCard(x.a, x.i, step); }).join('')
     + acsAddPanel(step);
 }
+// The bracket ages are a shared setting but only matter to accounts set to "Own age brackets",
+// so the bar sits on this tab and shows itself only when one does.
+function acsAnyOwnEq(){
+  return accounts.some(function(a){ return a.ownEq && !a.db && !a.benefit && !a.workRow
+    && (a.fixedRet === null || a.fixedRet === undefined); });
+}
+function acsSyncEqBar(){
+  var bar = document.getElementById('acs-eq-bar');
+  if(bar) bar.style.display = acsAnyOwnEq() ? 'flex' : 'none';
+}
+function acsFocusBrackets(){
+  var bar = document.getElementById('acs-eq-bar');
+  if(!bar) return;
+  bar.style.display = 'flex';
+  if(bar.scrollIntoView) bar.scrollIntoView({block: 'center', behavior: 'smooth'});
+  bar.classList.add('guide-hl');
+  setTimeout(function(){ bar.classList.remove('guide-hl'); }, 2200);
+  var f = document.getElementById('ageFrom1');
+  if(f) setTimeout(function(){ f.focus(); f.select && f.select(); }, 350);
+}
+
 function acsOpen(n){
   _acsOpen = _acsOpen === n ? 0 : n; buildAccountsTable();
   var el = document.getElementById('acs-step-' + n);
@@ -6850,6 +6889,7 @@ function buildAccountsTable(){
   }
   el.innerHTML = h;
   if(_acsOpen === 5) buildPgbSection();
+  acsSyncEqBar();
   acsSummaryTable();
   setTimeout(updateAccountSubtotals, 0);
   setTimeout(buildAssetSummary, 0);
@@ -9130,7 +9170,9 @@ function wdpStateMain(){
 function wdpStateAge(){ var a = wdpStateMain(); return a && a.ws < 9999 ? a.ws - wdpBy() : null; }
 function wdpStateAuto(){ var g = wdpStateAccs(); return g.length > 0 && g.every(function(a){ return a.wsAuto; }); }
 // Occupational = a contractual scheme, the occupational / salary-exchange rows; private = the other P-insurance rows
-function wdpIsOcc(a){ return !!a.scheme || /^acc\.name\.(occ\.pen|salary\.ex)/.test(a.nameKey || ''); }
+// occGroup: an individual occupational pension - no collective agreement, so no a.scheme, but it
+// belongs with the occupational pensions on both the Assets and the Withdrawals tab.
+function wdpIsOcc(a){ return !!a.scheme || a.occGroup === true || /^acc\.name\.(occ\.pen|salary\.ex)/.test(a.nameKey || ''); }
 function wdpPinsAccs(kind){ return accounts.filter(function(a){ return a.type === 'p-ins' && !a.workRow && (kind === 'occ' ? wdpIsOcc(a) : !wdpIsOcc(a)); }); }
 function wdpAfterAccs(){ return accounts.filter(function(a){ return a.type === 'after'; }); }
 function wdpRow(yr){ return (_projYears || []).find(function(y){ return y.yr === yr; }) || null; }
