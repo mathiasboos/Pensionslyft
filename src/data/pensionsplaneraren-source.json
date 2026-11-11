@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "506900a14e2b588f07ce7e35ecb3320b4a27c831",
-  "committedAt": "2026-11-11T12:48:43+01:00",
-  "subject": "Assets: individual occupational pension, bracket ages on the tab, glidepath renamed (#51)"
+  "commit": "9011f40c30d5c26a23006a91ef0071dac709cabb",
+  "committedAt": "2026-11-11T13:36:52+01:00",
+  "subject": "Assets: name the capital field plainly and spell out every label (#53)"
 }

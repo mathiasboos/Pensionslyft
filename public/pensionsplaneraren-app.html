@@ -2060,14 +2060,14 @@ header {
   <div class="acs-tot">
     <span data-i18n="acc.total.value">Total Value</span>
     <span><input type="text" readonly id="dst-total-opening" value="0"><small data-i18n="acs.tot.open">today</small></span>
-    <span><input type="text" readonly id="dst-total-contrib" value="0"><small data-i18n="acs.tot.contrib">in per year</small></span>
+    <span><input type="text" readonly id="dst-total-contrib" value="0"><small data-i18n="acs.tot.contrib">contributed per year</small></span>
   </div>
 
   <!-- Equity % age brackets: the ONE place they are set (ids must stay unique - they lived in two
        places until Nov 2026 and the pair disagreed). Only accounts set to "Own age brackets" use
        them, so the bar hides itself when no account does (acsSyncEqBar). -->
   <div id="acs-eq-bar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:14px;padding:8px 14px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r)">
-    <span style="color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:10px" data-i18n="acc.eq.brackets">Equity % Age Brackets</span>
+    <span style="color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:10px" data-i18n="acc.eq.brackets">Equity share age brackets</span>
     <span style="color:var(--muted)" data-i18n="acc.bracket1">Bracket 1:</span>
     <input id="ageFrom1" type="text" inputmode="numeric" value="55" style="width:40px;background:var(--s3);border:1px solid var(--border);border-radius:4px;color:var(--pl-gold-ink);font-family:var(--font-m);font-size:12px;text-align:center;padding:3px 5px" onchange="recalc();refreshEqHeaders()">
     <span style="color:var(--muted)">&#8211;</span>
@@ -2578,8 +2578,8 @@ en:{
   'acs.state.d.ipt':'A supplement for those with a low income pension.',
   'acs.state.d.tillagg':'Only for people born 1938–1953.',
   'acs.state.d.annat':'Any other pension you want to add by hand.',
-  'acs.tot.open':'today','acs.tot.contrib':'in per year',
-  'acs.tbl.t':'Everything in this plan','acs.tbl.item':'Item','acs.tbl.contrib':'In per year','acs.tbl.total':'Total',
+  'acs.tot.open':'today','acs.tot.contrib':'contributed per year',
+  'acs.tbl.t':'Everything in this plan','acs.tbl.item':'Item','acs.tbl.contrib':'Contributed per year','acs.tbl.total':'Total',
   'toast.iskfri':'Your savings now get the 300 000 kr tax-free allowance on ISK and kapitalförsäkring, so the yield tax is lower than in the saved plan.',
   'par.slr':'Statslåneränta (SLR), assumption (%)',
   'par.ytP.tip':'(SLR + 1 percentage point) × 30 %. Derived from the SLR above; a single account can still be given its own rate under Details on the Assets tab.',
@@ -2644,17 +2644,17 @@ en:{
 
 
   // ── Assets tab ──
-  'acc.eq.brackets':'Equity % Age Brackets',
+  'acc.eq.brackets':'Equity share age brackets',
   'acc.bracket1':'Bracket 1:','acc.bracket2':'Bracket 2:','acc.bracket3':'Bracket 3:',
-  'acc.col.account':'Account','acc.col.opening':'Opening (SEK)',
-  'acc.col.contrib.yr':'Contribution/yr','acc.col.cs':'Contrib Start (Age)',
-  'acc.col.ce':'Contrib End (Age)','acc.col.mgmt':'Mgmt %',
-  'acc.col.yt':'Yield Tax %','acc.col.fr':'Fixed Ret %',
-  'acc.eq.prefix':'Equity % Age',
+  'acc.col.account':'Account','acc.col.opening':'Capital today',
+  'acc.col.contrib.yr':'Contribution per year','acc.col.cs':'Contribution start (age)',
+  'acc.col.ce':'Contribution end (age)','acc.col.mgmt':'Management fee %',
+  'acc.col.yt':'Yield tax %','acc.col.fr':'Fixed return %',
+  'acc.eq.prefix':'Equity share, age',
   'acc.contrib.fixed':'Fixed','acc.contrib.salary':'Salary %',
   'acc.sum.after':'Sum After-Tax Acc','acc.sum.pins':'Sum Pensions',
   'acc.sum.state':'Sum State Pensions','acc.total.value':'Total value',
-  'acc.opening.after.tax':'Opening, after tax (SEK)',
+  'acc.opening.after.tax':'Capital today, after tax',
 
 
   // ── Account names ──
@@ -2720,7 +2720,7 @@ en:{
   'wdp.s1.div':'Divisor',
   'wdp.s1.own':'Own',
   'wdp.permonth':'kr/mo',
-  'wdp.peryear':'kr/yr',
+  'wdp.peryear':'kr per year',
   'wdp.s2.t':'Occupational pension',
   'wdp.s2.q':'From which age, and for how long, do you want your occupational pension?',
   'wdp.s2.help':'Lifelong: a smaller amount for as long as you live. A set number of years: the same capital over a shorter time, so more each month, and then it stops. Amounts per month in the first year, before tax, with Typfallsmodellen\'s divisors; a payout over a set number of years is adjusted so the account ends at 0.',
@@ -3371,8 +3371,8 @@ sv:{
   'acs.state.d.ipt':'Ett tillägg för dig med låg inkomstpension.',
   'acs.state.d.tillagg':'Bara för dig som är född 1938–1953.',
   'acs.state.d.annat':'Någon annan pension som du vill lägga in själv.',
-  'acs.tot.open':'i dag','acs.tot.contrib':'in per år',
-  'acs.tbl.t':'Allt i den här planen','acs.tbl.item':'Post','acs.tbl.contrib':'In per år','acs.tbl.total':'Totalt',
+  'acs.tot.open':'i dag','acs.tot.contrib':'insatt per år',
+  'acs.tbl.t':'Allt i den här planen','acs.tbl.item':'Post','acs.tbl.contrib':'Insatt per år','acs.tbl.total':'Totalt',
   'toast.iskfri':'Ditt sparande får nu fribeloppet 300 000 kr på ISK och kapitalförsäkring, så avkastningsskatten blir lägre än i den sparade planen.',
   'par.slr':'Statslåneränta (SLR), antagande (%)',
   'par.ytP.tip':'(SLR + 1 procentenhet) × 30 %. Räknas fram från SLR ovan; ett enskilt konto kan ändå få en egen sats under Detaljer på Tillgångar-fliken.',
@@ -3437,17 +3437,17 @@ sv:{
 
 
   // ── Assets tab ──
-  'acc.eq.brackets':'Aktie% Åldersintervall',
+  'acc.eq.brackets':'Aktieandel per åldersintervall',
   'acc.bracket1':'Intervall 1:','acc.bracket2':'Intervall 2:','acc.bracket3':'Intervall 3:',
-  'acc.col.account':'Konto','acc.col.opening':'Ingående (SEK)',
-  'acc.col.contrib.yr':'Bidrag/år','acc.col.cs':'Bidrag start (ålder)',
-  'acc.col.ce':'Bidrag slut (ålder)','acc.col.mgmt':'Förvaltning %',
-  'acc.col.yt':'Avkastningsskatt %','acc.col.fr':'Fast avk %',
-  'acc.eq.prefix':'Aktie% Ålder',
+  'acc.col.account':'Konto','acc.col.opening':'Kapital i dag',
+  'acc.col.contrib.yr':'Insättning per år','acc.col.cs':'Insättning start (ålder)',
+  'acc.col.ce':'Insättning slut (ålder)','acc.col.mgmt':'Förvaltningsavgift %',
+  'acc.col.yt':'Avkastningsskatt %','acc.col.fr':'Fast avkastning %',
+  'acc.eq.prefix':'Aktieandel, ålder',
   'acc.contrib.fixed':'Fast','acc.contrib.salary':'Lön %',
   'acc.sum.after':'Summa beskattade konton','acc.sum.pins':'Summa pensioner',
   'acc.sum.state':'Summa statliga pensioner','acc.total.value':'Totalt värde',
-  'acc.opening.after.tax':'Ingående, efter skatt (SEK)',
+  'acc.opening.after.tax':'Kapital i dag, efter skatt',
 
 
   // ── Account names ──
@@ -3513,7 +3513,7 @@ sv:{
   'wdp.s1.div':'Delningstal',
   'wdp.s1.own':'Eget',
   'wdp.permonth':'kr/mån',
-  'wdp.peryear':'kr/år',
+  'wdp.peryear':'kr per år',
   'wdp.s2.t':'Tjänstepension',
   'wdp.s2.q':'Från vilken ålder och hur länge vill du ta ut din tjänstepension?',
   'wdp.s2.help':'Livsvarigt: ett lägre belopp så länge du lever. Ett visst antal år: samma kapital på kortare tid, alltså mer varje månad, och sedan tar det slut. Belopp per månad det första året, före skatt, med Typfallsmodellens delningstal; en utbetalning under ett visst antal år justeras så att kontot slutar på 0.',
