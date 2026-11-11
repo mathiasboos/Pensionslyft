@@ -2452,8 +2452,8 @@ en:{
   'pers.ret.lbl':'Retirement Year',
   'pers.sal.uplift':'Gross salary in 2025 money, as in Typfallsmodellen. The model raises it by the 2026 income index (+{pct} %) and uses {amt} kr/month; net salary is after tax on that amount.',
   'pp.own.eq':'Own equity brackets',
-  'occ.own.eq.tip':'Unticked: Typfallsmodellen\'s return for occupational schemes (Parameters, 1,7 % net of fees). Ticked: the Equity % age brackets with the Parameters equity/bond returns, minus Mgmt %.','pp.glide':'Default fund: 100 % equities to age 55 → 33 % at 75',
-  'pp.glide.tip':'Premium pension default fund (AP7 Såfa): 100 % equities up to age 55, then gradually down to 33 % equities / 67 % bonds at age 75; default fee 0,20 % as in Typfallsmodellen (AP7 Såfa itself charges about 0,04 %; change Mgmt % to your own fund fee). Tick "Own equity brackets" to use the Equity % age brackets instead.',
+  'occ.own.eq.tip':'Unticked: Typfallsmodellen\'s return for occupational schemes (Parameters, 1,7 % net of fees). Ticked: the equity share age brackets with the Parameters equity/bond returns, minus the management fee.','pp.glide':'Default fund: 100 % equities to age 55 → 33 % at 75',
+  'pp.glide.tip':'Premium pension default fund (AP7 Såfa): 100 % equities up to age 55, then gradually down to 33 % equities / 67 % bonds at age 75; default fee 0,20 % as in Typfallsmodellen (AP7 Såfa itself charges about 0,04 %; change the management fee to your own fund fee). Pick "Own age brackets" to use the equity share age brackets instead.',
   'pers.work.age':'Begin work at age','pers.ret.age':'Retirement Age','pers.ret.age.small':'Age you stop working',
   'pers.rikt.tick':'Target retirement age','pers.life.age':'Life Expectancy Age',
   'pers.ret.year':'Retirement Year','pers.life.year':'Life Expectancy Year',
@@ -2546,7 +2546,7 @@ en:{
   'acs.s4.empty':'Savings outside the pension system: an ISK, a kapitalförsäkring, a bank account. Add what you want the plan to draw on in retirement.',
   'acs.s5.help':'Years at home with small children, military service, studies and sickness or activity compensation also earn state pension rights. Add them if any apply — otherwise the plan assumes none.',
   'acs.s5.sum':'{n} added',
-  'acs.sum':'{n} · {amt} kr · {contrib} kr/yr in',
+  'acs.sum':'{n} · {amt} kr · {contrib} kr contributed per year',
   'acs.add.1':'Add a state pension','acs.add.2':'Add an occupational pension','acs.add.3':'Add a private pension','acs.add.4':'Add savings','acs.add.5':'Add',
   'acs.add.q.1':'Which one do you want to add?','acs.add.q.2':'Which agreement do you belong to?','acs.add.q.3':'What do you want to add?','acs.add.q.4':'What kind of savings is it?',
   'acs.add.ok':'Add','acs.add.cancel':'Cancel',
@@ -2675,7 +2675,7 @@ en:{
   'bn.atp.none':'No tilläggspension for people born after 1953.',
   'pgb.title':'Pensionable amounts – PGB','pgb.sub':'Pension rights for child years, conscription, studies and sickness/activity compensation',
   'pgb.add':'+ Add PGB item','pgb.opt.child':'Child','pgb.opt.vpl':'Conscription service','pgb.opt.studies':'Studies','pgb.opt.sa':'Activity / sickness compensation',
-  'pgb.f.birth':'Born','pgb.f.years':'PGB years','pgb.f.start':'Start','pgb.f.end':'Discharge','pgb.f.agefrom':'From age','pgb.f.ageto':'To age','pgb.f.terms':'Terms/yr','pgb.f.grant':'or grant kr/yr','pgb.f.amount':'PGB kr/yr (today)',
+  'pgb.f.birth':'Born','pgb.f.years':'PGB years','pgb.f.start':'Start','pgb.f.end':'Discharge','pgb.f.agefrom':'From age','pgb.f.ageto':'To age','pgb.f.terms':'Terms per year','pgb.f.grant':'or grant kr per year','pgb.f.amount':'PGB kr per year (today)',
   'pgb.col.type':'Type','pgb.col.details':'Details','pgb.col.result':'Pensionable amount','pgb.empty':'No items. Add child years, conscription, studies or sickness/activity compensation.',
   'pgb.total':'Total PGB','pgb.rule':'Counted from age 16 until the guarantee age and before retirement; PGI + PGB is capped at 7.5 IBB. Raises income pension, premium pension and ATP rights.',
   'pgb.warn.born':'Not applicable for people born before 1938.',
@@ -2698,7 +2698,7 @@ en:{
   'occ.badge.db':'Defined benefit',
   'occ.warn.birth':'The occupational pension agreement does not match the birth year.',
   'occ.db.service':'Service years',
-  'occ.db.from':'≈ {amt} kr/yr from age {age}',
+  'occ.db.from':'≈ {amt} kr per year from age {age}',
   'occ.db.tip':'Defined-benefit pension (Typfallsmodellen v4.8): a share of final salary per IBB band, scaled by service years/30 and adjusted for pension start age. Paid for life; no capital.',
   
   'wdp.intro':'Answer the five questions in order. You can change any answer later; the result below updates at once. Every pension amount comes from Typfallsmodellen (Pensionsmyndigheten).',
@@ -3246,7 +3246,7 @@ sv:{
   'pers.sal.uplift':'Bruttolön i 2025 års nivå, som i Typfallsmodellen. Modellen räknar upp den med 2026 års inkomstindex (+{pct} %) och använder {amt} kr/mån; nettolönen är efter skatt på det beloppet.',
   'pp.own.eq':'Egna aktieandelar',
   'occ.own.eq.tip':'Ej ikryssad: Typfallsmodellens avkastning för tjänstepensionsavtal (Parametrar, 1,7 % efter avgifter). Ikryssad: aktieandelarna per åldersintervall med Parametrarnas avkastning för aktier/obligationer, minus förvaltningsavgiften.','pp.glide':'Förvalsalternativet: 100 % aktier till 55 år → 33 % vid 75',
-  'pp.glide.tip':'Premiepensionens förvalsalternativ (AP7 Såfa): 100 % aktier till 55 år, därefter gradvis ner till 33 % aktier / 67 % räntor vid 75 år; förvald avgift 0,20 % som i Typfallsmodellen (AP7 Såfa tar själv cirka 0,04 %; ändra förvaltningsavgiften för din egen fonds avgift). Kryssa i "Egna aktieandelar" för att använda aktieandelarna per åldersintervall i stället.',
+  'pp.glide.tip':'Premiepensionens förvalsalternativ (AP7 Såfa): 100 % aktier till 55 år, därefter gradvis ner till 33 % aktier / 67 % räntor vid 75 år; förvald avgift 0,20 % som i Typfallsmodellen (AP7 Såfa tar själv cirka 0,04 %; ändra förvaltningsavgiften för din egen fonds avgift). Välj "Egna åldersintervall" för att använda aktieandelarna per åldersintervall i stället.',
   'pers.work.age':'Börjar arbeta vid ålder','pers.ret.age':'Pensionsålder','pers.ret.age.small':'Åldern då du slutar arbeta',
   'pers.rikt.tick':'Riktålder','pers.life.age':'Förväntad livslängd (ålder)',
   'pers.ret.year':'Pensionsår','pers.life.year':'Livslängdsår',
@@ -3339,7 +3339,7 @@ sv:{
   'acs.s4.empty':'Sparande utanför pensionssystemet: ISK, kapitalförsäkring, bankkonto. Lägg till det du vill att planen ska ta av som pensionär.',
   'acs.s5.help':'År hemma med små barn, värnplikt, studier och sjuk- eller aktivitetsersättning ger också allmän pensionsrätt. Lägg till det som gäller dig — annars räknar planen med inget.',
   'acs.s5.sum':'{n} tillagda',
-  'acs.sum':'{n} · {amt} kr · {contrib} kr/år in',
+  'acs.sum':'{n} · {amt} kr · {contrib} kr insatt per år',
   'acs.add.1':'Lägg till allmän pension','acs.add.2':'Lägg till tjänstepension','acs.add.3':'Lägg till privat pension','acs.add.4':'Lägg till sparande','acs.add.5':'Lägg till',
   'acs.add.q.1':'Vilken vill du lägga till?','acs.add.q.2':'Vilket avtal tillhör du?','acs.add.q.3':'Vad vill du lägga till?','acs.add.q.4':'Vilken typ av sparande är det?',
   'acs.add.ok':'Lägg till','acs.add.cancel':'Avbryt',
@@ -3468,7 +3468,7 @@ sv:{
   'bn.atp.none':'Ingen tilläggspension för personer födda efter 1953.',
   'pgb.title':'Pensionsgrundande belopp – PGB','pgb.sub':'Pensionsrätt för barnår, värnplikt, studier och sjuk-/aktivitetsersättning',
   'pgb.add':'+ Lägg till PGB','pgb.opt.child':'Barn','pgb.opt.vpl':'Värnplikt','pgb.opt.studies':'Studier','pgb.opt.sa':'Aktivitets-/sjukersättning',
-  'pgb.f.birth':'Född','pgb.f.years':'PGB-år','pgb.f.start':'Start','pgb.f.end':'Muck','pgb.f.agefrom':'Från ålder','pgb.f.ageto':'Till ålder','pgb.f.terms':'Terminer/år','pgb.f.grant':'eller bidrag kr/år','pgb.f.amount':'PGB kr/år (idag)',
+  'pgb.f.birth':'Född','pgb.f.years':'PGB-år','pgb.f.start':'Start','pgb.f.end':'Muck','pgb.f.agefrom':'Från ålder','pgb.f.ageto':'Till ålder','pgb.f.terms':'Terminer per år','pgb.f.grant':'eller bidrag kr per år','pgb.f.amount':'PGB kr per år (i dag)',
   'pgb.col.type':'Typ','pgb.col.details':'Uppgifter','pgb.col.result':'Pensionsgrundande belopp','pgb.empty':'Inga poster. Lägg till barnår, värnplikt, studier eller sjuk-/aktivitetsersättning.',
   'pgb.total':'Summa PGB','pgb.rule':'Räknas från 16 år till riktåldern och före pension; PGI + PGB begränsas till 7,5 IBB. Höjer rätter i inkomstpension, premiepension och ATP.',
   'pgb.warn.born':'Gäller inte personer födda före 1938.',
@@ -3491,7 +3491,7 @@ sv:{
   'occ.badge.db':'Förmånsbestämd',
   'occ.warn.birth':'Tjänstepensionsavtalet stämmer inte med födelseåret.',
   'occ.db.service':'Tjänsteår',
-  'occ.db.from':'≈ {amt} kr/år från {age} år',
+  'occ.db.from':'≈ {amt} kr per år från {age} år',
   'occ.db.tip':'Förmånsbestämd pension (Typfallsmodellen v4.8): andel av slutlönen per IBB-intervall, skalad med tjänsteår/30 och justerad för uttagsålder. Betalas livsvarigt; inget kapital.',
   
   'wdp.intro':'Svara på de fem frågorna i tur och ordning. Du kan ändra ett svar när som helst – resultatet nedan uppdateras direkt. Alla pensionsbelopp kommer från Typfallsmodellen (Pensionsmyndigheten).',
@@ -5952,7 +5952,7 @@ function renderPInsContrib(i, a){
       +'<div style="font-size:10px;color:var(--muted);margin-bottom:3px" title="'+t('ip.rule.tip')+'">'+t('ip.rule')+'</div>'
       +'<div id="pins-sek-'+i+'" style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(15,32,52,0.1);'
       +'font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right">'
-      +'\u2248 '+Math.round(ipRatt(ctxI, a, contribRefYear(a))).toLocaleString('sv-SE')+' kr/yr</div></div>';
+      +'\u2248 '+Math.round(ipRatt(ctxI, a, contribRefYear(a))).toLocaleString('sv-SE')+' '+t('wdp.peryear')+'</div></div>';
   }
   // Premium pension: 2.5 % of PGI, no Fixed/Salary choice
   if(isPpAutoAcc(a)){
@@ -5960,7 +5960,7 @@ function renderPInsContrib(i, a){
       +'<div style="font-size:10px;color:var(--muted);margin-bottom:3px" title="'+t('pp.rule.tip')+'">'+t('pp.rule')+'</div>'
       +'<div id="pins-sek-'+i+'" style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(15,32,52,0.1);'
       +'font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right">'
-      +'\u2248 '+Math.round(ppRatt(occMakeCtx(occParamsNow()), a, contribRefYear(a))).toLocaleString('sv-SE')+' kr/yr</div></div>';
+      +'\u2248 '+Math.round(ppRatt(occMakeCtx(occParamsNow()), a, contribRefYear(a))).toLocaleString('sv-SE')+' '+t('wdp.peryear')+'</div></div>';
   }
   // Scheme accounts follow the agreement's rules: show them, don't offer editing.
   if(a.scheme && OCC_SCHEMES[a.scheme] && !a.db){
@@ -5971,7 +5971,7 @@ function renderPInsContrib(i, a){
       +'<div style="font-size:10px;color:var(--muted)">'+fmtD(ib1)+' – '+lim+' × IBB: <span style="color:var(--pl-gold-ink)">'+fmtR(r2)+'%</span></div>'
       +'<div id="pins-sek-'+i+'" style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(15,32,52,0.1);'
       +'font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right">'
-      +'≈ '+Math.round(occPremiumFor(a, occMakeCtx(occParamsNow()), START_YEAR)).toLocaleString('sv-SE')+' kr/yr</div></div>';
+      +'≈ '+Math.round(occPremiumFor(a, occMakeCtx(occParamsNow()), START_YEAR)).toLocaleString('sv-SE')+' '+t('wdp.peryear')+'</div></div>';
   }
 
   var salarySection = '';
@@ -6004,7 +6004,7 @@ function renderPInsContrib(i, a){
     salarySection +=
       '<div id="pins-sek-'+i+'" style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(15,32,52,0.1);'
       +'font-size:11px;font-family:var(--font-m);color:var(--pl-gold-ink);text-align:right">'
-      +'\u2248 '+sekVal+' kr/yr</div>';
+      +'\u2248 '+sekVal+' '+t('wdp.peryear')+'</div>';
   } else {
     var fixedVal = Math.round(a.contrib||0).toLocaleString('sv-SE');
     salarySection =
@@ -6069,7 +6069,7 @@ function updatePInsSEK(i){
     ? Math.round(Math.min(sal,b1)*r1/100)
     : Math.round(Math.min(sal,b1)*r1/100 + Math.max(0,Math.min(sal,b2)-b1)*r2/100);
   var el  = document.getElementById('pins-sek-'+i);
-  if(el) el.textContent = '\u2248 ' + sek.toLocaleString('sv-SE') + ' kr/yr';
+  if(el) el.textContent = '\u2248 ' + sek.toLocaleString('sv-SE') + ' ' + t('wdp.peryear');
 }
 
 

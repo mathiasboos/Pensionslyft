@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "9011f40c30d5c26a23006a91ef0071dac709cabb",
-  "committedAt": "2026-11-11T13:36:52+01:00",
-  "subject": "Assets: name the capital field plainly and spell out every label (#53)"
+  "commit": "1cc6915b5f2f92e002c70d1896a357c4df78ca04",
+  "committedAt": "2026-11-11T14:09:17+01:00",
+  "subject": "Assets: finish the no-abbreviations pass, and translate five hardcoded strings (#54)"
 }
