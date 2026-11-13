@@ -9325,10 +9325,28 @@ function wdpChip(on, onclick, big, small, extra){
 }
 
 // ── Step bodies ──
+// The empty states below name Assets as the place to add an account; this is the way there.
+// acsAddOpen sets _acsOpen, primes window._acsAdd and rebuilds, so it must run LAST.
+function wdpGoAdd(step){
+  goTab('accounts');
+  if(_guideStep >= 0){                      // keep the guide panel on the tab it just sent you to
+    for(var i = 0; i < GUIDE_STEPS.length; i++){
+      if(GUIDE_STEPS[i].tab === 'accounts'){ _guideStep = i; guideRender(); break; }
+    }
+  }
+  acsAddOpen(step);
+  var el = document.getElementById('acs-step-' + step);
+  if(el && el.scrollIntoView) el.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+// help text + the "+ Add …" button, for a Withdrawals step whose kind of account is missing
+function wdpNoneBody(msgKey, step){
+  return '<div class="wdp-help">' + t(msgKey) + '</div>'
+    + '<button type="button" class="acs-addbtn" onclick="wdpGoAdd(' + step + ')">+ ' + t('acs.add.' + step) + '</button>';
+}
 function wdpStep1(){
   var g = wdpStateAccs(), by = wdpBy(), rikt = getRiktalder(by) || 65, retAge = wdpRetAge();
   var res = {title:t('wdp.s1.t')};
-  if(!g.length){ res.summary = '–'; res.body = '<div class="wdp-help">' + t('wdp.s1.none') + '</div>'; return res; }
+  if(!g.length){ res.summary = '–'; res.body = wdpNoneBody('wdp.s1.none', 1); return res; }
   var cur = wdpStateAge(), auto = wdpStateAuto();
   res.summary = cur != null ? t('wdp.s1.sum', {age:cur}) : '–';
   var ages = [];
@@ -9385,7 +9403,7 @@ function wdpStateMore(a){
 function wdpStepPins(kind){
   var list = wdpPinsAccs(kind), by = wdpBy(), retAge = wdpRetAge();
   var res = {title:t(kind === 'occ' ? 'wdp.s2.t' : 'wdp.s3.t')};
-  if(!list.length){ res.summary = '–'; res.body = '<div class="wdp-help">' + t(kind === 'occ' ? 'wdp.s2.none' : 'wdp.s3.none') + '</div>'; return res; }
+  if(!list.length){ res.summary = '–'; res.body = wdpNoneBody(kind === 'occ' ? 'wdp.s2.none' : 'wdp.s3.none', kind === 'occ' ? 2 : 3); return res; }
   res.summary = list.map(function(a){
     var n = wdpYearsOf(a), from = a.ws < 9999 ? a.ws - by : null;
     return accDisplayName(a) + ': ' + (from == null ? t('wdp.notset')
@@ -9433,7 +9451,7 @@ function wdpStep4(){
   var out = wdpSavingsOutcome();
   var outTxt = !out ? '' : out.age != null ? t('wdp.s4.lasts', {age:out.age}) : t('wdp.s4.left', {amt:wdpN(out.left), age:out.at});
   res.summary = list.length ? t('wdp.s4.m.' + mode) + (outTxt ? ' · ' + outTxt : '') : '–';
-  if(!list.length){ res.body = '<div class="wdp-help">' + t('wdp.s4.empty') + '</div>'; return res; }
+  if(!list.length){ res.body = wdpNoneBody('wdp.s4.empty', 4); return res; }
   var opt = function(k){
     var on = mode === k;
     var h = '<div class="wdp-opt' + (on ? ' on' : '') + '"' + (on ? '' : ' onclick="wdpSetSavings(\'' + k + '\')"') + ' role="radio" aria-checked="' + on + '" tabindex="0"' + (on ? '' : ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}"') + '>'
@@ -13430,7 +13448,9 @@ function guideMove(d){
 function guideShow(){
   if(_guideStep < 0) return;
   // Open all account groups so every "+ Add" control is visible.
-  if(GUIDE_STEPS[_guideStep].tab === 'accounts') window._acsOpen = 0;   // all five step headers visible
+  // Step 1 open, not 0: a step's body is what renders acsAddPanel, so with everything collapsed
+  // the guide showed five headers and NO "+ Add" button anywhere on the tab.
+  if(GUIDE_STEPS[_guideStep].tab === 'accounts') window._acsOpen = 1;
   goTab(GUIDE_STEPS[_guideStep].tab);
   guideRender();
 }

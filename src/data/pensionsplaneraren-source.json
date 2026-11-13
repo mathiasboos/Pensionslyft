@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/mathiasboos/Calculators",
   "path": "Retirement_Planner.html",
-  "commit": "1cc6915b5f2f92e002c70d1896a357c4df78ca04",
-  "committedAt": "2026-11-11T14:09:17+01:00",
-  "subject": "Assets: finish the no-abbreviations pass, and translate five hardcoded strings (#54)"
+  "commit": "b9b5268629eccf7c255bfd68523104c074657f3d",
+  "committedAt": "2026-11-13T14:18:26+01:00",
+  "subject": "Guide: you can add pensions while it is running (#56)"
 }
