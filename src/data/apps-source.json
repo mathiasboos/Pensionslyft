@@ -27,9 +27,9 @@
     },
     "nettolon": {
       "file": "Net_Salary.html",
-      "commit": "a5e0a3d55323320787b842a53783efc57e3b356a",
-      "committedAt": "2026-10-29T10:52:15+00:00",
-      "subject": "Net_Salary: add CSV/Excel download, English number formats and a few wordings"
+      "commit": "0208d11ae9dc68ce5d3a06af6e95de1ccf24c703",
+      "committedAt": "2026-11-13T13:25:40+01:00",
+      "subject": "Net_Salary: link intro text to Skatteverket's original calculator (#55)"
     },
     "pensionsoversikt": {
       "file": "Pension Overview.html",

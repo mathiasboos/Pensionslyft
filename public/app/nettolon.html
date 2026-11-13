@@ -276,7 +276,7 @@ footer {
 <main class="wrap">
   <p class="eyebrow" id="eyebrow-main" style="margin-top: 32px">Pensionslyft · Kalkylatorer</p>
   <h1 id="h1">Nettolönkalkylator 2026</h1>
-  <p class="intro" id="intro">Se vad som blir kvar efter skatt 2026, steg för steg, med kommunalskatt, avdrag och avgifter. Beräkningen följer Skatteverkets tekniska beskrivning och räknas direkt i din webbläsare.</p>
+  <p class="intro" id="intro">Se vad som blir kvar efter skatt 2026, steg för steg, med kommunalskatt, avdrag och avgifter. Beräkningen följer <a href="https://www7.skatteverket.se/portal/rakna-ut-skatt?lang=sv" target="_blank" rel="noopener">Skatteverkets tekniska beskrivning</a> och räknas direkt i din webbläsare.</p>
   <div id="app" class="layout"><noscript>Kalkylatorn kräver JavaScript.</noscript></div>
 </main>
 <footer>
@@ -1234,9 +1234,9 @@ footer {
     $("meta-desc").setAttribute("content", tr("Se vad som blir kvar efter skatt 2026, steg f\xF6r steg. Frist\xE5ende version av Nettol\xF6nkalkylatorn fr\xE5n pensionslyft.se.", "See what is left after tax in 2026, step by step. Standalone version of the net salary calculator from pensionslyft.se."));
     $("eyebrow-main").textContent = tr("Pensionslyft \xB7 Kalkylatorer", "Pensionslyft \xB7 Calculators");
     $("h1").textContent = tr("Nettol\xF6nkalkylator 2026", "Net salary calculator 2026");
-    $("intro").textContent = tr(
-      "Se vad som blir kvar efter skatt 2026, steg f\xF6r steg, med kommunalskatt, avdrag och avgifter. Ber\xE4kningen f\xF6ljer Skatteverkets tekniska beskrivning och r\xE4knas direkt i din webbl\xE4sare.",
-      "See what is left after tax in 2026, step by step, with municipal tax, deductions and fees. The calculation follows the Swedish Tax Agency's technical description and runs directly in your browser."
+    $("intro").innerHTML = tr(
+      "Se vad som blir kvar efter skatt 2026, steg f\xF6r steg, med kommunalskatt, avdrag och avgifter. Ber\xE4kningen f\xF6ljer <a href=\"https://www7.skatteverket.se/portal/rakna-ut-skatt?lang=sv\" target=\"_blank\" rel=\"noopener\">Skatteverkets tekniska beskrivning</a> och r\xE4knas direkt i din webbl\xE4sare.",
+      "See what is left after tax in 2026, step by step, with municipal tax, deductions and fees. The calculation follows the <a href=\"https://www7.skatteverket.se/portal/rakna-ut-skatt?lang=en\" target=\"_blank\" rel=\"noopener\">Swedish Tax Agency's technical description</a> and runs directly in your browser."
     );
     $("foot").innerHTML = tr(
       'Ber\xE4kningen \xE4r en uppskattning och inte skatter\xE5dgivning. Den h\xE4r filen \xE4r en frist\xE5ende kopia av <a href="https://pensionslyft.se/nettolonkalkylator">Nettol\xF6nkalkylatorn p\xE5 pensionslyft.se</a>, d\xE4r du alltid hittar den senaste versionen.',
