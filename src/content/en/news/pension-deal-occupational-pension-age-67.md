@@ -8,6 +8,11 @@ tags: ["pension agreement", "occupational pension", "lo", "saf-lo", "transition 
 published_at: 2026-11-09
 ---
 
+<figure>
+<img src="/nyheter/lo-veli-pekka-saikkala.webp" width="170" height="205" alt="Veli-Pekka Säikkälä, LO bargaining secretary" />
+<figcaption>Veli-Pekka Säikkälä, LO's bargaining secretary (avtalssekreterare). Press photo: LO</figcaption>
+</figure>
+
 After intensive negotiations over the weekend, LO, the Confederation of Swedish Enterprise (Svenskt Näringsliv) and PTK have agreed new terms for pensions, insurance and transition support. LO's bargaining secretary (avtalssekreterare) describes the deal as a "big victory". Among the changes are a higher age limit for occupational pension (tjänstepension), from 65 to 67, and improved insurance terms. But one of LO's most important demands is still missing.
 
 It was late on Sunday that the parties announced that they had reached an agreement after the weekend's final negotiations. The deal covers around two million employees and brings several changes to the pensions and insurances under collective agreements.

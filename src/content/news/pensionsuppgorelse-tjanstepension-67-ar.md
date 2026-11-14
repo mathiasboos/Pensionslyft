@@ -7,6 +7,11 @@ tags: ["pensionsuppgörelse", "tjänstepension", "lo", "avtalspension", "omstäl
 published_at: 2026-11-09
 ---
 
+<figure>
+<img src="/nyheter/lo-veli-pekka-saikkala.webp" width="170" height="205" alt="Veli-Pekka Säikkälä, LOs avtalssekreterare" />
+<figcaption>Veli-Pekka Säikkälä, LOs avtalssekreterare. Pressbild: LO</figcaption>
+</figure>
+
 Efter intensiva förhandlingar under helgen har LO, Svenskt Näringsliv och PTK enats om nya villkor för pensioner, försäkringar och omställning. LO:s avtalssekreterare beskriver uppgörelsen som en ”stor seger”. Bland förändringarna finns höjd åldersgräns för tjänstepension från 65 till 67 år och förbättrade försäkringsvillkor. Men ett av LO:s viktigaste krav saknas fortfarande.
 
 Det var sent på söndagen som parterna meddelade att de nått en överenskommelse efter helgens slutförhandlingar. Uppgörelsen omfattar omkring två miljoner anställda och innebär flera förändringar i de kollektivavtalade pensionerna och försäkringarna.
