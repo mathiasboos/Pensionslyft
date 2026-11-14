@@ -45,9 +45,9 @@
     },
     "pensionskompassen": {
       "file": "Pensionskompassen_offline.html",
-      "commit": "8337d0dceebbcf62b26f28653e6f12073a8c513c",
-      "committedAt": "2026-11-08T09:19:02+00:00",
-      "subject": "Pensionskompassen: typing in age fields no longer jumps to the minimum"
+      "commit": "c7a029fb9e3fe7bf7f8d20a6d1a60bae3c688914",
+      "committedAt": "2026-11-14T08:29:51Z",
+      "subject": "Pensionskompassen: manual capital starts from the estimate and means balances today"
     }
   }
 }
